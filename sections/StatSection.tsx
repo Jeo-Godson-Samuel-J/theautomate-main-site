@@ -1,0 +1,57 @@
+import React from "react";
+import Image from "next/image";
+
+export default function StatsSection() {
+  return (
+    <section className="min-h-[80vh] bg-white flex items-center">
+      <div className="max-w-7xl mx-6 md:mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-12">
+        {/* Left Content */}
+        <div className="lg:w-1/2">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight md:text-nowrap mb-6">
+            Shape Your Future with <br /> Knowledge That Matters
+          </h2>
+
+          <p className="text-gray-600 text-lg md:text-xl max-w-xl mb-10">
+            We simplify online education with honest reviews, verified
+            discounts, and guides that help learners make the right choices.
+          </p>
+
+          {/* Stats */}
+          <div className="flex flex-wrap justify-around mb-10">
+            <div>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">500+</p>
+              <p className="text-gray-500 text-sm mt-1">Students</p>
+            </div>
+            <div>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">10+</p>
+              <p className="text-gray-500 text-sm mt-1">Courses Covered</p>
+            </div>
+            <div>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">5+</p>
+              <p className="text-gray-500 text-sm mt-1">Years of Training</p>
+            </div>
+          </div>
+
+          <button className="bg-brand-dark text-white px-10 py-3 rounded-full font-semibold shadow-lg hover:opacity-90 transition hover:scale-105">
+            Know more
+          </button>
+        </div>
+
+        {/* Right Content */}
+        <div className="pl-8 relative flex justify-center items-center min-h-[50vh] md:min-h-[60vh] lg:min-h-[80vh]">
+          {/* Person Image */}
+          <div className="relative">
+            <Image
+              src="/stats-image.png"
+              alt="Student"
+              width={1200}
+              height={1200}
+              className="object-contain w-full min-h-[300px] md:min-h-[400px] lg:min-h-[600px]"
+              priority
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 const courseData = [
     { title: "Selenium", img: "/selenium.svg.svg", learners: "350+", color: "bg-[#00AD00]" },
     { title: "SDET", img: "/SDET.svg", learners: "350+", color: "bg-[#0A2540]" },
@@ -6,15 +8,15 @@ const courseData = [
 
 export default function Courses() {
     return (
-        <section className="py-20 px-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">Our Popular Courses</h2>
+        <section className="py-20 px-6 bg-white">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-black mb-16">Our Popular Courses</h2>
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
                 {courseData.map((course, i) => (
                     <div key={i} className="bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col border border-gray-100">
                         <div className={`h-56 flex items-center justify-center p-8 ${course.color}`}>
-                            <img src={course.img} alt={course.title} className="max-h-full object-contain" />
+                            <Image src={course.img} alt={course.title} width={200} height={200} className="max-h-full object-contain" />
                         </div>
-                        <div className="p-8">
+                        <div className="p-8 text-black">
                             <h3 className="text-2xl font-bold mb-2">{course.title}</h3>
                             <div className="flex text-blue-500 mb-4">{"★★★★★"}</div>
                             <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
@@ -32,7 +34,7 @@ export default function Courses() {
                 ))}
             </div>
             <div className="flex justify-center mt-16">
-                <button className="bg-brand-dark text-white px-12 py-4 rounded-full font-bold text-lg">See more</button>
+                <button className="bg-brand-dark text-white px-8 py-3 rounded-full font-bold text-lg">See more</button>
             </div>
         </section>
     );

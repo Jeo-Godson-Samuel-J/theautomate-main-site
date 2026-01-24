@@ -1,6 +1,7 @@
 import React from 'react';
+import Image from 'next/image';
 /* Import social icons from lucide-react or use SVGs */
-import { Instagram, Linkedin, Send, MessageCircle, X } from 'lucide-react';
+import { Instagram, Linkedin, Send, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
     return (
@@ -29,7 +30,7 @@ export default function Footer() {
                     {/* Brand Info */}
                     <div className="lg:col-span-5">
                         <div className="flex items-center gap-2 mb-6">
-                            <img src="/logo.svg" alt="Auto-Mate" className="h-10 brightness-0 invert" />
+                            <Image src="/footer-logo.png" alt="Auto-Mate" width={180} height={100} className="h-10 md:h-12" />
                         </div>
                         <p className="text-gray-400 text-sm leading-relaxed max-w-sm mb-6">
                             Auto-Mate empowers professionals to master automation testing and advanced software skills. We equip you not just to adapt to the future of tech, but to define it.
