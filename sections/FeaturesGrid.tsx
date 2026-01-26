@@ -6,42 +6,42 @@ const features = [
     title: "Learn from anywhere",
     description:
       "Auto-mate online learning platform empowers you to learn new skills and accomplish real growth.",
-    icon: "/icons/globe.png",
+    icon: "/icons/globe1.png",
     accent: "from-[#1682F1] to-[#1EC0F7]",
   },
   {
     title: "Expert Mentors",
     description:
       "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/mentor.png",
+    icon: "/icons/mentor1.png",
     accent: "from-[#0050DE] to-[#1682F1]",
   },
   {
     title: "Learn in-demand skills",
     description:
       "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/graph.png",
+    icon: "/icons/graph1.png",
     accent: "from-[#174778] to-[#0050DE]",
   },
   {
     title: "AI-Powered Automation",
     description:
       "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/cloud.png",
+    icon: "/icons/cloud1.png",
     accent: "from-[#1EC0F7] to-[#25C8E5]",
   },
   {
     title: "Tailored Consulting",
     description:
       "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/classroom.png",
+    icon: "/icons/classroom1.png",
     accent: "from-[#1682F1] to-[#25C8E5]",
   },
   {
     title: "Community and Events",
     description:
       "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/atom.png",
+    icon: "/icons/atom1.png",
     accent: "from-[#0050DE] to-[#174778]",
   },
 ];
@@ -50,7 +50,7 @@ export default function FeaturesGrid() {
   return (
     <section className="w-full py-28 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
-        
+
         {/* Heading */}
         <h2 className="text-3xl md:text-4xl font-bold text-center text-black pb-12">
           What Makes Us Unique?

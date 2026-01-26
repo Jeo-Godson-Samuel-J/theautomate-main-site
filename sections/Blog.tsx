@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 interface BlogPost {
   title: string;
@@ -41,30 +42,30 @@ export default function Blog() {
           {blogs.map((post, i) => (
             <div key={i} className="group cursor-pointer hover:scale-105 transition-transform duration-300">
               <div className="overflow-hidden rounded-[40px] mb-6 shadow-xl hover:shadow-2xl transition-all duration-300">
-                <Image 
-                  src={post.image} 
-                  alt={post.title} 
-                  width={400} 
-                  height={256} 
-                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" 
+                <Image
+                  src={post.image}
+                  alt={post.title}
+                  width={400}
+                  height={256}
+                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
               <h3 className="text-xl font-bold mb-4 leading-tight group-hover:text-brand-blue transition">
                 {post.title}
               </h3>
               <div className="flex flex-col gap-3 text-sm" aria-label="Post metadata">
-                <time 
-                  dateTime={post.date} 
+                <time
+                  dateTime={post.date}
                   className="flex items-center gap-1"
                   title={`Published on ${new Date(post.date).toLocaleDateString('en-US', { dateStyle: 'long' })}`}
                 >
                   📅 {new Date(post.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </time>
                 <div className="flex items-center gap-2">
-                  <Image 
-                    src={BLOG_AUTHOR_AVATAR} 
-                    alt={`${BLOG_AUTHOR}'s avatar`} 
-                    width={16} 
+                  <Image
+                    src={BLOG_AUTHOR_AVATAR}
+                    alt={`${BLOG_AUTHOR}'s avatar`}
+                    width={16}
                     height={16}
                     className="rounded-full"
                   />
@@ -74,9 +75,9 @@ export default function Blog() {
             </div>
           ))}
         </div>
-        <button className="mt-16 bg-brand-dark text-white px-12 py-4 rounded-full font-bold text-lg hover:bg-opacity-90 shadow-lg">
+        <Button className="mt-16 bg-brand-dark text-white px-12 py-4 rounded-full font-bold text-lg hover:bg-brand-blue shadow-lg">
           See more
-        </button>
+        </Button>
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 const courseData = [
     { title: "Selenium", img: "/selenium.svg.svg", learners: "350+", color: "bg-[#00AD00]" },
@@ -26,15 +27,15 @@ export default function Courses() {
                             <p className="text-gray-600 text-sm mb-8">
                                 Master the latest tools and frameworks used by top industry professionals.
                             </p>
-                            <button className="w-full bg-brand-blue text-white py-3 rounded-full font-bold hover:bg-brand-dark transition">
+                            <Button className="w-full bg-brand-blue text-white py-3 rounded-full font-bold hover:bg-brand-dark transition">
                                 Learn more
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 ))}
             </div>
             <div className="flex justify-center mt-16">
-                <button className="bg-brand-dark text-white px-8 py-3 rounded-full font-bold text-lg">See more</button>
+                <Button className="bg-brand-dark text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-brand-blue">See more</Button>
             </div>
         </section>
     );
