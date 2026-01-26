@@ -8,14 +8,14 @@ export default function CourseHero() {
     return (
         <section className="py-16 px-6 bg-white">
             <div className='mx-auto'>
-                <h1 className="text-4xl flex flex-col items-center md:text-6xl font-bold bg-clip-text text-transparent 
+                <h1 className="text-4xl flex flex-col items-center md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent 
                     bg-linear-to-r from-[#0A3D62] via-[#1E90FF] to-[#0A3D62] leading-[1.2] text-center">
                     Our Industry Leading Training <br /> Courses
                 </h1>
                 <p className='p-4 text-black-400 md:p-12 md:m-4 md:text-lg text-center'>Master the art of automation with our industry-leading training courses! Designed and delivered by seasoned experts, our hands-on programs equip you with real-world skills to excel in automation.
-                    Whether you're advancing your career or upskilling your team, we’ll empower you to lead with confidence in today’s tech-driven world</p>
+                    Whether you&apos;re advancing your career or upskilling your team, we’ll empower you to lead with confidence in today’s tech-driven world</p>
 
-                <div className="bg-white rounded-[40px] w-full md:w-[60%] mx-auto shadow-2xl border border-gray-500 flex flex-col md:flex-row overflow-hidden p-2">
+                <div className="bg-white rounded-[40px] w-full lg:w-[80%] mx-auto shadow-2xl shadow-[#2B71B8] flex flex-col md:flex-row overflow-hidden p-2">
                     <div className="md:w-1/2 relative group overflow-hidden rounded-3xl">
                         {/* Video Element */}
                         <video

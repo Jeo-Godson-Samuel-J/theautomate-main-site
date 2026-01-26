@@ -6,7 +6,7 @@ import Consultation from '@/sections/courses-section/Consultation';
 
 export default function CoursesPage() {
     return (
-        <main className="pt-20"> {/* Standard space for Navbar */}
+        <main className="pt-20 mx-auto max-w-7xl"> {/* Standard space for Navbar */}
             <CourseHero />
             <CourseList />
             <UniqueFeature />

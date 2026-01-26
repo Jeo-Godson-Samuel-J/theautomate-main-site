@@ -13,7 +13,7 @@ interface CourseCardProps {
 
 export default function CourseCard({ slug, title, image, learners, duration, description }: CourseCardProps) {
     return (
-        <div className="bg-white rounded-[40px] shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-xl transition-shadow duration-300">
+        <div className="bg-white rounded-[40px] shadow-[#2B71B8] shadow-lg border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-xl transition-shadow duration-300">
             {/* Course Image Header */}
             <div className="relative h-48 w-full bg-gray-100">
                 <Image
@@ -24,7 +24,7 @@ export default function CourseCard({ slug, title, image, learners, duration, des
                 />
             </div>
 
-            <div className="p-8 flex flex-col flex-grow">
+            <div className="p-8 flex flex-col grow">
                 <h3 className="text-xl font-bold text-black-400 mb-2">{title}</h3>
 
                 {/* Stars */}
@@ -46,7 +46,7 @@ export default function CourseCard({ slug, title, image, learners, duration, des
                     </div>
                 </div>
 
-                <p className="text-black-400 font-bold text-sm leading-relaxed mb-8 flex-grow">
+                <p className="text-black-400 font-bold text-sm leading-relaxed mb-8 grow">
                     {description}
                 </p>
 
