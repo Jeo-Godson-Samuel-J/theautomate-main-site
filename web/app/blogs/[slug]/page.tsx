@@ -4,8 +4,22 @@ import { PortableText } from "@portabletext/react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
+interface SanityImage {
+  _type: 'image';
+  asset: {
+    _ref: string;
+    _type: 'reference';
+  };
+}
+
+interface SanityCode {
+  _type: 'code';
+  code: string;
+  language?: string;
+}
+
 const builder = imageUrlBuilder(client);
-const urlFor = (source: any) => builder.image(source);
+const urlFor = (source: SanityImage) => builder.image(source);
 
 const BLOG_QUERY = `
 *[_type == "blog" && slug.current == $slug][0]{
@@ -113,7 +127,7 @@ export default async function BlogPage({
             value={blog.content}
             components={{
               types: {
-                image: ({ value }: any) => (
+                image: ({ value }: { value: SanityImage }) => (
                   <Image
                     src={urlFor(value).width(900).url()}
                     alt=""
@@ -122,7 +136,7 @@ export default async function BlogPage({
                     className="my-8 rounded-lg"
                   />
                 ),
-                code: ({ value }: any) => (
+                code: ({ value }: { value: SanityCode }) => (
                   <pre className="
                     bg-gray-900 text-green-400
                     p-5 rounded-lg
