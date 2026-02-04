@@ -1,5 +1,4 @@
 import BannerCTA from "@/components/layout/BannerCTA";
-import Footer from "@/components/layout/Footer";
 import FAQSection from "@/sections/contact-section/FAQSection";
 import ContactHero from "@/sections/contact-section/ContactHero";
 
