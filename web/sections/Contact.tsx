@@ -3,8 +3,8 @@ import Image from 'next/image';
 
 export default function Contact() {
     return (
-        <div className="bg-white text-black">
-            <div className="py-20 px-6 pb-60 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+        <div className="bg-white text-black pb-24">
+            <div className="py-10 md:py-20 px-6 pb-20 md:pb-60 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 md:gap-16">
                 <div className="lg:w-1/2 relative">
                     <Image src="/starDust.svg" width={320} height={320} className="w-64 md:w-80 mb-8 mx-auto lg:mx-0" alt="" />
                     <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6">

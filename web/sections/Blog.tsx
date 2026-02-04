@@ -34,7 +34,7 @@ const blogs: BlogPost[] = [
 
 export default function Blog() {
   return (
-    <section className="py-20 px-6 bg-white text-black">
+    <section className="py-10 md:py-20 px-6 bg-white text-black">
       <div className="max-w-7xl mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Latest Blog Posts & Guides</h2>
         <p className="text-gray-500 mb-12">Fresh guides, reviews & verified deals - Read our latest posts.</p>
@@ -77,7 +77,7 @@ export default function Blog() {
           ))}
         </div>
         <Link href="/blogs">
-          <Button className="mt-16 bg-brand-dark text-white px-12 py-4 rounded-full font-bold text-lg hover:bg-brand-blue shadow-lg">
+          <Button className="mt-8 md:mt-16 bg-brand-dark text-white px-12 py-4 rounded-full font-bold text-lg hover:bg-brand-blue shadow-lg">
             See more
           </Button>
         </Link>

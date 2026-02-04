@@ -2,7 +2,8 @@ import CourseHero from '@/sections/courses-section/CourseHero';
 import CourseList from '@/sections/courses-section/CourseList';
 import UniqueFeature from '@/sections/courses-section/UniqueFeature';
 import CaseStudies from '@/sections/courses-section/CaseStudies';
-import Consultation from '@/sections/courses-section/Consultation';
+// import Consultation from '@/sections/courses-section/Consultation';
+import BannerCTA from '@/components/layout/BannerCTA';
 
 export default function CoursesPage() {
     return (
@@ -11,7 +12,12 @@ export default function CoursesPage() {
             <CourseList />
             <UniqueFeature />
             <CaseStudies />
-            <Consultation />
+            <BannerCTA
+                icon="/icons/consultation.png"
+                title="Need A Consultation?"
+                description="We are here to answer your questions"
+                buttonText="Contact Us"
+            />
         </main>
     );
 }

@@ -1,126 +1,63 @@
+'use client';
 import Image from 'next/image';
 import Link from "next/link";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
-    <section className="relative pt-32 pb-20 overflow-hidden bg-white">
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Left Side */}
-        <Image
-          src="/A.svg"
-          className="absolute left-[5%] top-[25%] w-14 md:w-20 opacity-85"
-          alt=""
-          width={80}
-          height={80}
-          priority
-        />
-        <Image
-          src="/A.svg"
-          className="absolute left-[15%] top-[50%] w-14 md:w-20 opacity-85"
-          alt=""
-          width={80}
-          height={80}
-        />
-        <Image
-          src="/A.svg"
-          className="absolute left-[2%] top-[75%] w-14 md:w-20 opacity-85"
-          alt=""
-          width={80}
-          height={80}
-        />
+    <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 overflow-hidden bg-white">
 
-        {/* Right Side */}
-        <Image
-          src="/A.svg"
-          className="absolute right-[5%] top-[30%] w-14 md:w-20 opacity-85"
-          alt=""
-          width={80}
-          height={80}
-        />
-        <Image
-          src="/A.svg"
-          className="absolute right-[12%] top-[55%] w-14 md:w-20 opacity-85"
-          alt=""
-          width={80}
-          height={80}
-        />
-        <Image
-          src="/A.svg"
-          className="absolute right-[3%] top-[80%] w-14 md:w-20 opacity-85"
-          alt=""
-          width={80}
-          height={80}
-        />
+      {/* --- FLOATING "A" SVGS (Now fully responsive) --- */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {/* Left Side Group */}
+        {/* We use 'vw' and 'vh' for mobile to keep them relative to the screen edge */}
+        <Image src="/A.svg" className="absolute left-[5vw] top-[15vh] w-10 md:w-20 opacity-25 md:opacity-80" alt="" width={80} height={80} priority />
+        <Image src="/A.svg" className="absolute left-[12vw] top-[45vh] w-12 md:w-20 opacity-20 md:opacity-85" alt="" width={80} height={80} />
+        <Image src="/A.svg" className="absolute left-[2vw] top-[75vh] w-10 md:w-20 opacity-25 md:opacity-80" alt="" width={80} height={80} />
+
+        {/* Right Side Group */}
+        <Image src="/A.svg" className="absolute right-[5vw] top-[20vh] w-10 md:w-20 opacity-25 md:opacity-80" alt="" width={80} height={80} />
+        <Image src="/A.svg" className="absolute right-[12vw] top-[55vh] w-12 md:w-20 opacity-10 md:opacity-85" alt="" width={80} height={80} />
+        <Image src="/A.svg" className="absolute right-[2vw] top-[80vh] w-10 md:w-20 opacity-15 md:opacity-80" alt="" width={80} height={80} />
       </div>
-      <div className="max-w-5xl mx-auto px-6 text-center flex flex-col items-center">
+
+      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center flex flex-col items-center">
+
+        {/* --- MAIN TITLE --- */}
         <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent 
-                    bg-linear-to-r from-[#0A3D62] via-[#1E90FF] to-[#0A3D62] leading-[1.2]">
-          Your Smart Way To learn <br /> Automation
+                       bg-gradient-to-r from-[#0A3D62] via-[#1E90FF] to-[#0A3D62] leading-tight md:leading-[1.2]">
+          Your Smart Way To <br className="hidden md:block" /> learn Automation
         </h1>
 
-        <p className="mt-6 text-black text-lg text-center whitespace-nowrap overflow-hidden px-4">
-          <span className="inline-block animate-marquee">
-            Lead the next wave of innovation. Auto-Mate provides the critical automation skills to engineer tomorrow.
-          </span>
+        {/* --- DESCRIPTION --- */}
+        <p className="mt-6 text-gray-700 text-base md:text-lg max-w-2xl leading-relaxed">
+          Lead the next wave of innovation. Auto-Mate provides the critical
+          automation skills to engineer tomorrow.
         </p>
 
-        <Link href="/courses">
-          <Button className="mt-10 bg-brand-dark text-white px-10 py-3 rounded-full text-lg font-bold shadow-lg hover:translate-y-[-2px] transition-all">
+        <Link href="/courses" className="w-full md:w-auto">
+          <Button className="mt-8 md:mt-10 bg-[#1B262C] text-white px-10 py-7 md:py-6 rounded-full text-lg font-bold shadow-lg hover:translate-y-[-1px] transition-all w-[80%] md:w-auto mx-auto">
             Start Learning
           </Button>
         </Link>
 
-        <div className="mt-8 sm:mt-12 md:mt-16 lg:mt-20 w-full max-w-5xl mx-auto px-3 sm:px-4 md:px-6">
-          <p className="text-sm sm:text-base md:text-lg font-medium text-black text-center mb-4 sm:mb-6 md:mb-8 px-2">
-            We have trained over <span className="font-bold">1000+ students</span> now working at top MNC&apos;s
+        {/* --- TRUSTED LOGOS SECTION --- */}
+        <div className="mt-16 md:mt-24 w-full">
+          <p className="text-xs md:text-sm font-semibold text-black-400 uppercase tracking-widest mb-8">
+            Working at top MNC&apos;s
           </p>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4 md:gap-6 bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg shadow-gray-200">
-            <div className="relative h-7 sm:h-8 md:h-9 w-full">
-              <Image
-                src="/tcs.svg"
-                fill
-                className="object-contain transition-transform duration-200 hover:scale-105"
-                alt="TCS"
-                sizes="(max-width: 640px) 33vw, 20vw"
-              />
-            </div>
-            <div className="relative h-7 sm:h-8 md:h-9 w-full">
-              <Image
-                src="/cognizant.svg"
-                fill
-                className="object-contain transition-transform duration-200 hover:scale-105"
-                alt="Cognizant"
-                sizes="(max-width: 640px) 33vw, 20vw"
-              />
-            </div>
-            <div className="relative h-7 sm:h-8 md:h-9 w-full">
-              <Image
-                src="/amazon.svg"
-                fill
-                className="object-contain transition-transform duration-200 hover:scale-105"
-                alt="Amazon"
-                sizes="(max-width: 640px) 33vw, 20vw"
-              />
-            </div>
-            <div className="relative h-7 sm:h-8 md:h-9 w-full">
-              <Image
-                src="/wipro.svg"
-                fill
-                className="object-contain transition-transform duration-200 hover:scale-105"
-                alt="Wipro"
-                sizes="(max-width: 640px) 33vw, 20vw"
-              />
-            </div>
-            <div className="relative h-7 sm:h-8 md:h-9 w-full">
-              <Image
-                src="/zoho.svg"
-                fill
-                className="object-contain transition-transform duration-200 hover:scale-105"
-                alt="Zoho"
-                sizes="(max-width: 640px) 33vw, 20vw"
-              />
-            </div>
+
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center items-center gap-8 md:gap-12 bg-white/50 backdrop-blur-sm p-8 rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100/50">
+            {['tcs', 'cognizant', 'amazon', 'wipro', 'zoho'].map((logo) => (
+              <div key={logo} className="relative h-6 md:h-8 w-full sm:w-24 md:w-32 opacity-80 hover:opacity-100 transition-opacity">
+                <Image
+                  src={`/${logo}.svg`}
+                  fill
+                  className="object-contain"
+                  alt={logo}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>

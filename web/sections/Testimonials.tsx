@@ -62,7 +62,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="py-24 px-6 bg-white overflow-hidden">
+    <section className="py-12 md:py-24 px-6 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto text-center">
         <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[#1B262C]">
           What Learners Say About Us
@@ -124,11 +124,10 @@ export default function Testimonials() {
               onClick={() =>
                 scrollToPage(activePage - activeDot + i)
               }
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                i === activeDot
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${i === activeDot
                   ? "bg-[#163E72] scale-110"
                   : "bg-gray-300 hover:bg-gray-400"
-              }`}
+                }`}
               aria-label={`Go to testimonial page ${i + 1}`}
             />
           ))}

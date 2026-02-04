@@ -5,21 +5,21 @@ import { Button } from "@/components/ui/button";
 
 export default function StatsSection() {
   return (
-    <section className="min-h-[80vh] bg-white flex items-center">
-      <div className="max-w-7xl mx-6 md:mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-12">
+    <section className="min-h-[50vh] md:min-h-[80vh] bg-white flex items-center">
+      <div className="max-w-7xl mx-6 md:mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-12">
         {/* Left Content */}
         <div className="lg:w-1/2">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight md:text-nowrap mb-6">
             Shape Your Future with <br /> Knowledge That Matters
           </h2>
 
-          <p className="text-gray-600 text-lg md:text-xl max-w-xl mb-10">
+          <p className="text-gray-600 text-lg md:text-xl max-w-xl mb-6 md:mb-10">
             We simplify online education with honest reviews, verified
             discounts, and guides that help learners make the right choices.
           </p>
 
           {/* Stats */}
-          <div className="flex flex-wrap justify-around mb-10">
+          <div className="flex flex-wrap justify-around mb-6 md:mb-10">
             <div>
               <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">500+</p>
               <p className="text-gray-500 text-sm mt-1">Students</p>

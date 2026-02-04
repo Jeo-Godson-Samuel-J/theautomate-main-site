@@ -48,7 +48,7 @@ const features = [
 
 export default function FeaturesGrid() {
   return (
-    <section className="w-full py-28 px-6 bg-white">
+    <section className="w-full py-14 md:py-28 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
 
         {/* Heading */}
@@ -57,7 +57,7 @@ export default function FeaturesGrid() {
         </h2>
 
         {/* Feature Lanes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-12 md:gap-y-24">
           {features.map((feature, index) => (
             <div
               key={index}
