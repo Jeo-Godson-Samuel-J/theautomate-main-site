@@ -48,7 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LoadingProvider>
           <LoadingManager />
           <Navbar />
-          {children}
+          <main className='md:py-18'>
+            {children}
+          </main>
           <Footer />
         </LoadingProvider>
       </body>
