@@ -1,0 +1,69 @@
+'use client';
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowDown } from 'lucide-react';
+
+const StarDustSVG = ({ className }: { className?: string }) => (
+    <svg
+        viewBox="0 0 100 100"
+        className={className}
+        style={{ fill: 'currentColor' }}
+    >
+        <path d="M50 0 L60 40 L100 50 L60 60 L50 100 L40 60 L0 50 L40 40 Z" />
+    </svg>
+);
+
+export default function AboutHero() {
+    const scrollToNextSection = () => {
+        const nextSection = document.getElementById('about-story-section');
+        if (nextSection) {
+            nextSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    return (
+        <section className="relative py-20 px-6 md:py-32 md:px-24 bg-gradient-to-b from-blue-50 to-white overflow-hidden">
+            {/* Floating StarDust Background Assets - Hidden or scaled on small screens */}
+            <div className="absolute inset-0 pointer-events-none -z-10 text-blue-200">
+                <StarDustSVG className="absolute top-10 left-5 w-8 h-8 md:w-12 md:h-12 opacity-20" />
+                <StarDustSVG className="absolute top-1/4 right-5 w-10 h-10 md:w-16 md:h-16 opacity-10 rotate-45" />
+                <StarDustSVG className="absolute bottom-10 left-1/4 w-6 h-6 md:w-10 md:h-10 opacity-15" />
+                <StarDustSVG className="hidden md:block absolute top-1/2 left-1/2 w-8 h-8 opacity-20 -rotate-12" />
+                <StarDustSVG className="absolute bottom-1/4 right-1/4 w-10 h-10 md:w-14 md:h-14 opacity-10" />
+            </div>
+
+            <div className="max-w-7xl mx-auto">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="text-center max-w-4xl mx-auto"
+                >
+                    {/* Title scaling: text-3xl to text-6xl */}
+                    <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold bg-clip-text text-transparent 
+                       bg-gradient-to-r from-[#0A3D62] via-[#1E90FF] to-[#0A3D62] leading-[1.15] md:leading-[1.2] mb-6">
+                        Pioneering the <span className="text-[#1E90FF]">Future</span> of Automation Education.
+                    </h1>
+
+                    <p className="text-gray-600 text-base md:text-lg lg:text-xl leading-relaxed mb-8 md:mb-12 px-2">
+                        At Auto-Mate, we're not just teaching skills; we're cultivating the next generation of leaders who will shape the future of technology. Our mission is to empower professionals with the practical, high-demand skills needed to thrive in an automated world.
+                    </p>
+
+                    <button
+                        onClick={scrollToNextSection}
+                        className="mx-auto flex flex-col items-center text-[#1E90FF] hover:text-[#163E72] transition-colors duration-300 focus:outline-none group"
+                    >
+                        <span className="text-xs md:text-sm font-semibold uppercase tracking-widest mb-2 group-hover:translate-y-1 transition-transform">Learn More</span>
+                        <motion.div
+                            animate={{ y: [0, 8, 0] }}
+                            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                        >
+                            <ArrowDown className="w-5 h-5 md:w-6 md:h-6" />
+                        </motion.div>
+                    </button>
+                </motion.div>
+            </div>
+        </section>
+    );
+}
