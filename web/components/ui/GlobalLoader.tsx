@@ -1,66 +1,81 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GlobalLoaderProps {
   isLoading: boolean;
 }
 
 export default function GlobalLoader({ isLoading }: GlobalLoaderProps) {
-  if (!isLoading) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-        transition={{ duration: 0.3 }}
-        className="relative"
-      >
-        {/* Custom Loader matching the design */}
-        <div className="relative w-16 h-16">
-          {/* Outer spinning arc */}
-          <motion.div
-            className="absolute inset-0"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          >
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 64 64"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Blue arc */}
-              <path
-                d="M 32 8 A 24 24 0 1 1 8 32"
-                stroke="#3B82F6"
-                strokeWidth="4"
-                strokeLinecap="round"
-                fill="none"
+    <AnimatePresence>
+      {isLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white"
+        >
+          <div className="relative flex flex-col items-center gap-6">
+
+            {/* Main StarDust Container */}
+            <div className="relative w-32 h-32 md:w-40 md:h-40">
+
+              {/* Outer Glow Effect */}
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.6, 0.3]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="absolute inset-0 bg-blue-400 rounded-full blur-[40px]"
               />
-            </svg>
-          </motion.div>
-          
-          {/* Center pulsing circle */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.7, 1, 0.7]
-            }}
-            transition={{ 
-              duration: 1.5, 
-              repeat: Infinity, 
-              ease: "easeInOut"
-            }}
-          >
-            <div className="w-3 h-3 bg-blue-600 rounded-full" />
-          </motion.div>
-        </div>
-      </motion.div>
-    </div>
+
+              {/* The StarDust PNG */}
+              <motion.div
+                animate={{
+                  rotate: 360,
+                  scale: [0.95, 1.05, 0.95]
+                }}
+                transition={{
+                  rotate: { duration: 5, repeat: Infinity, ease: "linear" },
+                  scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className="relative w-full h-full"
+              >
+                <Image
+                  src="/loader.png" // Replace with your actual filename in /public
+                  alt="Loading..."
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </motion.div>
+            </div>
+
+            {/* Subtle Brand Text */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-col items-center gap-1"
+            >
+              <h2 className="text-[#0A3D62] font-bold tracking-[0.3em] text-lg uppercase">
+                Auto-Mate
+              </h2>
+              <div className="w-12 h-1 bg-gradient-to-r from-transparent via-[#1E90FF] to-transparent rounded-full" />
+            </motion.div>
+
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
