@@ -50,6 +50,7 @@ export default function PaymentPage() {
                             courseName={selectedCourse.name}
                             price={selectedCourse.price}
                             batch={batch}
+                            courseKey={courseKey}
                         />
                     </div>
 
