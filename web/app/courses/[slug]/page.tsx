@@ -1,5 +1,4 @@
-import { client } from "@/lib/sanity.client";
-import imageUrlBuilder from "@sanity/image-url";
+import { client, urlFor } from "@/lib/sanity.client";
 import { PortableText } from "@portabletext/react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -17,8 +16,7 @@ interface Highlight {
   title: string;
 }
 
-const builder = imageUrlBuilder(client);
-const urlFor = (source: SanityImage) => builder.image(source);
+
 
 const COURSE_QUERY = `
 *[_type == "course" && slug.current == $slug][0]{

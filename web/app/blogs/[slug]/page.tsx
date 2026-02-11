@@ -1,5 +1,4 @@
-import { client } from "@/lib/sanity.client";
-import imageUrlBuilder from "@sanity/image-url";
+import { client, urlFor } from "@/lib/sanity.client";
 import { PortableText } from "@portabletext/react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -18,8 +17,7 @@ interface SanityCode {
   language?: string;
 }
 
-const builder = imageUrlBuilder(client);
-const urlFor = (source: SanityImage) => builder.image(source);
+
 
 const BLOG_QUERY = `
 *[_type == "blog" && slug.current == $slug][0]{

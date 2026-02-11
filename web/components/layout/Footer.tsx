@@ -5,7 +5,7 @@ import { Instagram, Linkedin, Send, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
     return (
-        <footer className="relative w-full bg-[#1B262C] text-white pt-30 pb-10 px-6 font-sans">
+        <footer className="relative w-full bg-[#1B262C] text-white pt-30 pb-10 px-6 md:px-12 font-sans">
             <div className="mx-auto">
 
                 {/* Contact Info Card - Absolute positioned to overlap the top */}

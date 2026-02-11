@@ -2,8 +2,7 @@ export const revalidate = 60; // ISR – refresh every 60 seconds
 
 import Link from "next/link";
 import Image from "next/image";
-import imageUrlBuilder from "@sanity/image-url";
-import { client } from "@/lib/sanity.client";
+import { client, urlFor } from "@/lib/sanity.client";
 
 /* -----------------------------
    TYPES
@@ -24,12 +23,7 @@ interface Blog {
   coverImage?: SanityImage;
 }
 
-/* -----------------------------
-   IMAGE BUILDER
------------------------------ */
 
-const builder = imageUrlBuilder(client);
-const urlFor = (source: SanityImage) => builder.image(source);
 
 /* -----------------------------
    GROQ QUERY
