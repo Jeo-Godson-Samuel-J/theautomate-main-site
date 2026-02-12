@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 interface CourseCardProps {
     slug: string;
@@ -51,12 +52,12 @@ export default function CourseCard({ slug, title, image, learners, duration, des
                 </p>
 
                 {/* Dynamic Link to the [slug] page */}
-                <Link
-                    href={`/courses/${slug}`}
-                    className="bg-[#2B71B8] text-white text-center py-3 rounded-xl font-bold text-sm hover:bg-[#163E72] transition-colors"
-                >
-                    Learn more
+
+
+                <Link href={`/courses/${slug}`}>
+                    <Button className='w-full bg-[#163E72] hover:bg-[#0166A7] text-white py-7 rounded-full text-lg font-bold transition-all'>Learn More</Button>
                 </Link>
+
             </div>
         </div>
     );

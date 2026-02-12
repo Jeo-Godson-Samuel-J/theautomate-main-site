@@ -8,7 +8,6 @@ import BannerCTA from '@/components/layout/BannerCTA';
 export default function CoursesPage() {
     return (
         <main className="pt-20 mx-auto max-w-7xl"> {/* Standard space for Navbar */}
-            <CourseHero />
             <CourseList />
             <UniqueFeature />
             <CaseStudies />
