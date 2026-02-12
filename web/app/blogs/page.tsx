@@ -21,6 +21,7 @@ interface Blog {
   slug: { current: string };
   excerpt: string;
   coverImage?: SanityImage;
+  contentImage?: SanityImage;
 }
 
 
@@ -38,7 +39,8 @@ const BLOGS_QUERY = `
   title,
   slug,
   excerpt,
-  coverImage
+  coverImage,
+  "contentImage": content[_type == "image"][0]
 }
 `;
 
@@ -76,56 +78,61 @@ export default async function BlogsPage() {
           lg:grid-cols-3
         "
       >
-        {blogs.map((blog) => (
-          <article
-            key={blog._id}
-            className="
-              bg-white rounded-xl overflow-hidden
-              border border-gray-200
-              hover:shadow-lg hover:-translate-y-1
-              transition-all duration-300
-              flex flex-col
-            "
-          >
-            {/* IMAGE */}
-            {blog.coverImage && (
-              <Image
-                src={urlFor(blog.coverImage)
-                  .width(600)
-                  .height(350)
-                  .fit("crop")
-                  .url()}
-                alt={blog.title}
-                width={600}
-                height={350}
-                className="w-full h-56 object-cover"
-              />
-            )}
+        {blogs.map((blog) => {
+          // Determine which image to show: coverImage > contentImage (first inline image)
+          const displayImage = blog.coverImage || blog.contentImage;
 
-            {/* CONTENT */}
-            <div className="p-6 flex flex-col grow">
-              <h2 className="text-xl font-semibold mb-3 line-clamp-2">
-                {blog.title}
-              </h2>
+          return (
+            <article
+              key={blog._id}
+              className="
+                bg-white rounded-xl overflow-hidden
+                border border-gray-200
+                hover:shadow-lg hover:-translate-y-1
+                transition-all duration-300
+                flex flex-col
+              "
+            >
+              {/* IMAGE */}
+              {displayImage && (
+                <Image
+                  src={urlFor(displayImage)
+                    .width(600)
+                    .height(350)
+                    .fit("crop")
+                    .url()}
+                  alt={blog.title}
+                  width={600}
+                  height={350}
+                  className="w-full h-56 object-cover"
+                />
+              )}
 
-              <p className="text-gray-600 mb-6 line-clamp-3">
-                {blog.excerpt}
-              </p>
+              {/* CONTENT */}
+              <div className="p-6 flex flex-col grow">
+                <h2 className="text-xl font-semibold mb-3 line-clamp-2">
+                  {blog.title}
+                </h2>
 
-              <Link
-                href={`/blogs/${blog.slug.current}`}
-                className="
-                  mt-auto
-                  text-blue-600 font-medium
-                  hover:text-blue-800
-                  transition-colors
-                "
-              >
-                Read More →
-              </Link>
-            </div>
-          </article>
-        ))}
+                <p className="text-gray-600 mb-6 line-clamp-3">
+                  {blog.excerpt}
+                </p>
+
+                <Link
+                  href={`/blogs/${blog.slug.current}`}
+                  className="
+                    mt-auto
+                    text-blue-600 font-medium
+                    hover:text-blue-800
+                    transition-colors
+                  "
+                >
+                  Read More →
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </main>
   );
