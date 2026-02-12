@@ -65,8 +65,8 @@ export default function Navbar() {
             </Link>
           ))}
 
-          <Button className="ml-6 bg-[#1B262C] text-white px-6 py-2 rounded-full hover:opacity-90 transition">
-            Start Learning
+          <Button asChild className="ml-6 bg-[#1B262C] text-white px-6 py-2 rounded-full hover:opacity-90 transition">
+            <Link href="/courses">Start Learning</Link>
           </Button>
 
           {/* Animated Jumping Dot (Desktop Only) */}
@@ -81,8 +81,8 @@ export default function Navbar() {
         {/* Mobile Controls */}
         <div className="md:hidden flex items-center gap-3 z-50">
           {!isOpen && (
-            <Button className="bg-[#1B262C] text-white px-4 py-2 rounded-full text-xs">
-              Start Learning
+            <Button asChild className="bg-[#1B262C] text-white px-4 py-2 rounded-full text-xs">
+              <Link href="/courses">Start Learning</Link>
             </Button>
           )}
 
@@ -113,8 +113,8 @@ export default function Navbar() {
           ))}
 
           <div className="mt-8 flex flex-col gap-4">
-            <Button className="w-full bg-[#1B262C] text-white py-6 rounded-2xl text-lg font-bold">
-              Start Learning
+            <Button asChild className="w-full bg-[#1B262C] text-white py-6 rounded-2xl text-lg font-bold">
+              <Link href="/courses" onClick={() => setIsOpen(false)}>Start Learning</Link>
             </Button>
             <p className="text-center text-gray-500 text-sm">
               Level up your automation skills today.

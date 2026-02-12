@@ -1,34 +1,14 @@
-export const COURSE_BY_SLUG_QUERY = `
-*[_type == "course" && slug.current == $slug][0]{
+export const POPULAR_COURSES_QUERY = `*[_type == "course"] | order(title asc)[0...3] {
   title,
+  "slug": slug.current,
   tagline,
   heroImage,
-  rating,
-  instructorName,
-  instructorImage,
-  price,
-  duration,
-  level,
-
-  keyConcepts[]{
-    title,
-    description,
-    icon
-  },
-
-  description,
-
-  whoFor,
-  whatYouLearn,
-  outcomes,
-
-  highlights[]{
-    title,
-    icon
-  },
-
-  hours,
   students,
-  projects
-}
-`;
+  hours,
+  rating
+}`;
+
+export const ALL_COURSES_QUERY = `*[_type == "course" && defined(slug.current)] | order(title asc) {
+  title,
+  "slug": slug.current
+}`;

@@ -6,22 +6,32 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
-const COURSE_PRICE_MAP: Record<string, number> = {
-    playwright: 20,
-    selenium: 40,
-    devops: 50,
-};
-
 export async function POST(req: NextRequest) {
-    const { courseKey } = await req.json();
+    try {
+        const { amount, courseKey } = await req.json();
 
-    const amount = COURSE_PRICE_MAP[courseKey] * 100;
+        if (!amount || isNaN(amount)) {
+            return NextResponse.json(
+                { error: 'Amount is required and must be a number' },
+                { status: 400 }
+            );
+        }
 
-    const order = await razorpay.orders.create({
-        amount,
-        currency: 'INR',
-        receipt: `client_receipt_${Date.now()}`,
-    });
+        // Amount comes from frontend in INR, Razorpay expects Paise (INR * 100)
+        const totalPaise = Math.round(Number(amount) * 100);
 
-    return NextResponse.json(order);
+        const order = await razorpay.orders.create({
+            amount: totalPaise,
+            currency: 'INR',
+            receipt: `receipt_${courseKey}_${Date.now()}`,
+        });
+
+        return NextResponse.json(order);
+    } catch (error: any) {
+        console.error('Error creating Razorpay order:', error);
+        return NextResponse.json(
+            { error: error.message || 'Failed to create order' },
+            { status: 500 }
+        );
+    }
 }

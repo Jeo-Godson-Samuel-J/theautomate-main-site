@@ -10,7 +10,6 @@ export default function CoursesPage() {
         <main className="pt-20 mx-auto max-w-7xl"> {/* Standard space for Navbar */}
             <CourseList />
             <UniqueFeature />
-            <CaseStudies />
             <BannerCTA
                 icon="/icons/consultation.png"
                 title="Need A Consultation?"

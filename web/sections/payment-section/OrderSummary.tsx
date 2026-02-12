@@ -6,12 +6,14 @@ import { ShieldCheck, CreditCard, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Script from 'next/script';
+import PaymentStatusModal from './PaymentStatusModal';
+
 
 interface SummaryProps {
     courseName: string;
-    price: number;
-    batch: string;
     courseKey: string;
+    customAmount: number;
+    batch: string;
 }
 
 declare global {
@@ -20,23 +22,45 @@ declare global {
     }
 }
 
-export default function OrderSummary({ courseName, price, batch, courseKey }: SummaryProps) {
+export default function OrderSummary({ courseName, courseKey, customAmount, batch }: SummaryProps) {
     const [isProcessing, setIsProcessing] = useState(false);
+    const [modal, setModal] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error' | 'loading';
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'loading',
+        message: ''
+    });
+
+    const finalPrice = customAmount || 0;
 
     const handlePayment = async () => {
         setIsProcessing(true);
+        setModal({
+            isOpen: true,
+            status: 'loading',
+            message: 'Initiating secure payment gateway...'
+        });
 
         try {
             // 1. Create Order
             const response = await fetch('/api/razorpay/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ courseKey }),
+                body: JSON.stringify({
+                    courseKey,
+                    amount: finalPrice
+                }),
             });
 
             if (!response.ok) {
-                console.error('Order creation failed');
-                alert('Failed to create order. Please try again.');
+                setModal({
+                    isOpen: true,
+                    status: 'error',
+                    message: 'Failed to create payment order. Please try again.'
+                });
                 return;
             }
 
@@ -44,13 +68,19 @@ export default function OrderSummary({ courseName, price, batch, courseKey }: Su
 
             // 2. Initialize Razorpay
             const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Ensure this env var is public or use a safe way
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                 amount: order.amount,
                 currency: order.currency,
                 name: "Auto-Mate",
                 description: `Enrollment for ${courseName}`,
                 order_id: order.id,
                 handler: async function (response: any) {
+                    setModal({
+                        isOpen: true,
+                        status: 'loading',
+                        message: 'Verifying payment...'
+                    });
+
                     // 3. Verify Payment
                     const verifyResponse = await fetch('/api/razorpay/verify-payment', {
                         method: 'POST',
@@ -65,31 +95,52 @@ export default function OrderSummary({ courseName, price, batch, courseKey }: Su
                     const verifyData = await verifyResponse.json();
 
                     if (verifyData.success) {
-                        alert('Payment Successful! Welcome to the course.');
-                        // Redirect or update UI state here
+                        setModal({
+                            isOpen: true,
+                            status: 'success',
+                            message: 'Success! Your enrollment is complete. Welcome abroad!'
+                        });
                     } else {
-                        alert('Payment Verification Failed.');
+                        setModal({
+                            isOpen: true,
+                            status: 'error',
+                            message: 'Payment verification failed. Please contact support.'
+                        });
                     }
                 },
                 prefill: {
-                    name: "Student Name", // You might want to get this from the form if potential
+                    name: "Student Name",
                     email: "student@example.com",
                     contact: "9999999999",
                 },
                 theme: {
                     color: "#0A3D62",
                 },
+                modal: {
+                    ondismiss: function () {
+                        setIsProcessing(false);
+                        setModal(prev => ({ ...prev, isOpen: false }));
+                    }
+                }
             };
 
             const rzp1 = new window.Razorpay(options);
             rzp1.on('payment.failed', function (response: any) {
-                alert(response.error.description);
+                setModal({
+                    isOpen: true,
+                    status: 'error',
+                    message: response.error.description || 'Payment process interrupted.'
+                });
             });
             rzp1.open();
 
         } catch (error) {
             console.error('Payment Error:', error);
-            alert('Something went wrong. Please check your connection.');
+            setModal({
+                isOpen: true,
+                status: 'error',
+                message: 'A connection error occurred. Please check your internet.'
+            });
         } finally {
             setIsProcessing(false);
         }
@@ -118,14 +169,14 @@ export default function OrderSummary({ courseName, price, batch, courseKey }: Su
                                     <span className="text-xs font-semibold text-[#1E90FF] capitalize">{batch} Batch</span>
                                 </div>
                             </div>
-                            <span className="font-bold text-xl text-[#0A3D62] whitespace-nowrap">₹{price}</span>
+                            <span className="font-bold text-xl text-[#0A3D62] whitespace-nowrap">₹{finalPrice}</span>
                         </div>
 
                         {/* Pricing Table */}
                         <div className="space-y-4">
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>Subtotal</span>
-                                <span className="font-medium text-gray-900">₹{price}.00</span>
+                                <span className="font-medium text-gray-900">₹{finalPrice}.00</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Tax / Processing</span>
@@ -135,24 +186,25 @@ export default function OrderSummary({ courseName, price, batch, courseKey }: Su
                             <div className="flex justify-between items-center pt-4 border-t border-dashed border-gray-200">
                                 <span className="font-bold text-[#0A3D62]">Grand Total</span>
                                 <div className="text-right">
-                                    <span className="block font-black text-3xl text-[#1E90FF]">₹{price}</span>
+                                    <span className="block font-black text-3xl text-[#1E90FF]">₹{finalPrice}</span>
                                     <span className="text-[10px] text-gray-400 font-medium italic">Inclusive of all taxes</span>
                                 </div>
                             </div>
                         </div>
 
+
                         {/* Action Button */}
                         <Button
-                            className="w-full bg-[#1B262C] hover:bg-gray-500 h-14 md:h-16 rounded-full text-sm font-bold transition-all duration-300 shadow-xl active:scale-95"
+                            className="w-full bg-[#1B262C] hover:bg-gray-500 h-14 md:h-16 rounded-full text-sm font-bold transition-all duration-300 shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handlePayment}
-                            disabled={isProcessing}
+                            disabled={isProcessing || finalPrice <= 0}
                         >
                             {isProcessing ? (
                                 <Loader2 className="w-5 h-5 animate-spin mr-3" />
                             ) : (
                                 <CreditCard className="w-5 h-5 mr-3" />
                             )}
-                            {isProcessing ? 'Processing...' : 'Proceed to Payment'}
+                            {finalPrice <= 0 ? 'Enter Amount to Proceed' : (isProcessing ? 'Processing...' : 'Proceed to Payment')}
                         </Button>
 
                         {/* Trust Footer */}
@@ -173,6 +225,13 @@ export default function OrderSummary({ courseName, price, batch, courseKey }: Su
                     </p>
                 </div>
             </motion.div>
+
+            <PaymentStatusModal
+                isOpen={modal.isOpen}
+                status={modal.status}
+                message={modal.message}
+                onClose={() => setModal(prev => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 }
