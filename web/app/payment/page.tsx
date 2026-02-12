@@ -32,6 +32,12 @@ function PaymentContent() {
     const [batch, setBatch] = useState('weekend');
     const [customAmount, setCustomAmount] = useState('');
 
+    // Personal Details State
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [comments, setComments] = useState('');
+
     const selectedCourse = STATIC_COURSES.find(c => c.slug === courseKey) || STATIC_COURSES[0];
 
     return (
@@ -56,6 +62,14 @@ function PaymentContent() {
                         courses={STATIC_COURSES}
                         batch={batch}
                         setBatch={setBatch}
+                        name={name}
+                        setName={setName}
+                        email={email}
+                        setEmail={setEmail}
+                        phone={phone}
+                        setPhone={setPhone}
+                        comments={comments}
+                        setComments={setComments}
                     />
                 </div>
 
@@ -65,6 +79,7 @@ function PaymentContent() {
                         courseKey={courseKey}
                         customAmount={Number(customAmount)}
                         batch={batch}
+                        userData={{ name, email, phone, comments }}
                     />
                 </div>
             </div>

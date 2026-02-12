@@ -14,6 +14,12 @@ interface SummaryProps {
     courseKey: string;
     customAmount: number;
     batch: string;
+    userData: {
+        name: string;
+        email: string;
+        phone: string;
+        comments: string;
+    };
 }
 
 declare global {
@@ -22,7 +28,7 @@ declare global {
     }
 }
 
-export default function OrderSummary({ courseName, courseKey, customAmount, batch }: SummaryProps) {
+export default function OrderSummary({ courseName, courseKey, customAmount, batch, userData }: SummaryProps) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [modal, setModal] = useState<{
         isOpen: boolean;
@@ -37,6 +43,16 @@ export default function OrderSummary({ courseName, courseKey, customAmount, batc
     const finalPrice = customAmount || 0;
 
     const handlePayment = async () => {
+        // Validation check
+        if (!userData.name || !userData.email || !userData.phone) {
+            setModal({
+                isOpen: true,
+                status: 'error',
+                message: 'Please fill in your name, email, and phone number before proceeding.'
+            });
+            return;
+        }
+
         setIsProcessing(true);
         setModal({
             isOpen: true,
@@ -95,6 +111,30 @@ export default function OrderSummary({ courseName, courseKey, customAmount, batc
                     const verifyData = await verifyResponse.json();
 
                     if (verifyData.success) {
+                        // 4. Sync to Google Sheets
+                        setModal({
+                            isOpen: true,
+                            status: 'loading',
+                            message: 'Finalizing your enrollment...'
+                        });
+
+                        try {
+                            await fetch('/api/sync-to-sheet', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    ...userData,
+                                    course: courseName,
+                                    batch: batch,
+                                    amount: finalPrice,
+                                    paymentId: response.razorpay_payment_id
+                                }),
+                            });
+                        } catch (syncError) {
+                            console.error('Sync failed:', syncError);
+                            // We don't block the success state if sync fails, but we log it
+                        }
+
                         setModal({
                             isOpen: true,
                             status: 'success',
@@ -109,9 +149,9 @@ export default function OrderSummary({ courseName, courseKey, customAmount, batc
                     }
                 },
                 prefill: {
-                    name: "Student Name",
-                    email: "student@example.com",
-                    contact: "9999999999",
+                    name: userData.name,
+                    email: userData.email,
+                    contact: userData.phone,
                 },
                 theme: {
                     color: "#0A3D62",

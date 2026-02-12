@@ -22,6 +22,14 @@ interface DetailsProps {
     courses: CourseOption[];
     batch: string;
     setBatch: (val: string) => void;
+    name: string;
+    setName: (val: string) => void;
+    email: string;
+    setEmail: (val: string) => void;
+    phone: string;
+    setPhone: (val: string) => void;
+    comments: string;
+    setComments: (val: string) => void;
 }
 
 
@@ -32,7 +40,15 @@ export default function PaymentDetails({
     setCustomAmount,
     courses,
     batch,
-    setBatch
+    setBatch,
+    name,
+    setName,
+    email,
+    setEmail,
+    phone,
+    setPhone,
+    comments,
+    setComments
 }: DetailsProps) {
     return (
         <motion.div
@@ -52,15 +68,34 @@ export default function PaymentDetails({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="space-y-2">
                         <Label htmlFor="name" className="text-sm font-semibold text-gray-700">Full Name</Label>
-                        <Input id="name" placeholder="John Doe" className="h-12 rounded-xl focus:ring-[#1E90FF]" />
+                        <Input
+                            id="name"
+                            placeholder="John Doe"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="h-12 rounded-xl focus:ring-[#1E90FF]"
+                        />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-sm font-semibold text-gray-700">Email Address</Label>
-                        <Input id="email" type="email" placeholder="john@example.com" className="h-12 rounded-xl" />
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="john@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="h-12 rounded-xl"
+                        />
                     </div>
                     <div className="sm:col-span-2 space-y-2">
                         <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">Phone Number</Label>
-                        <Input id="phone" placeholder="+91 00000 00000" className="h-12 rounded-xl" />
+                        <Input
+                            id="phone"
+                            placeholder="+91 00000 00000"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="h-12 rounded-xl"
+                        />
                     </div>
                 </div>
             </section>
@@ -126,6 +161,8 @@ export default function PaymentDetails({
                         <Label htmlFor="comments" className="text-sm font-semibold text-gray-700">Additional Comments</Label>
                         <textarea
                             id="comments"
+                            value={comments}
+                            onChange={(e) => setComments(e.target.value)}
                             className="w-full min-h-[120px] rounded-xl border border-input px-3 py-3 text-sm focus:ring-2 focus:ring-[#1E90FF] outline-none transition-all"
                             placeholder="Tell us about your goals..."
                         />
