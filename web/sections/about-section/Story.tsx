@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function Story() {
     return (
@@ -13,11 +14,13 @@ export default function Story() {
                         side="left"
                         title="Auto-Mate's Story"
                         text="What started as a small vision to bridge the skills gap has evolved into a powerhouse of automation excellence."
+                        imageSrc="/banner1.png"
                     />
                     <TimelineItem
                         side="right"
                         title="Our Purpose"
                         text="To democratize high-end software engineering skills and make automation accessible to every aspiring professional."
+                        imageSrc="/banner2.png"
                     />
                 </div>
             </div>
@@ -25,7 +28,7 @@ export default function Story() {
     );
 }
 
-function TimelineItem({ side, title, text }: { side: 'left' | 'right'; title: string; text: string }) {
+function TimelineItem({ side, title, text, imageSrc }: { side: 'left' | 'right'; title: string; text: string; imageSrc: string }) {
     return (
         <motion.div
             initial={{ opacity: 0, x: side === 'left' ? -50 : 50 }}
@@ -39,8 +42,13 @@ function TimelineItem({ side, title, text }: { side: 'left' | 'right'; title: st
             <div className="w-16 h-16 rounded-full bg-white border-4 border-blue-500 z-10 flex items-center justify-center shadow-lg shrink-0">
                 <div className="w-4 h-4 rounded-full bg-blue-500"></div>
             </div>
-            <div className="flex-1 h-64 bg-gray-100 rounded-[40px] relative overflow-hidden flex items-center justify-center">
-                <span className="text-gray-400 italic">Visual History Asset</span>
+            <div className="flex-1 h-64 bg-gray-100 rounded-[40px] relative overflow-hidden flex items-center justify-center border border-gray-100 shadow-inner">
+                <Image
+                    src={imageSrc}
+                    alt={title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
             </div>
         </motion.div>
     );
