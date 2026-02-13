@@ -7,7 +7,7 @@ import { useRouteChangeLoader } from '@/hooks/useRouteChangeLoader';
 
 export default function LoadingManager() {
   const { isLoading, setLoading } = useLoading();
-  
+
   // Handle route changes
   useRouteChangeLoader();
 
@@ -15,7 +15,7 @@ export default function LoadingManager() {
   useEffect(() => {
     // Show loader initially
     setLoading(true);
-    
+
     // Hide loader after page is fully loaded
     const handleLoad = () => {
       setTimeout(() => {

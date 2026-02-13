@@ -11,7 +11,7 @@ export function useRouteChangeLoader() {
   useEffect(() => {
     // Show loader when route changes
     setLoading(true);
-    
+
     // Hide loader after a short delay to simulate loading
     const timer = setTimeout(() => {
       setLoading(false);
