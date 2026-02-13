@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLoading } from '@/contexts/LoadingContext';
 import GlobalLoader from './GlobalLoader';
 import { useRouteChangeLoader } from '@/hooks/useRouteChangeLoader';
@@ -11,21 +11,19 @@ export default function LoadingManager() {
   // Handle route changes
   useRouteChangeLoader();
 
+  const hasInitialized = useRef(false);
+
   // Handle initial page load
   useEffect(() => {
-    // Show loader initially
-    setLoading(true);
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
 
-    // Hide loader after page is fully loaded
-    const handleLoad = () => {
-      setTimeout(() => {
-        setLoading(false);
-      }, 1000);
-    };
-
-    if (document.readyState === 'complete') {
-      handleLoad();
-    } else {
+    // Only show initial loader if document isn't fully ready yet
+    if (document.readyState !== 'complete') {
+      setLoading(true);
+      const handleLoad = () => {
+        setTimeout(() => setLoading(false), 800);
+      };
       window.addEventListener('load', handleLoad);
       return () => window.removeEventListener('load', handleLoad);
     }
