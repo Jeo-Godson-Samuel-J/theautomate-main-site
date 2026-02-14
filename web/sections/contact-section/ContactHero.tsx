@@ -1,10 +1,67 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          source: 'Contact Page'
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Message sent! We\'ll get back to you soon.');
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+      } else {
+        toast.error(result.error || 'Failed to send message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error('An unexpected error occurred. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="bg-white pt-20 md:pt-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
@@ -67,18 +124,70 @@ export default function ContactPage() {
             </div>
 
             <div className="relative z-10 bg-white p-8 md:p-12 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-black-50 backdrop-blur-sm">
-              <form className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder="First Name" className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]" />
-                  <input type="text" placeholder="Last Name" className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]" />
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    placeholder="First Name"
+                    className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]"
+                  />
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    placeholder="Last Name"
+                    className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]"
+                  />
                 </div>
-                <input type="email" placeholder="E-mail" className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]" />
-                <input type="tel" placeholder="Phone Number" className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]" />
-                <input type="text" placeholder="Subject" className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]" />
-                <textarea rows={4} placeholder="Your Message" className="w-full px-6 py-4 rounded-[30px] border border-gray-500 focus:outline-none focus:border-[#0166A7] resize-none" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="E-mail"
+                  className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]"
+                />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  placeholder="Phone Number"
+                  className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]"
+                />
+                <input
+                  type="text"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  required
+                  placeholder="Subject"
+                  className="w-full px-6 py-4 rounded-full border border-gray-500 focus:outline-none focus:border-[#0166A7]"
+                />
+                <textarea
+                  rows={4}
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
+                  placeholder="Your Message"
+                  className="w-full px-6 py-4 rounded-[30px] border border-gray-500 focus:outline-none focus:border-[#0166A7] resize-none"
+                />
 
-                <Button className="w-full bg-[#163E72] hover:bg-[#0166A7] text-white py-7 rounded-full text-lg font-bold transition-all">
-                  Submit
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#163E72] hover:bg-[#0166A7] text-white py-7 rounded-full text-lg font-bold transition-all"
+                >
+                  {isSubmitting ? 'Sending...' : 'Submit'}
                 </Button>
               </form>
             </div>

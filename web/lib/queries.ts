@@ -12,3 +12,12 @@ export const ALL_COURSES_QUERY = `*[_type == "course" && defined(slug.current)] 
   title,
   "slug": slug.current
 }`;
+
+export const LATEST_BLOGS_QUERY = `*[_type == "blog" && defined(slug.current)] | order(publishedAt desc)[0...3] {
+  _id,
+  title,
+  "slug": slug.current,
+  publishedAt,
+  coverImage,
+  "contentImage": content[_type == "image"][0]
+}`;

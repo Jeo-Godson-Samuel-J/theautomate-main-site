@@ -1,7 +1,38 @@
-import React from "react";
+'use client';
+
+import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
+
+function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: false, margin: "-100px" });
+  const motionValue = useMotionValue(0);
+  const springValue = useSpring(motionValue, {
+    damping: 30,
+    stiffness: 100,
+  });
+  const displayValue = useTransform(springValue, (latest) =>
+    Math.round(latest).toLocaleString()
+  );
+
+  useEffect(() => {
+    if (inView) {
+      motionValue.set(value);
+    } else {
+      motionValue.set(0);
+    }
+  }, [inView, value, motionValue]);
+
+  return (
+    <span ref={ref}>
+      <motion.span>{displayValue}</motion.span>
+      {suffix}
+    </span>
+  );
+}
 
 export default function StatsSection() {
   return (
@@ -21,15 +52,21 @@ export default function StatsSection() {
           {/* Stats */}
           <div className="flex flex-wrap justify-around mb-6 md:mb-10">
             <div>
-              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">500+</p>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">
+                <Counter value={500} suffix="+" />
+              </p>
               <p className="text-gray-500 text-sm mt-1">Students</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">10+</p>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">
+                <Counter value={10} suffix="+" />
+              </p>
               <p className="text-gray-500 text-sm mt-1">Courses Covered</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">5+</p>
+              <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">
+                <Counter value={5} suffix="+" />
+              </p>
               <p className="text-gray-500 text-sm mt-1">Years of Training</p>
             </div>
           </div>

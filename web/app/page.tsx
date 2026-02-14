@@ -1,5 +1,4 @@
 import Blog from '@/sections/Blog';
-import Contact from '@/sections/Contact';
 import Courses from '@/sections/Courses';
 import FeaturesGrid from '@/sections/FeaturesGrid';
 import Hero from '@/sections/Hero';
@@ -15,7 +14,6 @@ export default function HomePage() {
       <Courses />
       <Testimonials />
       <Blog />
-      <Contact />
     </main>
   );
 }
