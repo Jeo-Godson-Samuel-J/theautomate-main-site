@@ -78,7 +78,7 @@ export default function Achievements() {
  */
 function Counter({ value }: { value: number }) {
     const ref = useRef<HTMLSpanElement>(null);
-    const isInView = useInView(ref, { once: true, margin: "-100px" });
+    const isInView = useInView(ref, { once: true, margin: "-10px" });
 
     const motionValue = useMotionValue(0);
     const springValue = useSpring(motionValue, {
