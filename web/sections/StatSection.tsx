@@ -8,7 +8,7 @@ import { motion, useInView, useMotionValue, useSpring, useTransform } from "fram
 
 function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: false, margin: "-100px" });
+  const inView = useInView(ref, { once: false, margin: "-10px" });
   const motionValue = useMotionValue(0);
   const springValue = useSpring(motionValue, {
     damping: 30,

@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
@@ -37,8 +38,8 @@ export default function CTA() {
                         Join the next wave of innovation. Your journey to mastering automation starts with a single click.
                     </p>
 
-                    <Button className="bg-white text-[#163E72] hover:bg-blue-50 px-10 py-7 md:py-8 rounded-full text-lg md:text-xl font-bold shadow-xl w-full md:w-auto transition-all active:scale-95">
-                        Get The Course
+                    <Button asChild className="bg-white text-[#163E72] hover:bg-blue-50 px-10 py-7 md:py-8 rounded-full text-lg md:text-xl font-bold shadow-xl w-full md:w-auto transition-all active:scale-95">
+                        <Link href="/courses">Get The Course</Link>
                     </Button>
                 </div>
             </motion.div>

@@ -1,5 +1,6 @@
 "use client"
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button"
 
 export default function Consultation() {
@@ -55,8 +56,8 @@ export default function Consultation() {
 
                         {/* Right Side: Responsive Button Alignment */}
                         <div className="w-full lg:w-auto flex justify-center lg:block lg:px-8">
-                            <Button className="w-full lg:w-auto bg-[#163E72] hover:bg-[#0d2646] text-white px-12 py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-xl border border-white/20 whitespace-nowrap active:scale-95">
-                                Contact Us
+                            <Button asChild className="w-full lg:w-auto bg-[#163E72] hover:bg-[#0d2646] text-white px-12 py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-xl border border-white/20 whitespace-nowrap active:scale-95">
+                                <Link href="/contact">Contact Us</Link>
                             </Button>
                         </div>
                     </div>
