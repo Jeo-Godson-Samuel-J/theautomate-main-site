@@ -97,8 +97,10 @@ export default function Navbar() {
 
       {/* --- MOBILE MENU OVERLAY --- */}
       <div className={`
-        fixed inset-0 bg-white z-40 flex flex-col p-8 pt-24 transition-transform duration-500 ease-in-out md:hidden
-        ${isOpen ? "translate-y-0" : "-translate-y-full"}
+        fixed inset-0 bg-white z-40 flex flex-col p-8 pt-24 transition-all duration-500 ease-in-out md:hidden
+        ${isOpen
+          ? "translate-y-0 opacity-100 visible pointer-events-auto"
+          : "-translate-y-full opacity-0 invisible pointer-events-none"}
       `}>
         <div className="flex flex-col gap-6">
           {navLinks.map((link) => (
