@@ -19,27 +19,27 @@ interface Course {
 export default async function Courses() {
     const courses: Course[] = await client.fetch(POPULAR_COURSES_QUERY);
 
-    const colors = ["bg-[#00AD00]", "bg-[#0A2540]", "bg-white"];
-
     return (
         <section className="py-10 md:py-20 px-6 bg-white">
             <h2 className="text-3xl md:text-4xl font-bold text-center text-black mb-10 md:mb-16">Our Popular Courses</h2>
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
                 {courses.map((course, i) => {
-                    const bgColor = colors[i % colors.length];
                     const courseUrl = `/courses/${course.slug}`;
 
                     return (
-                        <div key={course.slug} className="bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col border border-gray-100">
-                            <div className={`h-56 flex items-center justify-center p-8 ${bgColor}`}>
-                                {course.heroImage && (
+                        <div key={course.slug} className="bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col border border-gray-100 group">
+                            <div className="h-52 md:h-64 relative overflow-hidden">
+                                {course.heroImage ? (
                                     <Image
-                                        src={urlFor(course.heroImage).url()}
+                                        src={urlFor(course.heroImage).width(600).height(400).fit('crop').url()}
                                         alt={course.title}
-                                        width={200}
-                                        height={200}
-                                        className="max-h-full object-contain"
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                        No Image
+                                    </div>
                                 )}
                             </div>
                             <div className="p-8 text-black flex flex-col flex-grow">

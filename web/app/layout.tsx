@@ -48,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LoadingProvider>
           <LoadingManager />
           <Navbar />
-          <main className='md:py-18 pt-12 md:pt-0 pb-24 md:pb-0'>
+          <main className='md:py-18 pt-12 md:pt-18 pb-24 md:pb-0'>
             {children}
           </main>
           <Footer />

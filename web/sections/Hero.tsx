@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
-    <section className="relative pt-24 md:pt-12 pb-16 md:pb-24 overflow-hidden bg-white">
+    <section className="relative pt-24 md:pt-14 pb-16 md:pb-24 overflow-hidden bg-white">
 
       {/* --- FLOATING "A" SVGS (Now fully responsive) --- */}
       <div className="absolute inset-0 pointer-events-none z-0">
