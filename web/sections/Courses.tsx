@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { client } from '@/lib/sanity.client';
 import { POPULAR_COURSES_QUERY } from '@/lib/queries';
 import { urlFor } from '@/lib/sanity.client';
+import { Star } from 'lucide-react';
 
 interface Course {
     title: string;
@@ -44,8 +45,10 @@ export default async function Courses() {
                             </div>
                             <div className="p-8 text-black flex flex-col flex-grow">
                                 <h3 className="text-2xl font-bold mb-2">{course.title}</h3>
-                                <div className="flex text-blue-500 mb-4">
-                                    {"★".repeat(Math.round(course.rating || 5))}{"☆".repeat(5 - Math.round(course.rating || 5))}
+                                <div className="flex text-blue-500 mb-4 gap-0.5">
+                                    {[...Array(5)].map((_, index) => (
+                                        <Star key={index} className="w-5 h-5" fill={index < Math.round(course.rating || 5) ? "currentColor" : "none"} />
+                                    ))}
                                 </div>
                                 <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
                                     <span>⏱ {course.hours ? `${course.hours}+ hrs` : 'N/A'}</span>

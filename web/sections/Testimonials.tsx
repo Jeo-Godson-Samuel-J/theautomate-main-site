@@ -2,32 +2,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-const singleSet = [
-  {
-    name: "Mr. Kannan",
-    image: "/kanan.png",
-    text: "We approached The Auto-Mate to develop a framework for our QA team and provide training. They delivered an exceptional framework supporting both mobile and desktop applications. Truly glad to have found The Auto-Mate!",
-  },
-  {
-    name: "Mr. Sakthipratheesh",
-    image: "/sathi.png",
-    text: "\"The Auto-Mate\" is a great platform for students and working professionals who are looking to get inspired and start or advance their journey into automation testing. It helped me alot with lots of challenges.",
-  },
-  {
-    name: "Mrs. Varsha",
-    image: "/varsha.png",
-    text: "The Auto-Mate transformed my career! Their Playwright course and real-world training helped me switch to automation testing and land a product-based role with a 200% hike. Highly recommend!",
-  },
-];
+export interface Testimonial {
+  name: string;
+  image: string;
+  text: string;
+}
 
+interface TestimonialsProps {
+  initialData: Testimonial[];
+}
 
-//remove these multiple pages after recieving all the testimonials 
-// Simulated multiple pages
-const testimonialGroups = [singleSet, singleSet, singleSet, singleSet, singleSet];
-
-export default function Testimonials() {
+export default function Testimonials({ initialData }: TestimonialsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activePage, setActivePage] = useState(0);
+  const testimonials = initialData || [];
+
+  // Split into groups of 3 for desktop pagination
+  const testimonialGroups: Testimonial[][] = [];
+  for (let i = 0; i < testimonials.length; i += 3) {
+    testimonialGroups.push(testimonials.slice(i, i + 3));
+  }
 
   const totalPages = testimonialGroups.length;
   const maxDots = 3;
@@ -61,20 +55,29 @@ export default function Testimonials() {
     });
   };
 
+  if (testimonials.length === 0) {
+    return null;
+  }
+
   return (
-    <section className="py-12 md:py-24 px-6 bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[#1B262C]">
+    <section className="relative py-12 md:py-24 px-6 overflow-hidden bg-[#0A3D62]">
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#1E90FF] blur-3xl" />
+        <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-[#22D3EE] blur-3xl" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto text-center">
+        <h2 className="text-4xl md:text-5xl font-black mb-4 text-white tracking-tight">
           What Learners Say About Us
         </h2>
-        <p className="text-gray-500 lg:mb-12 mb-6">
+        <p className="text-white/70 lg:mb-12 mb-6">
           Read what people from different industries has to say about us
         </p>
 
         {/* Scroll Container */}
         <div
           ref={containerRef}
-          className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-6 pb-12 pt-12"
+          className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-6 pb-10 pt-10"
         >
           {testimonialGroups.map((group, groupIdx) => (
             <div
@@ -84,32 +87,41 @@ export default function Testimonials() {
               {group.map((t, i) => (
                 <div
                   key={i}
-                  className={`relative bg-[#163E72] p-8 pt-16 text-left shadow-2xl
-                    rounded-[40px] w-full md:w-[380px] shrink-0
+                  className={`group relative w-full md:w-[420px] shrink-0 rounded-[28px]
+                    border border-white/25 bg-white/10 backdrop-blur-sm
+                    px-10 py-12 text-center shadow-2xl shadow-black/20
                     ${i > 0 ? "hidden md:block" : "block"}`}
                 >
-                  {/* Avatar */}
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 md:left-12 md:translate-x-0">
-                    <div className="w-24 h-24 rounded-full border-4 border-white overflow-hidden shadow-lg">
-                      <Image
-                        src={t.image}
-                        alt={t.name}
-                        width={96}
-                        height={96}
-                        className="object-cover"
-                      />
-                    </div>
+                  <div className="pointer-events-none absolute left-8 top-6 select-none text-6xl font-black leading-none text-white/70">
+                    “
+                  </div>
+                  <div className="pointer-events-none absolute bottom-6 right-8 select-none text-6xl font-black leading-none text-white/70">
+                    ”
                   </div>
 
-                  {/* Stars */}
-                  <div className="flex text-[#22D3EE] mb-4 text-xl">★★★★★</div>
-
-                  <h3 className="text-white font-bold text-xl mb-3">
-                    {t.name}
-                  </h3>
-                  <p className="text-blue-100 text-[14px] leading-relaxed font-light">
+                  <p className="mx-auto max-w-[34ch] text-white/90 text-sm md:text-base leading-relaxed">
                     {t.text}
                   </p>
+
+                  <div className="mt-10 flex items-center justify-center gap-4">
+                    <div className="h-12 w-12 rounded-full border border-white/40 overflow-hidden bg-white/10">
+                      <Image
+                        src={t.image || "/avatars/placeholder.png"}
+                        alt={t.name}
+                        width={48}
+                        height={48}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-white font-bold leading-tight">
+                        {t.name}
+                      </div>
+                      <div className="text-white/60 text-xs leading-tight">
+                        Learner
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -117,21 +129,23 @@ export default function Testimonials() {
         </div>
 
         {/* Functional Pagination Dots */}
-        <div className="flex justify-center gap-3 mt-8">
-          {Array.from({ length: visibleDots }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() =>
-                scrollToPage(activePage - activeDot + i)
-              }
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${i === activeDot
-                  ? "bg-[#163E72] scale-110"
-                  : "bg-gray-300 hover:bg-gray-400"
-                }`}
-              aria-label={`Go to testimonial page ${i + 1}`}
-            />
-          ))}
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center gap-3 mt-8">
+            {Array.from({ length: visibleDots }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() =>
+                  scrollToPage(activePage - activeDot + i)
+                }
+                className={`h-2.5 rounded-full transition-all duration-300 ${i === activeDot
+                  ? "w-8 bg-[#22D3EE]"
+                  : "w-2.5 bg-white/35 hover:bg-white/50"
+                  }`}
+                aria-label={`Go to testimonial page ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Hide scrollbar */}

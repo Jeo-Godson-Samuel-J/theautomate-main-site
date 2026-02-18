@@ -83,11 +83,11 @@ export default function ContactPage() {
             <div className="flex flex-col items-center md:items-start space-y-6">
               <div className="flex items-center gap-4">
                 <Image src="/icons/mail.png" alt="Mail" width={32} height={32} />
-                <span className="font-bold text-[#1B262C] text-lg">help@theauto-mate.com</span>
+                <span className="font-bold text-[#1B262C] text-lg text-nowrap">help@theauto-mate.com</span>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 text-nowrap">
                 <Image src="/icons/phone.png" alt="Phone" width={32} height={32} />
-                <span className="font-bold text-[#1B262C] text-lg">+91-9361142819</span>
+                <span className="font-bold text-[#1B262C] text-lg">+91-93611 42819</span>
               </div>
             </div>
 
@@ -95,13 +95,13 @@ export default function ContactPage() {
             <div className="flex flex-col items-center md:items-start pt-2">
               <p className="font-bold text-[#1B262C] mb-4">Follow us on</p>
               <div className="flex gap-4">
-                <a href="#" className="hover:scale-110 transition-transform">
+                <a href="https://www.linkedin.com/in/theauto-mate" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform">
                   <Image src="/icons/linkedin.png" alt="LinkedIn" width={40} height={40} />
                 </a>
-                <a href="#" className="hover:scale-110 transition-transform">
+                <a href="https://www.instagram.com/the.auto_mate" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform">
                   <Image src="/icons/instagram.png" alt="Instagram" width={40} height={40} />
                 </a>
-                <a href="#" className="hover:scale-110 transition-transform">
+                <a href="https://www.youtube.com/@the.auto-mate" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform">
                   <Image src="/icons/youtube.png" alt="YouTube" width={40} height={40} />
                 </a>
               </div>

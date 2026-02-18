@@ -36,30 +36,46 @@ export default function Hero() {
         </p>
 
         <Link href="/courses" className="w-full md:w-auto">
-          <Button className="mt-8 md:mt-10 bg-[#1B262C] text-white px-10 py-7 md:py-6 rounded-full text-lg font-bold shadow-lg hover:translate-y-[-1px] transition-all w-[80%] md:w-auto mx-auto">
+          <Button className="mt-8 md:mt-10 bg-[#1B262C] text-white px-10 py-7 md:py-6 rounded-full text-lg font-bold shadow-lg hover:translate-y-[-1px] transition-all w-[80%] md:w-auto mx-auto cursor-pointer relative z-20">
             Start Learning
           </Button>
         </Link>
 
         {/* --- TRUSTED LOGOS SECTION --- */}
-        <div className="mt-16 md:mt-24 w-full">
+        <div className="mt-16 md:mt-24 w-full overflow-hidden">
           <p className="text-xs md:text-sm font-semibold text-black-400 uppercase tracking-widest mb-8">
             Working at top MNC&apos;s
           </p>
 
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center items-center gap-8 md:gap-12 bg-white/50 backdrop-blur-sm p-8 rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100/50">
-            {['tcs', 'cognizant', 'amazon', 'wipro', 'zoho'].map((logo) => (
-              <div key={logo} className="relative h-6 md:h-8 w-full sm:w-24 md:w-32 opacity-80 hover:opacity-100 transition-opacity">
-                <Image
-                  src={`/${logo}.svg`}
-                  fill
-                  className="object-contain"
-                  alt={logo}
-                />
-              </div>
-            ))}
+          <div className="relative flex whitespace-nowrap overflow-hidden bg-white/50 backdrop-blur-sm p-8 rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100/50">
+            <div className="flex animate-scroll gap-12 md:gap-24 items-center min-w-full shrink-0 pr-12 md:pr-24">
+              {['tcs', 'cognizant', 'amazon', 'wipro', 'zoho', 'tcs', 'cognizant', 'amazon', 'wipro', 'zoho'].map((logo, idx) => (
+                <div key={`${logo}-${idx}`} className="relative h-6 md:h-10 w-24 md:w-32 opacity-80 hover:opacity-100 transition-opacity shrink-0">
+                  <Image
+                    src={`/${logo}.svg`}
+                    fill
+                    className="object-contain"
+                    alt={logo}
+                  />
+                </div>
+              ))}
+            </div>
+            {/* Duplicate for seamless scroll */}
+            <div className="flex animate-scroll gap-12 md:gap-24 items-center min-w-full shrink-0 pr-12 md:pr-24" aria-hidden="true">
+              {['tcs', 'cognizant', 'amazon', 'wipro', 'zoho', 'tcs', 'cognizant', 'amazon', 'wipro', 'zoho'].map((logo, idx) => (
+                <div key={`${logo}-duplicate-${idx}`} className="relative h-6 md:h-10 w-24 md:w-32 opacity-80 hover:opacity-100 transition-opacity shrink-0">
+                  <Image
+                    src={`/${logo}.svg`}
+                    fill
+                    className="object-contain"
+                    alt={logo}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
       </div>
     </section>
   );

@@ -167,5 +167,11 @@ export default defineType({
       title: "Projects Count",
       type: "number",
     }),
+    defineField({
+      name: "batchDetails",
+      title: "Batch Details",
+      type: "array",
+      of: [{ type: "string" }],
+    }),
   ],
 });

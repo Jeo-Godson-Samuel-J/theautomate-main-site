@@ -1,102 +1,72 @@
 import React from "react";
-import Image from "next/image";
 
 const features = [
   {
     title: "Learn from anywhere",
-    description:
-      "Auto-mate online learning platform empowers you to learn new skills and accomplish real growth.",
-    icon: "/icons/globe1.png",
-    accent: "from-[#1682F1] to-[#1EC0F7]",
+    description: "Auto-mate online learning platform empowers you to learn new skills and accomplish real growth.",
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
   },
   {
     title: "Expert Mentors",
-    description:
-      "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/mentor1.png",
-    accent: "from-[#0050DE] to-[#1682F1]",
+    description: "Automate any application with our expertise, taught by industry veterans.",
+    image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    title: "Learn in-demand skills",
-    description:
-      "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/graph1.png",
-    accent: "from-[#174778] to-[#0050DE]",
+    title: "In-demand Skills",
+    description: "Master the tools that top tech companies are looking for in 2024.",
+    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    title: "AI-Powered Automation",
-    description:
-      "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/cloud1.png",
-    accent: "from-[#1EC0F7] to-[#25C8E5]",
+    title: "AI-Powered Training",
+    description: "Integrate GenAI into your automation workflows for cutting-edge efficiency.",
+    image: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80",
   },
   {
     title: "Tailored Consulting",
-    description:
-      "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/classroom1.png",
-    accent: "from-[#1682F1] to-[#25C8E5]",
+    description: "Get personalized guidance to solve your specific automation challenges.",
+    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    title: "Community and Events",
-    description:
-      "Automate any application with our expertise, what you achieve is up to you.",
-    icon: "/icons/atom1.png",
-    accent: "from-[#0050DE] to-[#174778]",
+    title: "Community & Events",
+    description: "Connect with a global network of automation engineers and experts.",
+    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
   },
 ];
 
 export default function FeaturesGrid() {
   return (
-    <section className="w-full py-14 md:py-28 px-6 bg-white">
-      <div className="max-w-6xl mx-auto">
+    <section className="w-full py-16 md:py-32 px-6 bg-slate-50">
+      <div className="max-w-7xl mx-auto">
+        {/* Heading Container */}
+        <div className="text-center mb-16 md:mb-24">
+          <h2 className="text-4xl md:text-5xl font-black text-[#0A3D62] mb-6 tracking-tight">
+            What Makes Us Unique?
+          </h2>
+          <div className="h-1.5 w-24 bg-[#1E90FF] mx-auto rounded-full" />
+        </div>
 
-        {/* Heading */}
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-black pb-12">
-          What Makes Us Unique?
-        </h2>
-
-        {/* Feature Lanes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-12 md:gap-y-24">
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <div
               key={index}
-              className={`relative flex gap-6 items-start
-                ${index % 2 !== 0 ? "md:translate-y-16" : ""}
-              `}
+              className="group relative overflow-hidden rounded-[22px] border border-slate-200 bg-slate-900 shadow-xl shadow-slate-200/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-100"
             >
-              {/* Ambient separator shadow (NOT a box) */}
-              <div className="absolute -inset-x-4 -inset-y-6 rounded-xl 
-                              shadow-[0_20px_40px_-30px_rgba(23,71,120,0.25)] 
-                              pointer-events-none" />
-
-              {/* Icon */}
               <div
-                className={`relative w-14 h-14 rounded-full 
-                            bg-linear-to-br ${feature.accent}
-                            flex items-center justify-center shrink-0
-                            shadow-lg`}
-              >
-                <Image
-                  src={feature.icon}
-                  width={26}
-                  height={26}
-                  alt={feature.title}
-                />
-              </div>
+                className="absolute inset-0 bg-cover bg-center transition-all duration-300 filter grayscale contrast-125 brightness-50 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100"
+                style={{ backgroundImage: `url(${feature.image})` }}
+              />
+              <div className="absolute inset-0 bg-black/45 transition-colors duration-300 group-hover:bg-white/55" />
 
-              {/* Text */}
-              <div className="relative">
-                <h3 className="text-xl font-semibold text-black mb-2">
+              <div className="relative z-10 p-10">
+                <div className="absolute right-6 top-6 text-5xl font-black tracking-tight text-white/25 transition-colors duration-300 group-hover:text-black/25">
+                  {String(index + 1).padStart(2, "0")}
+                </div>
+
+                <h3 className="text-2xl font-bold text-white transition-colors duration-300 group-hover:text-slate-950">
                   {feature.title}
                 </h3>
-
-                {/* Accent line */}
-                <div
-                  className={`h-[3px] w-12 bg-linear-to-r ${feature.accent} mb-4 rounded-full`}
-                />
-
-                <p className="text-[#174778] text-sm leading-relaxed max-w-sm">
+                <p className="mt-4 leading-relaxed text-white/80 transition-colors duration-300 group-hover:text-slate-800">
                   {feature.description}
                 </p>
               </div>
