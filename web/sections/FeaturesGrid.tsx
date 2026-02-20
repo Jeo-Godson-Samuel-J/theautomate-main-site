@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 
 const features = [
@@ -50,7 +51,13 @@ export default function FeaturesGrid() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group relative overflow-hidden rounded-[22px] border border-slate-200 bg-slate-900 shadow-xl shadow-slate-200/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-100"
+              className="group relative overflow-hidden rounded-[22px] bg-slate-900 transition-all duration-300 hover:-translate-y-1"
+              style={{
+                border: "1px solid rgba(30,144,255,0.45)",
+                boxShadow: "0 0 18px rgba(30,144,255,0.18), 0 4px 24px rgba(0,0,0,0.18)",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 32px rgba(30,144,255,0.45), 0 8px 32px rgba(0,0,0,0.22)")}
+              onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 0 18px rgba(30,144,255,0.18), 0 4px 24px rgba(0,0,0,0.18)")}
             >
               <div
                 className="absolute inset-0 bg-cover bg-center transition-all duration-300 filter grayscale contrast-125 brightness-50 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100"
