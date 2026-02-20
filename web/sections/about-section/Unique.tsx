@@ -1,160 +1,86 @@
-// 'use client';
+"use client";
+import React from "react";
 
-// import React from 'react';
-// import { motion } from 'framer-motion';
-// import { Linkedin } from 'lucide-react';
-
-// const uniquePoints = [
-//     {
-//         title: "Available Offline",
-//         description: "Download course materials and learn anytime, anywhere, even without an internet connection. Your learning journey knows no boundaries.",
-//     },
-//     {
-//         title: "Trusted by Millions",
-//         description: "Join a vast community of learners who have transformed their careers. Our programs are recognized for their quality and impact.",
-//     },
-//     {
-//         title: "Certificate Awarded",
-//         description: "Receive a globally recognized certificate upon completion, validating your new skills to employers.",
-//     },
-//     {
-//         title: "700+ Hours of Classes",
-//         description: "Dive deep with comprehensive curriculum designed to take you from beginner to master, with extensive hands-on practice.",
-//     },
-//     {
-//         title: "Made by Professionals",
-//         description: "Learn directly from industry experts with years of real-world experience. Our curriculum is practical and up-to-date.",
-//     },
-//     {
-//         title: "Career Support",
-//         description: "Get guidance on resume building, interview preparation, and job placement to kickstart your new career in automation.",
-//     }
-// ];
-
-// export default function Unique() {
-//     return (
-//         <section className="py-20 bg-white">
-//             <div className="max-w-7xl mx-auto px-6">
-//                 <h2 className="text-4xl font-bold text-center mb-16 text-[#0A3D62]">What Makes Us Unique?</h2>
-//                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-//                     {uniquePoints.map((point, index) => (
-//                         <motion.div
-//                             key={index}
-//                             initial={{ opacity: 0, y: 20 }}
-//                             whileInView={{ opacity: 1, y: 0 }}
-//                             transition={{ duration: 0.5, delay: index * 0.1 }}
-//                             className="bg-blue-50 rounded-2xl p-8 relative hover:shadow-lg transition-shadow duration-300"
-//                         >
-//                             <div className="absolute top-6 right-6 text-[#0A3D62]">
-//                                 <Linkedin className="w-6 h-6" />
-//                             </div>
-//                             <h3 className="text-xl font-bold text-[#0A3D62] mb-4 pr-8">{point.title}</h3>
-//                             <p className="text-gray-600 leading-relaxed text-sm">{point.description}</p>
-//                         </motion.div>
-//                     ))}
-//                 </div>
-//             </div>
-//         </section>
-//     );
-// }
-'use client';
-
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Linkedin } from 'lucide-react';
-
-const StarDustSVG = ({ className }: { className?: string }) => (
-    <svg viewBox="0 0 100 100" className={className} fill="currentColor">
-        <path d="M50 0 L60 40 L100 50 L60 60 L50 100 L40 60 L0 50 L40 40 Z" />
-    </svg>
-);
-
-const uniquePoints = [
-    // Column 1
-    { title: "Available Offline", desc: "Download materials and learn without boundaries.", col: 1 },
-    { title: "Trusted by Millions", desc: "A global community of successful alumni.", col: 1 },
-    { title: "Career Support", desc: "Expert guidance from resume to interview.", col: 1 },
-    // Column 2
-    { title: "Certificate Awarded", desc: "Globally recognized validation of your skills.", col: 2 },
-    { title: "700+ Hours of Classes", desc: "Deep-dive curriculum for total mastery.", col: 2 },
-    { title: "Chat Online", desc: "24/7 support from our technical mentors.", col: 2 },
-    // Column 3
-    { title: "Made by Professionals", desc: "Industry-led projects and real-world logic.", col: 3 },
-    { title: "Live Workshops", desc: "Interactive sessions with automation leads.", col: 3 },
-    { title: "MNC Partnerships", desc: "Direct pipelines to top-tier tech firms.", col: 3 },
+const features = [
+    {
+        title: "Learn from anywhere",
+        description: "Auto-mate online learning platform empowers you to learn new skills and accomplish real growth.",
+        image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+        title: "Expert Mentors",
+        description: "Automate any application with our expertise, taught by industry veterans.",
+        image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+        title: "In-demand Skills",
+        description: "Master the tools that top tech companies are looking for in 2024.",
+        image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+        title: "AI-Powered Training",
+        description: "Integrate GenAI into your automation workflows for cutting-edge efficiency.",
+        image: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+        title: "Tailored Consulting",
+        description: "Get personalized guidance to solve your specific automation challenges.",
+        image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+        title: "Community & Events",
+        description: "Connect with a global network of automation engineers and experts.",
+        image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
+    },
 ];
 
 export default function Unique() {
     return (
-        <section className="py-24 bg-white relative overflow-hidden">
-            {/* Reduced Opacity StarDust Background */}
-            <div className="absolute inset-0 pointer-events-none -z-10 text-blue-100">
-                <StarDustSVG className="absolute top-10 left-1/4 w-8 opacity-20" />
-                <StarDustSVG className="absolute bottom-20 right-1/4 w-12 opacity-15 rotate-12" />
-            </div>
-
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="mb-20 text-center">
-                    <h2 className="text-4xl font-bold text-[#0A3D62]">What Makes Us Unique?</h2>
-                    <p className="text-gray-500 mt-4">Built on a foundation of professional excellence and student success.</p>
+        <section className="w-full py-16 md:py-32 px-6 bg-slate-50">
+            <div className="max-w-7xl mx-auto">
+                {/* Heading Container */}
+                <div className="text-center mb-16 md:mb-24">
+                    <h2 className="text-4xl md:text-5xl font-black text-[#0A3D62] mb-6 tracking-tight">
+                        What Makes Us Unique?
+                    </h2>
+                    <div className="h-1.5 w-24 bg-[#1E90FF] mx-auto rounded-full" />
                 </div>
 
-                <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Features Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {features.map((feature, index) => (
+                        <div
+                            key={index}
+                            className="group relative overflow-hidden rounded-[22px] bg-slate-900 transition-all duration-300 hover:-translate-y-1"
+                            style={{
+                                border: "1px solid rgba(30,144,255,0.45)",
+                                boxShadow: "0 0 18px rgba(30,144,255,0.18), 0 4px 24px rgba(0,0,0,0.18)",
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 32px rgba(30,144,255,0.45), 0 8px 32px rgba(0,0,0,0.22)")}
+                            onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 0 18px rgba(30,144,255,0.18), 0 4px 24px rgba(0,0,0,0.18)")}
+                        >
+                            <div
+                                className="absolute inset-0 bg-cover bg-center transition-all duration-300 filter grayscale contrast-125 brightness-50 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100"
+                                style={{ backgroundImage: `url(${feature.image})` }}
+                            />
+                            <div className="absolute inset-0 bg-black/45 transition-colors duration-300 group-hover:bg-white/55" />
 
-                    {/* Subtle Background Trend Line (Graph Visual) */}
-                    <svg className="absolute top-1/2 left-0 w-full h-full hidden md:block pointer-events-none opacity-10 -z-10" viewBox="0 0 1200 400">
-                        <path
-                            d="M0,300 C200,280 400,150 600,180 S1000,50 1200,20"
-                            fill="none"
-                            stroke="#1E90FF"
-                            strokeWidth="4"
-                            strokeDasharray="10,10"
-                        />
-                    </svg>
+                            <div className="relative z-10 p-10">
+                                <div className="absolute right-6 top-6 text-5xl font-black tracking-tight text-white/25 transition-colors duration-300 group-hover:text-black/25">
+                                    {String(index + 1).padStart(2, "0")}
+                                </div>
 
-                    {/* Column 1 - Base Level */}
-                    <div className="flex flex-col gap-8">
-                        {uniquePoints.filter(p => p.col === 1).map((point, i) => (
-                            <UniqueCard key={i} {...point} delay={i * 0.1} />
-                        ))}
-                    </div>
-
-                    {/* Column 2 - Mid Offset (Linear Graph Stepped Up) */}
-                    <div className="flex flex-col gap-8 md:mt-16">
-                        {uniquePoints.filter(p => p.col === 2).map((point, i) => (
-                            <UniqueCard key={i} {...point} delay={(i + 3) * 0.1} />
-                        ))}
-                    </div>
-
-                    {/* Column 3 - High Offset (Linear Graph Peak) */}
-                    <div className="flex flex-col gap-8 md:mt-32">
-                        {uniquePoints.filter(p => p.col === 3).map((point, i) => (
-                            <UniqueCard key={i} {...point} delay={(i + 6) * 0.1} />
-                        ))}
-                    </div>
-
+                                <h3 className="text-2xl font-bold text-white transition-colors duration-300 group-hover:text-slate-950">
+                                    {feature.title}
+                                </h3>
+                                <p className="mt-4 leading-relaxed text-white/80 transition-colors duration-300 group-hover:text-slate-800">
+                                    {feature.description}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </section>
-    );
-}
-
-function UniqueCard({ title, desc, delay }: { title: string; desc: string; delay: number }) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay }}
-            className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-300 relative group"
-        >
-            <div className="absolute top-6 right-6 text-blue-300 group-hover:text-[#1E90FF] transition-colors">
-                <Linkedin size={20} />
-            </div>
-            <h3 className="text-lg font-bold text-[#0A3D62] mb-3 pr-6">{title}</h3>
-            <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-
-            {/* Corner Accent from Snippet */}
-            <div className="absolute bottom-0 left-0 w-1 h-0 bg-[#1E90FF] transition-all duration-300 group-hover:h-12 rounded-bl-2xl"></div>
-        </motion.div>
     );
 }

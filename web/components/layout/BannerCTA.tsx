@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from "@/components/ui/button"
 
@@ -12,11 +13,12 @@ interface BannerCTAProps {
 
 export default function BannerCTA({ icon, title, description, buttonText, onButtonClick }: BannerCTAProps) {
     const patternGrid = Array.from({ length: 30 });
+    const href = buttonText.trim().toLowerCase() === "get the course" ? "/courses" : "/contact";
 
     return (
-        <section className="py-8 pb-24 mb-24 sm:py-12 bg-white">
+        <section className="py-6 pb-12 mb-12 sm:py-8 bg-white">
             <div className="mx-auto px-6 md:px-12">
-                <div className="relative overflow-hidden rounded-[40px] bg-linear-to-r from-[#0166A7] via-[#2B71B8] to-[#C6DFF2] min-h-[300px] flex items-center shadow-2xl">
+                <div className="relative overflow-hidden rounded-[32px] bg-linear-to-r from-[#0166A7] via-[#2B71B8] to-[#C6DFF2] min-h-[180px] md:min-h-[200px] flex items-center shadow-xl">
 
                     {/* --- THE PATTERN GRID --- */}
                     <div className="absolute right-0 top-0 h-full w-[45%] hidden lg:flex items-center justify-end pr-10 pointer-events-none">
@@ -62,10 +64,12 @@ export default function BannerCTA({ icon, title, description, buttonText, onButt
                         {/* Right Side: Button */}
                         <div className="w-full lg:w-auto flex justify-center lg:block lg:px-8">
                             <Button
-                                onClick={onButtonClick}
+                                asChild
                                 className="w-full lg:w-auto bg-[#163E72] hover:bg-[#0d2646] text-white px-12 py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-xl border border-white/20 whitespace-nowrap active:scale-95"
                             >
-                                {buttonText}
+                                <Link href={href} onClick={onButtonClick} className="w-full lg:w-auto">
+                                    {buttonText}
+                                </Link>
                             </Button>
                         </div>
                     </div>

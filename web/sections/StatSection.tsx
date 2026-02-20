@@ -53,9 +53,9 @@ export default function StatsSection() {
           <div className="flex flex-wrap justify-around mb-6 md:mb-10">
             <div>
               <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">
-                <Counter value={500} suffix="+" />
+                <Counter value={1000} suffix="+" />
               </p>
-              <p className="text-gray-500 text-sm mt-1">Students</p>
+              <p className="text-gray-500 text-sm mt-1">Students Trained</p>
             </div>
             <div>
               <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-blue">

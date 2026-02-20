@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 /* Import social icons from lucide-react or use SVGs */
 import { Instagram, Linkedin, Send, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Footer() {
     return (
@@ -42,11 +43,13 @@ export default function Footer() {
                     <div className="lg:col-span-7 flex flex-col gap-10">
                         {/* Social Icons */}
                         <div className="flex flex-wrap items-start gap-4">
-                            <div className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><Instagram size={24} /></div>
-                            <div className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><Linkedin size={24} /></div>
-                            <div className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><Send size={24} /></div>
-                            <div className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><MessageCircle size={24} /></div>
-                            <div className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><span className="font-bold text-xl leading-none">X</span></div>
+                            <a href="https://www.instagram.com/the.auto_mate" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><Instagram size={24} /></a>
+                            <a href="https://www.linkedin.com/in/theauto-mate" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><Linkedin size={24} /></a>
+                            <a href="https://www.youtube.com/@the.auto-mate" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer">
+                                <Image src="/icons/youtube.png" alt="YouTube" width={24} height={24} className="invert brightness-0" />
+                            </a>
+                            <a href="https://t.me/theautomate" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><Send size={24} /></a>
+                            <a href="https://wa.me/919361142819" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><MessageCircle size={24} /></a>
                         </div>
 
                         {/* Links Grid */}
@@ -54,11 +57,11 @@ export default function Footer() {
                             <div className="sm:col-span-3">
                                 <h4 className="font-bold mb-6 text-white uppercase text-sm tracking-widest">Company</h4>
                                 <ul className="space-y-4 text-gray-400 text-sm">
-                                    <li className="hover:text-white cursor-pointer">Home</li>
-                                    <li className="hover:text-white cursor-pointer">Courses</li>
-                                    <li className="hover:text-white cursor-pointer">Blog</li>
-                                    <li className="hover:text-white cursor-pointer">About</li>
-                                    <li className="hover:text-white cursor-pointer">Contact</li>
+                                    <li className="hover:text-white cursor-pointer"><Link href="/">Home</Link></li>
+                                    <li className="hover:text-white cursor-pointer"><Link href="/courses">Courses</Link></li>
+                                    <li className="hover:text-white cursor-pointer"><Link href="/blogs">Blog</Link></li>
+                                    <li className="hover:text-white cursor-pointer"><Link href="/about">About</Link></li>
+                                    <li className="hover:text-white cursor-pointer"><Link href="/contact">Contact</Link></li>
                                 </ul>
                             </div>
                             <div className="sm:col-span-4">
