@@ -1,6 +1,6 @@
 import Blog from '@/sections/Blog';
 import Courses from '@/sections/Courses';
-import FeaturesGrid from '@/sections/FeaturesGrid';
+import FeaturesGrid from '@/components/layout/Unique';
 import Hero from '@/sections/Hero';
 import StatsSection from '@/sections/StatSection';
 import Testimonials from '@/sections/Testimonials';

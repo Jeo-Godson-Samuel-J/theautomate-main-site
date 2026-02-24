@@ -49,7 +49,7 @@ export default function Footer() {
                                 <Image src="/icons/youtube.png" alt="YouTube" width={24} height={24} className="invert brightness-0" />
                             </a>
                             <a href="https://t.me/theautomate" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><Send size={24} /></a>
-                            <a href="https://wa.me/919361142819" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"><MessageCircle size={24} /></a>
+                            <a href="https://wa.me/919361142819" target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border border-white/10 hover:bg-white/5 cursor-pointer"> <Image src="/icons/whatsapp.png" alt="WhatsApp" width={24} height={24} className="" /></a>
                         </div>
 
                         {/* Links Grid */}

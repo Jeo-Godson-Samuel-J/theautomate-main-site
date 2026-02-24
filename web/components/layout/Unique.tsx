@@ -20,7 +20,7 @@ const features = [
   {
     title: "AI-Powered Training",
     description: "Integrate GenAI into your automation workflows for cutting-edge efficiency.",
-    image: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",
   },
   {
     title: "Tailored Consulting",
@@ -36,11 +36,11 @@ const features = [
 
 export default function FeaturesGrid() {
   return (
-    <section className="w-full py-16 md:py-32 px-6 bg-slate-50">
+    <section className="w-full py-16 md:py-32 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         {/* Heading Container */}
         <div className="text-center mb-16 md:mb-24">
-          <h2 className="text-4xl md:text-5xl font-black text-[#0A3D62] mb-6 tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-black mb-10 md:mb-16">
             What Makes Us Unique?
           </h2>
           <div className="h-1.5 w-24 bg-[#1E90FF] mx-auto rounded-full" />
@@ -51,31 +51,29 @@ export default function FeaturesGrid() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group relative overflow-hidden rounded-[22px] bg-slate-900 transition-all duration-300 hover:-translate-y-1"
-              style={{
-                border: "1px solid rgba(30,144,255,0.45)",
-                boxShadow: "0 0 18px rgba(30,144,255,0.18), 0 4px 24px rgba(0,0,0,0.18)",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 32px rgba(30,144,255,0.45), 0 8px 32px rgba(0,0,0,0.22)")}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 0 18px rgba(30,144,255,0.18), 0 4px 24px rgba(0,0,0,0.18)")}
+              className="group relative h-[300px] overflow-hidden rounded-[24px] bg-[#1E90FF] transition-all duration-500 border border-transparent hover:border-[#1E90FF]/50 shadow-lg hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-2"
             >
+              {/* Background Image: Low opacity and grayscale by default */}
               <div
-                className="absolute inset-0 bg-cover bg-center transition-all duration-300 filter grayscale contrast-125 brightness-50 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100"
+                className="absolute inset-0 bg-cover bg-center transition-all duration-700 opacity-20 grayscale group-hover:grayscale-0 group-hover:opacity-40 group-hover:scale-110"
                 style={{ backgroundImage: `url(${feature.image})` }}
               />
-              <div className="absolute inset-0 bg-black/45 transition-colors duration-300 group-hover:bg-white/55" />
 
-              <div className="relative z-10 p-10">
-                <div className="absolute right-6 top-6 text-5xl font-black tracking-tight text-white/25 transition-colors duration-300 group-hover:text-black/25">
-                  {String(index + 1).padStart(2, "0")}
-                </div>
+              {/* Gradient Overlay: Ensures text remains readable regardless of image color */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/90" />
 
-                <h3 className="text-2xl font-bold text-white transition-colors duration-300 group-hover:text-slate-950">
+              {/* Content Container */}
+              <div className="relative z-10 p-8 md:p-10 flex flex-col h-full justify-end">
+                <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-none">
                   {feature.title}
                 </h3>
-                <p className="mt-4 leading-relaxed text-white/80 transition-colors duration-300 group-hover:text-slate-800">
+
+                <p className="mt-4 leading-relaxed text-gray-100 font-bold text-sm md:text-base opacity-90 group-hover:opacity-100">
                   {feature.description}
                 </p>
+
+                {/* Accent Line: Only shows on hover for extra interactivity */}
+                <div className="mt-6 h-1 w-12 bg-[#1E90FF] transition-all duration-500 group-hover:w-full rounded-full" />
               </div>
             </div>
           ))}

@@ -59,11 +59,11 @@ type CourseHighlight = {
   icon?: unknown;
 };
 
- type CourseKeyConcept = {
-   title: string;
-   description?: string;
-   icon?: unknown;
- };
+type CourseKeyConcept = {
+  title: string;
+  description?: string;
+  icon?: unknown;
+};
 
 export async function generateStaticParams() {
   const slugs = await client.fetch(
@@ -141,7 +141,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
       {/* 2. WHY CHOOSE US (Screenshot 1) */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-black text-[#0A3D62] text-center mb-16">Why Choose Us?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-black mb-10 md:mb-16">Why Choose Us?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {course.keyConcepts?.map((concept: CourseKeyConcept, i: number) => (
               <WhyChooseCard
@@ -172,42 +172,91 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           </div>
         </div>
       </section>
-
-      {/* 3. WHO IS THIS COURSE FOR & REGISTRATION (Screenshot 2) */}
-      <section className="py-20 bg-linear-to-b from-blue-50 to-white">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-          <div className="lg:col-span-7 space-y-12">
-            <h2 className="text-4xl font-black text-[#0A3D62]">Who Is This Course For?</h2>
-            <p className="text-xl font-medium text-slate-700 italic border-l-4 border-[#1E90FF] pl-6">
-              This course is ideal for:
-            </p>
-            <div className="space-y-6">
-              {course.whoFor?.map((item: string, i: number) => (
-                <div key={i} className="flex gap-4 items-start">
-                  <div className="w-2 h-2 rounded-full bg-slate-900 mt-2.5 shrink-0" />
-                  <p className="text-lg text-slate-700 leading-relaxed font-medium">
-                    {item}
-                  </p>
-                </div>
-              ))}
+      {/* 3. WHO IS THIS COURSE FOR & REGISTRATION (Screenshot Reference) */}
+      <section className="relative overflow-visible pb-20">
+        {/* Blue Header Background (Matches Snippet top half) */}
+        <div className="bg-gradient-to-r from-[#0A3D62] via-[#1B74B5] to-[#87CEFA] py-16 px-6">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16">
+            <div className="lg:col-span-7 space-y-6">
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">
+                Become a High-Paid Automation Engineer with Playwright & GenAI
+              </h2>
+              <div className="space-y-4 max-w-3xl">
+                <p className="text-white text-lg leading-relaxed">
+                  Master <span className="font-bold">Playwright Automation</span> Testing along with <span className="font-bold">JavaScript, TypeScript, API Automation, and GenAI</span> to confidently transition into a high-paying Automation Engineer role.
+                </p>
+                <p className="text-white text-lg leading-relaxed opacity-90">
+                  This course is designed with <span className="font-bold underline decoration-white underline-offset-4">industry-first practices</span>, real-time projects, and hands-on learning to make you <span className="font-bold">job-ready</span>, not just certificate-ready.
+                </p>
+              </div>
             </div>
-            <p className="text-lg font-bold text-[#0A3D62] pt-4">
-              No prior automation experience is required — we start from the basics and gradually build you up to industry standards.
+          </div>
+        </div>
+
+        {/* Main Content & Overlapping Form */}
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start mt-20">
+          <div className="lg:col-span-7 space-y-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-black mb-10 md:mb-16">Who Is This Course For?</h2>
+
+            <div className="space-y-4">
+              <p className="text-xl font-medium text-slate-900">
+                This course is ideal for:
+              </p>
+              <div className="space-y-6">
+                {course.whoFor?.map((item: string, i: number) => (
+                  <div key={i} className="flex gap-4 items-start group">
+                    <div className="w-2 h-2 rounded-sm bg-black mt-2.5 shrink-0" />
+                    <p className="text-lg text-black leading-relaxed font-medium">
+                      {item}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-lg font-bold text-black pt-4 max-w-2xl">
+              No prior automation experience is required — we start <span className="font-black">from the basics</span> and gradually build you up to industry standards.
             </p>
           </div>
 
-          {/* Registration Form (Screenshot 2) */}
-          <div className="lg:col-span-5 relative">
-            <div className="bg-white rounded-[40px] p-10 shadow-2xl shadow-blue-100 border border-slate-100">
-              <div className="bg-black text-white text-center py-4 rounded-full font-bold text-lg mb-8">
+          {/* Registration Form (Overlapping Card) */}
+          <div className="lg:col-span-5 relative lg:-mt-64 z-20">
+            <div className="bg-white rounded-[50px] p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-50">
+              <div className="bg-black text-white text-center py-4 rounded-full font-bold text-lg mb-10 tracking-wide">
                 Register for this Course
               </div>
-              <form className="space-y-6">
-                <input type="text" placeholder="Name*" className="w-full px-8 py-4 rounded-full bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1E90FF]" />
-                <input type="email" placeholder="E-mail*" className="w-full px-8 py-4 rounded-full bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1E90FF]" />
-                <input type="tel" placeholder="Phone Number*" className="w-full px-8 py-4 rounded-full bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1E90FF]" />
-                <textarea rows={4} placeholder="Your Message" className="w-full px-8 py-4 rounded-[30px] bg-slate-50 border border-slate-200 focus:outline-none focus:border-[#1E90FF] resize-none"></textarea>
-                <button className="w-full bg-[#163E72] hover:bg-[#0A3D62] text-white py-5 rounded-full font-black text-xl transition-all shadow-lg active:scale-95">
+
+              <form className="space-y-5">
+                <div className="space-y-1">
+                  <input
+                    type="text"
+                    placeholder="Name*"
+                    className="w-full px-8 py-4 rounded-full bg-white border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-[#1E90FF] focus:ring-1 focus:ring-[#1E90FF]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <input
+                    type="email"
+                    placeholder="E-mail*"
+                    className="w-full px-8 py-4 rounded-full bg-white border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-[#1E90FF] focus:ring-1 focus:ring-[#1E90FF]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <input
+                    type="tel"
+                    placeholder="Phone Number*"
+                    className="w-full px-8 py-4 rounded-full bg-white border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-[#1E90FF] focus:ring-1 focus:ring-[#1E90FF]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <textarea
+                    rows={5}
+                    placeholder="Your Message"
+                    className="w-full px-8 py-4 rounded-[35px] bg-white border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-[#1E90FF] focus:ring-1 focus:ring-[#1E90FF] resize-none"
+                  ></textarea>
+                </div>
+
+                <button className="w-full bg-[#163E72] hover:bg-[#0A3D62] text-white py-5 rounded-full font-black text-xl transition-all shadow-xl mt-4 active:scale-95">
                   Book Now
                 </button>
               </form>
@@ -216,23 +265,61 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         </div>
       </section>
 
-      {/* 4. WHAT YOU'LL LEARN (Screenshot 3) */}
+
       <section className="py-24 bg-[#0A3D62] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 text-white text-4xl">^</div>
-          <div className="absolute bottom-20 right-10 text-white text-4xl">^</div>
-          <div className="absolute top-1/2 left-1/4 text-white text-4xl">^</div>
-          <div className="absolute top-1/3 right-1/4 text-white text-4xl">^</div>
+        {/* Floating Background Icons - Positioned exactly as per snippet */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Top Right Icon */}
+          <div className="absolute top-10 right-[10%] w-12 h-12 opacity-40 rotate-12">
+            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
+          </div>
+
+          {/* Mid Right Icon */}
+          <div className="absolute top-1/2 right-[5%] w-10 h-10 opacity-30 -rotate-12">
+            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
+          </div>
+
+          {/* Bottom Right Icon */}
+          <div className="absolute bottom-10 right-[15%] w-14 h-14 opacity-50 rotate-45">
+            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
+          </div>
+
+          {/* Top Left Icon */}
+          <div className="absolute top-[30%] left-[5%] w-12 h-12 opacity-50 -rotate-45">
+            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
+          </div>
+
+          {/* Mid Left Icon */}
+          <div className="absolute bottom-[20%] left-[8%] w-10 h-10 opacity-30 rotate-[160deg]">
+            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
+          </div>
+
+          {/* Far Bottom Left Icon */}
+          <div className="absolute bottom-[5%] left-[20%] w-8 h-8 opacity-20 rotate-12">
+            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
+          </div>
         </div>
+
         <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
-          <h2 className="text-4xl font-black text-white mb-20 tracking-tight">What You&apos;ll Learn in This Course</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-20 tracking-tight">
+            What You&apos;ll Learn in This Course
+          </h2>
+
           <div className="space-y-4">
             {course.whatYouLearn?.map((item: string, i: number) => {
+              // Splitting by colon or newline to separate title from description
               const [title, ...desc] = item.split('\n');
               return (
-                <div key={i} className="bg-white rounded-[32px] p-8 text-center shadow-xl hover:scale-[1.02] transition-transform">
-                  <h3 className="text-xl font-bold text-[#0A3D62] mb-2">{title}</h3>
-                  <p className="text-slate-600">{desc.join('\n')}</p>
+                <div
+                  key={i}
+                  className="bg-white rounded-[32px] p-8 md:p-10 text-center shadow-2xl transition-all duration-300 hover:scale-[1.01] border border-white/10"
+                >
+                  <h3 className="text-xl font-bold text-[#0A3D62] mb-2">
+                    • {title.replace('• ', '')}
+                  </h3>
+                  <p className="text-slate-700 font-medium leading-relaxed">
+                    {desc.join('\n')}
+                  </p>
                 </div>
               );
             })}
@@ -240,7 +327,6 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         </div>
       </section>
 
-      {/* 5. OUTCOME OF THIS COURSE (Screenshot 4) */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-black text-[#0A3D62] text-center mb-16">Outcome of This Course</h2>
@@ -323,7 +409,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           </div>
         </div>
       </section>
-    </main>
+    </main >
   );
 }
 

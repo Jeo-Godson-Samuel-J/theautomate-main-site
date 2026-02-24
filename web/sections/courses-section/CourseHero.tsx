@@ -60,9 +60,7 @@ export default function CourseHero({ featuredCourse }: CourseHeroProps) {
                             <span className="text-white/80 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold">
                                 Featured Program
                             </span>
-                            <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter drop-shadow-lg text-center px-4">
-                                {data.title}
-                            </h2>
+
                             <div className="w-12 h-1.5 bg-cyan-400 mt-4 rounded-full shadow-lg" />
                         </div>
                     </div>
