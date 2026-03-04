@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import CurriculumAccordion from "@/components/layout/CurriculumAccordion";
 import {
   CheckCircle2,
   Users,
@@ -36,7 +37,16 @@ const COURSE_QUERY = `
   level,
   description,
   whoFor,
-  whatYouLearn,
+  curriculum[]{
+    subheading,
+    points,
+    summary
+  },
+
+  careerOpportunities[]{
+    role,
+    description
+  },
   outcomes,
   keyConcepts[]{
     title,
@@ -266,63 +276,31 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
       </section>
 
 
+      {/* WHAT YOU'LL LEARN SECTION */}
       <section className="py-24 bg-[#0A3D62] relative overflow-hidden">
-        {/* Floating Background Icons - Positioned exactly as per snippet */}
+        {/* Floating Background Icons */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Top Right Icon */}
           <div className="absolute top-10 right-[10%] w-12 h-12 opacity-40 rotate-12">
-            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
+            <Image src="/A.svg" alt="" fill className="object-contain" />
           </div>
-
-          {/* Mid Right Icon */}
-          <div className="absolute top-1/2 right-[5%] w-10 h-10 opacity-30 -rotate-12">
-            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
+          <div className="absolute bottom-20 left-[5%] w-14 h-14 opacity-30 -rotate-12">
+            <Image src="/A.svg" alt="" fill className="object-contain" />
           </div>
-
-          {/* Bottom Right Icon */}
-          <div className="absolute bottom-10 right-[15%] w-14 h-14 opacity-50 rotate-45">
-            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
-          </div>
-
-          {/* Top Left Icon */}
-          <div className="absolute top-[30%] left-[5%] w-12 h-12 opacity-50 -rotate-45">
-            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
-          </div>
-
-          {/* Mid Left Icon */}
-          <div className="absolute bottom-[20%] left-[8%] w-10 h-10 opacity-30 rotate-[160deg]">
-            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
-          </div>
-
-          {/* Far Bottom Left Icon */}
-          <div className="absolute bottom-[5%] left-[20%] w-8 h-8 opacity-20 rotate-12">
-            <Image src="/A.svg" alt="decoration" fill className="object-contain" />
-          </div>
+          {/* Add more icons as per snippet arrangement */}
         </div>
 
-        <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-20 tracking-tight">
-            What You&apos;ll Learn in This Course
-          </h2>
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
+              What You&apos;ll Learn in This Course
+            </h2>
+            <div className="h-1.5 w-24 bg-[#1E90FF] mx-auto rounded-full" />
+          </div>
 
-          <div className="space-y-4">
-            {course.whatYouLearn?.map((item: string, i: number) => {
-              // Splitting by colon or newline to separate title from description
-              const [title, ...desc] = item.split('\n');
-              return (
-                <div
-                  key={i}
-                  className="bg-white rounded-[32px] p-8 md:p-10 text-center shadow-2xl transition-all duration-300 hover:scale-[1.01] border border-white/10"
-                >
-                  <h3 className="text-xl font-bold text-[#0A3D62] mb-2">
-                    • {title.replace('• ', '')}
-                  </h3>
-                  <p className="text-slate-700 font-medium leading-relaxed">
-                    {desc.join('\n')}
-                  </p>
-                </div>
-              );
-            })}
+          <div className="space-y-6">
+            {course.curriculum?.map((module: any, i: number) => (
+              <CurriculumAccordion key={i} module={module} />
+            ))}
           </div>
         </div>
       </section>
@@ -367,6 +345,51 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                   <HighlightItem icon={<Monitor className="w-12 h-12" />} label="Recorded Sessions" />
                 </>
               )}
+          </div>
+        </div>
+      </section>
+      {/* 8. CAREER OPPORTUNITIES SECTION */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-black text-[#0A3D62] mb-4">
+              Career Opportunities After This Course
+            </h2>
+            <p className="text-lg text-slate-600 font-medium">
+              After completing this course, you can move into roles such as:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {course.careerOpportunities?.map((item: any, i: number) => (
+              <div
+                key={i}
+                className="bg-white p-8 rounded-[35px] border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col items-center text-center group hover:-translate-y-2 transition-all duration-300"
+              >
+                {/* Career Icon / Badge */}
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-[#1E90FF] mb-6 group-hover:bg-[#1E90FF] group-hover:text-white transition-colors">
+                  <Award size={32} />
+                </div>
+
+                <h3 className="text-xl font-black text-[#0A3D62] mb-3">
+                  {item.role}
+                </h3>
+
+                <p className="text-slate-600 text-sm font-medium leading-relaxed">
+                  {item.description || "In-demand role in top-tier tech companies and global enterprises."}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Final Career Note */}
+          <div className="mt-16 p-8 bg-[#0A3D62] rounded-[40px] text-center shadow-2xl relative overflow-hidden">
+            {/* Decorative Glow */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#1E90FF] opacity-20 blur-[80px]" />
+
+            <p className="relative z-10 text-white text-xl font-bold italic">
+              "Automation expertise significantly increases your market demand and salary potential in the current tech landscape."
+            </p>
           </div>
         </div>
       </section>

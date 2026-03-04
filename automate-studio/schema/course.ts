@@ -116,10 +116,25 @@ export default defineType({
     /* ---------------- WHAT YOU LEARN ---------------- */
 
     defineField({
-      name: "whatYouLearn",
-      title: "What You'll Learn",
-      type: "array",
-      of: [{ type: "string" }],
+      name: 'curriculum',
+      title: 'What You\'ll Learn (Curriculum)',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'module',
+          fields: [
+            { name: 'subheading', title: 'Subheading (e.g. Tosca Fundamentals)', type: 'string' },
+            {
+              name: 'points',
+              title: 'Major Points',
+              type: 'array',
+              of: [{ type: 'string' }]
+            },
+            { name: 'summary', title: 'Module Summary (Short Footer Text)', type: 'string' }
+          ]
+        }
+      ]
     }),
 
     /* ---------------- OUTCOMES ---------------- */
@@ -132,6 +147,20 @@ export default defineType({
     }),
 
     /* ---------------- HIGHLIGHTS ---------------- */
+    defineField({
+      name: 'careerOpportunities',
+      title: 'Career Opportunities',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'role', title: 'Job Role (e.g. SDET)', type: 'string' },
+            { name: 'description', title: 'Brief Description', type: 'string' }
+          ]
+        }
+      ]
+    }),
 
     defineField({
       name: "highlights",
