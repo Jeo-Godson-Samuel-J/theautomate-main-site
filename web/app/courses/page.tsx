@@ -1,7 +1,7 @@
 import CourseHero from '@/sections/courses-section/CourseHero';
 import CourseList from '@/sections/courses-section/CourseList';
-import UniqueFeature from '@/sections/courses-section/UniqueFeature';
 import BannerCTA from '@/components/layout/BannerCTA';
+import FeaturesGrid from '@/components/layout/Unique';
 import { client, urlFor } from "@/lib/sanity.client";
 
 const FEATURED_COURSE_QUERY = `
@@ -33,7 +33,7 @@ export default async function CoursesPage() {
             />
 
             <CourseList />
-            <UniqueFeature />
+            <FeaturesGrid />
             <BannerCTA
                 icon="/icons/consultation.png"
                 title="Need A Consultation?"

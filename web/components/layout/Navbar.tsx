@@ -65,9 +65,7 @@ export default function Navbar() {
             </Link>
           ))}
 
-          <Button asChild className="ml-6 bg-[#1B262C] text-white px-6 py-2 rounded-full hover:opacity-90 transition">
-            <Link href="/courses">Start Learning</Link>
-          </Button>
+
 
           {/* Animated Jumping Dot (Desktop Only) */}
           {activeIndex !== null && (
