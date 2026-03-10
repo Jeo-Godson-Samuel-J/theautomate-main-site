@@ -47,7 +47,7 @@ export default function CourseCard({ slug, title, image, learners, duration, des
                     </div>
                 </div>
 
-                <p className="text-slate-600 text-xs leading-relaxed mb-6 grow line-clamp-3">
+                <p className="text-black-500 text-xs leading-relaxed mb-6 grow line-clamp-3">
                     {description}
                 </p>
 

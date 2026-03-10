@@ -147,20 +147,7 @@ export default defineType({
     }),
 
     /* ---------------- HIGHLIGHTS ---------------- */
-    defineField({
-      name: 'careerOpportunities',
-      title: 'Career Opportunities',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            { name: 'role', title: 'Job Role (e.g. SDET)', type: 'string' },
-            { name: 'description', title: 'Brief Description', type: 'string' }
-          ]
-        }
-      ]
-    }),
+
 
     defineField({
       name: "highlights",

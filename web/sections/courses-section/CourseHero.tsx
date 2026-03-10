@@ -32,7 +32,7 @@ export default function CourseHero({ featuredCourse }: CourseHeroProps) {
                     bg-gradient-to-r from-[#0A3D62] via-[#1E90FF] to-[#0A3D62] leading-[1.2] text-center mb-6">
                     Our Industry Leading Training <br className="hidden md:block" /> Courses
                 </h1>
-                <p className='text-slate-500 text-lg max-w-2xl mx-auto text-center mb-12'>
+                <p className='text-black-500 text-lg max-w-2xl mx-auto text-center mb-12'>
                     Master the art of automation with our industry-leading training courses! Designed and delivered by seasoned experts, our hands-on programs equip you with real-world skills to excel in automation.
                 </p>
 
@@ -88,7 +88,7 @@ export default function CourseHero({ featuredCourse }: CourseHeroProps) {
                             </div>
                         </div>
 
-                        <div className="relative text-slate-600 mb-10">
+                        <div className="relative text-black-500 mb-10">
                             <p className={`text-base md:text-lg leading-relaxed transition-all duration-200 ${!isExpanded ? 'line-clamp-3 md:line-clamp-none' : ''}`}>
                                 {data.description}
                             </p>

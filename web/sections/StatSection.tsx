@@ -44,7 +44,7 @@ export default function StatsSection() {
             Shape Your Future with <br /> Knowledge That Matters
           </h2>
 
-          <p className="text-gray-600 text-lg md:text-xl max-w-xl mb-6 md:mb-10">
+          <p className="text-black text-lg md:text-xl max-w-xl mb-6 md:mb-10">
             We simplify online education with honest reviews, verified
             discounts, and guides that help learners make the right choices.
           </p>
@@ -72,7 +72,7 @@ export default function StatsSection() {
           </div>
 
           <Link href="/about">
-            <Button className="bg-brand-dark text-white px-10 py-3 rounded-full font-semibold shadow-lg hover:opacity-90 transition hover:scale-105">
+            <Button className="bg-brand-dark mt-8 md:mt-10 text-white px-10 py-7 md:py-6 rounded-full text-lg font-bold shadow-lg hover:translate-y-[-1px] transition-all w-[80%] md:w-auto mx-auto cursor-pointer relative z-2">
               Know more
             </Button>
           </Link>
