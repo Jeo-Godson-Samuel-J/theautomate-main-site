@@ -1,4 +1,4 @@
-import BannerCTA from "@/components/layout/BannerCTA";
+import CTA from "@/components/layout/CTA";
 import FAQSection from "@/sections/contact-section/FAQSection";
 import ContactHero from "@/sections/contact-section/ContactHero";
 
@@ -8,10 +8,10 @@ export default function ContactPage() {
             <ContactHero />
             <FAQSection />
 
-            <BannerCTA
+            <CTA
                 icon="/icons/book.png"
                 title="Start Learning Today"
-                description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                description="Join the next wave of innovation. Your journey to mastering automation starts with a single click."
                 buttonText="Get The Course"
             />
         </main>

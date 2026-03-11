@@ -5,11 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 
 const StarDustSVG = ({ className }: { className?: string }) => (
-    <svg
-        viewBox="0 0 100 100"
-        className={className}
-        style={{ fill: 'currentColor' }}
-    >
+    <svg viewBox="0 0 100 100" className={className} style={{ fill: 'currentColor' }}>
         <path d="M50 0 L60 40 L100 50 L60 60 L50 100 L40 60 L0 50 L40 40 Z" />
     </svg>
 );
@@ -23,8 +19,7 @@ export default function AboutHero() {
     };
 
     return (
-        <section className="relative py-20 px-6 md:py-32 md:px-24 bg-gradient-to-b from-blue-50 to-white overflow-hidden">
-            {/* Floating StarDust Background Assets - Hidden or scaled on small screens */}
+        <section className="relative py-16 px-6 md:py-24 bg-gradient-to-b from-blue-50 to-white overflow-hidden">
             <div className="absolute inset-0 pointer-events-none -z-10 text-blue-200">
                 <StarDustSVG className="absolute top-10 left-5 w-8 h-8 md:w-12 md:h-12 opacity-20" />
                 <StarDustSVG className="absolute top-1/4 right-5 w-10 h-10 md:w-16 md:h-16 opacity-10 rotate-45" />
@@ -40,13 +35,12 @@ export default function AboutHero() {
                     transition={{ duration: 0.8 }}
                     className="text-center max-w-4xl mx-auto"
                 >
-                    {/* Title scaling: text-3xl to text-6xl */}
-                    <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold bg-clip-text text-transparent 
-                       bg-gradient-to-r from-[#0A3D62] via-[#1E90FF] to-[#0A3D62] leading-[1.15] md:leading-[1.2] mb-6">
-                        Pioneering the <span className="text-[#1E90FF]">Future</span> of Automation Education.
+                    <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold bg-clip-text text-transparent
+                       bg-gradient-to-r from-[#0A3D62] via-[#1E90FF] to-[#0A3D62] leading-[1.15] md:leading-[1.2] mb-5">
+                        Pioneering the Future of Automation Education.
                     </h1>
 
-                    <p className="text-gray-600 text-base md:text-lg lg:text-xl leading-relaxed mb-8 md:mb-12 px-2">
+                    <p className="text-gray-600 text-base md:text-lg lg:text-xl leading-relaxed mb-8 px-2">
                         At Auto-Mate, we're not just teaching skills; we're cultivating the next generation of leaders who will shape the future of technology. Our mission is to empower professionals with the practical, high-demand skills needed to thrive in an automated world.
                     </p>
 

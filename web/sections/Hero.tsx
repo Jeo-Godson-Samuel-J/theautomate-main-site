@@ -36,7 +36,7 @@ export default function Hero() {
         </p>
 
         <Link href="/courses" className="w-full md:w-auto">
-          <Button className="mt-8 md:mt-10 bg-[#1B262C] text-white px-10 py-7 md:py-6 rounded-full text-lg font-bold shadow-lg hover:translate-y-[-1px] transition-all w-[80%] md:w-auto mx-auto cursor-pointer relative z-20">
+          <Button className="mt-8 md:mt-10 bg-brand-dark text-white px-10 py-7 md:py-6 rounded-full text-lg font-bold shadow-lg hover:translate-y-[-1px] transition-all w-[80%] md:w-auto mx-auto cursor-pointer relative z-20">
             Start Learning
           </Button>
         </Link>
