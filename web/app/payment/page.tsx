@@ -27,15 +27,18 @@ const STATIC_COURSES: Course[] = [
 function PaymentContent() {
     const searchParams = useSearchParams();
     const initialCourseSlug = searchParams.get('course') || '';
+    const initialName = searchParams.get('name') || '';
+    const initialEmail = searchParams.get('email') || '';
+    const initialPhone = searchParams.get('phone') || '';
 
     const [courseKey, setCourseKey] = useState(initialCourseSlug || STATIC_COURSES[0].slug);
     const [batch, setBatch] = useState('weekend');
     const [customAmount, setCustomAmount] = useState('');
 
     // Personal Details State
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
+    const [name, setName] = useState(initialName);
+    const [email, setEmail] = useState(initialEmail);
+    const [phone, setPhone] = useState(initialPhone);
     const [comments, setComments] = useState('');
 
     const selectedCourse = STATIC_COURSES.find(c => c.slug === courseKey) || STATIC_COURSES[0];
