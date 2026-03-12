@@ -13,6 +13,7 @@ import {
   Phone,
   Monitor,
 } from "lucide-react";
+import BookingForm from "@/components/layout/BookingForm";
 
 export const revalidate = 60;
 
@@ -166,15 +167,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               <div className="bg-black text-white text-center py-3 rounded-full font-bold text-lg mb-8">
                 Register for this Course
               </div>
-              <form className="space-y-4">
-                <input type="text" placeholder="Name*" className="w-full px-8 py-4 rounded-full bg-slate-50 border border-slate-200 focus:border-[#1E90FF] outline-none" />
-                <input type="email" placeholder="Email*" className="w-full px-8 py-4 rounded-full bg-slate-50 border border-slate-200 focus:border-[#1E90FF] outline-none" />
-                <input type="tel" placeholder="Phone*" className="w-full px-8 py-4 rounded-full bg-slate-50 border border-slate-200 focus:border-[#1E90FF] outline-none" />
-                <textarea rows={4} placeholder="Message" className="w-full px-8 py-4 rounded-[30px] bg-slate-50 border border-slate-200 focus:border-[#1E90FF] outline-none" />
-                <button className="w-full bg-[#163E72] hover:bg-[#0A3D62] text-white py-4 rounded-full font-black text-xl shadow-xl transition-all active:scale-95">
-                  Book Now
-                </button>
-              </form>
+              <BookingForm courseSlug={slug} />
             </div>
           </div>
         </div>
@@ -215,7 +208,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
       </section>
 
       {/* 6. HIGHLIGHTS & BATCH */}
-      <section className="py-16 bg-slate-50">
+      <section className="py-8 md:py-10 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-black mb-14">Course Highlights</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-y-12">
@@ -235,7 +228,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               <h3 className="text-2xl font-bold text-black">Course Duration</h3>
               <div className="flex-1 bg-[#1E90FF] text-white rounded-[40px] p-8 shadow-xl flex flex-col items-center justify-center gap-2">
                 <span className="text-4xl md:text-5xl font-bold">{course.duration ?? '12'}</span>
-                <span className="text-lg font-semibold opacity-90">Weeks</span>
+                <span className="text-lg font-semibold opacity-90">Months</span>
               </div>
             </div>
             <div className="flex flex-col gap-4 text-center">
