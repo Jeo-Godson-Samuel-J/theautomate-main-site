@@ -7,11 +7,11 @@ const COURSES_QUERY = `
 *[_type == "course"]{
   _id,
   title,
-  slug,
   heroImage,
   students,
   hours,
-  tagline
+  tagline,
+  "slug": slug.current
 }
 `;
 
@@ -27,21 +27,27 @@ export default async function CourseList() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     {(() => {
-                        // Filter out Playwright (it's featured)
-                        const filtered = courses.filter((c: any) => c.slug.current !== 'playwright');
+                        const priority = [
+                            { key: 'playwright', match: (c: any) => c.slug?.toLowerCase().includes('playwright') || c.title?.toLowerCase().includes('playwright') },
+                            { key: 'genai', match: (c: any) => c.slug?.toLowerCase().includes('genai') || c.slug?.toLowerCase().includes('gen-ai') || c.title?.toLowerCase().includes('genai') || c.title?.toLowerCase().includes('gen ai') },
+                            { key: 'selenium', match: (c: any) => c.slug?.toLowerCase().includes('selenium') || c.title?.toLowerCase().includes('selenium') },
+                        ];
 
-                        // Move Selenium to index 3 (2nd row, 1st item) if it exists
-                        const seleniumIndex = filtered.findIndex((c: any) => c.title.toLowerCase().includes('selenium'));
-                        const reordered = [...filtered];
-                        if (seleniumIndex !== -1 && reordered.length > 3) {
-                            const [selenium] = reordered.splice(seleniumIndex, 1);
-                            reordered.splice(3, 0, selenium);
-                        }
-                        return reordered;
+                        const sorted = [...courses].sort((a: any, b: any) => {
+                            const aIndex = priority.findIndex(p => p.match(a));
+                            const bIndex = priority.findIndex(p => p.match(b));
+
+                            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                            if (aIndex !== -1) return -1;
+                            if (bIndex !== -1) return 1;
+                            return 0;
+                        });
+
+                        return sorted;
                     })().map((course: any) => (
                         <CourseCard
                             key={course._id}
-                            slug={course.slug.current}
+                            slug={course.slug}
                             title={course.title}
                             image={
                                 course.heroImage
