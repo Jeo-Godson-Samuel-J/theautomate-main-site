@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { PortableText } from "@portabletext/react";
 import CurriculumAccordion from "@/components/layout/CurriculumAccordion";
 import {
   CheckCircle2,
@@ -28,6 +29,7 @@ const COURSE_QUERY = `
   hours,
   students,
   whoFor,
+  description,
   curriculum[]{
     subheading,
     points,
@@ -124,22 +126,45 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         <div className="bg-gradient-to-r from-[#0A3D62] via-[#1B74B5] to-[#87CEFA] py-14 px-6">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16">
             <div className="lg:col-span-7 space-y-5">
-              <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">
-                Become a High-Paid Automation Engineer with Playwright & GenAI
-              </h2>
-              <div className="space-y-3 max-w-3xl">
-                <p className="text-white text-lg leading-relaxed">
-                  Master <span className="font-bold">Playwright Automation</span> Testing along with{" "}
-                  <span className="font-bold">JavaScript, TypeScript, API Automation, and GenAI</span> to
-                  confidently transition into a high-paying Automation Engineer role.
-                </p>
-                <p className="text-white text-lg leading-relaxed opacity-90">
-                  This course is designed with{" "}
-                  <span className="font-bold underline decoration-white underline-offset-4">industry-first practices</span>,
-                  real-time projects, and hands-on learning to make you{" "}
-                  <span className="font-bold">job-ready</span>, not just certificate-ready.
-                </p>
-              </div>
+              {course.description ? (
+                <div className="space-y-4 max-w-3xl">
+                  <PortableText
+                    value={course.description}
+                    components={{
+                      block: {
+                        h1: ({ children }) => <h2 className="text-4xl md:text-7xl font-black text-white leading-tight mb-2">{children}</h2>,
+                        h2: ({ children }) => <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-2">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-2">{children}</h3>,
+                        normal: ({ children }) => <p className="text-white text-lg leading-relaxed">{children}</p>,
+                      },
+                      marks: {
+                        strong: ({ children }) => <span className="font-bold">{children}</span>,
+                        em: ({ children }) => <span className="italic">{children}</span>,
+                        underline: ({ children }) => <span className="font-bold underline decoration-white underline-offset-4">{children}</span>,
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">
+                    Become a High-Paid Automation Engineer with Playwright & GenAI
+                  </h2>
+                  <div className="space-y-3 max-w-3xl">
+                    <p className="text-white text-lg leading-relaxed">
+                      Master <span className="font-bold">Playwright Automation</span> Testing along with{" "}
+                      <span className="font-bold">JavaScript, TypeScript, API Automation, and GenAI</span> to
+                      confidently transition into a high-paying Automation Engineer role.
+                    </p>
+                    <p className="text-white text-lg leading-relaxed opacity-90">
+                      This course is designed with{" "}
+                      <span className="font-bold underline decoration-white underline-offset-4">industry-first practices</span>,
+                      real-time projects, and hands-on learning to make you{" "}
+                      <span className="font-bold">job-ready</span>, not just certificate-ready.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
