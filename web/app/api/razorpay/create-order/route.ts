@@ -1,13 +1,14 @@
 import Razorpay from 'razorpay';
 import { NextResponse, NextRequest } from 'next/server';
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID!,
-    key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
-
 export async function POST(req: NextRequest) {
+    const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID!,
+        key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    });
+
     try {
+        console.log('Using Razorpay Key ID:', process.env.RAZORPAY_KEY_ID);
         const { amount, courseKey } = await req.json();
 
         if (!amount || isNaN(amount)) {
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
         const order = await razorpay.orders.create({
             amount: totalPaise,
             currency: 'INR',
-            receipt: `receipt_${courseKey}_${Date.now()}`,
+            receipt: `rcpt_${courseKey.substring(0, 15)}_${Date.now()}`.substring(0, 40),
         });
 
         return NextResponse.json(order);
