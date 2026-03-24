@@ -83,6 +83,17 @@ export default function OrderSummary({ courseName, courseKey, customAmount, batc
             const order = await response.json();
 
             // 2. Initialize Razorpay
+            console.log('Initializing Razorpay with Key:', process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
+            
+            if (!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID) {
+                setModal({
+                    isOpen: true,
+                    status: 'error',
+                    message: 'Razorpay Key ID is missing in the environment. Please check your deployment settings.'
+                });
+                return;
+            }
+
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                 amount: order.amount,
