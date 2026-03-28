@@ -127,15 +127,22 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16">
             <div className="lg:col-span-7 space-y-5">
               {course.description ? (
-                <div className="space-y-4 max-w-3xl">
+                <div className="space-y-6 md:space-y-8 max-w-3xl">
                   <PortableText
                     value={course.description}
                     components={{
                       block: {
-                        h1: ({ children }) => <h2 className="text-4xl md:text-7xl font-black text-white leading-tight mb-2">{children}</h2>,
-                        h2: ({ children }) => <h2 className="text-3xl md:text-5xl font-black text-white leading-tight mb-2">{children}</h2>,
-                        h3: ({ children }) => <h3 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-2">{children}</h3>,
-                        normal: ({ children }) => <p className="text-white text-lg leading-relaxed">{children}</p>,
+                        h1: ({ children }) => <h2 className="text-3xl md:text-6xl font-black text-white leading-snug md:leading-tight mb-4">{children}</h2>,
+                        h2: ({ children }) => <h2 className="text-2xl md:text-5xl font-black text-white leading-snug md:leading-tight mb-4">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-xl md:text-4xl font-bold text-white leading-snug md:leading-tight mb-3">{children}</h3>,
+                        normal: ({ children, index }: any) => {
+                          const isFirst = index === 0;
+                          return (
+                            <p className={`text-white leading-[1.8] md:leading-relaxed ${isFirst ? "text-2xl md:text-4xl font-extrabold" : "text-lg md:text-xl font-medium"}`}>
+                              {children}
+                            </p>
+                          );
+                        },
                       },
                       marks: {
                         strong: ({ children }) => <span className="font-bold">{children}</span>,
@@ -147,16 +154,16 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                 </div>
               ) : (
                 <>
-                  <h2 className="text-3xl md:text-5xl font-black text-white leading-tight">
+                  <h2 className="text-3xl md:text-5xl font-black text-white leading-snug md:leading-tight mb-4">
                     Become a High-Paid Automation Engineer with Playwright & GenAI
                   </h2>
-                  <div className="space-y-3 max-w-3xl">
-                    <p className="text-white text-lg leading-relaxed">
+                  <div className="space-y-6 max-w-3xl">
+                    <p className="text-white text-2xl md:text-4xl font-extrabold leading-[1.8] md:leading-relaxed">
                       Master <span className="font-bold">Playwright Automation</span> Testing along with{" "}
                       <span className="font-bold">JavaScript, TypeScript, API Automation, and GenAI</span> to
                       confidently transition into a high-paying Automation Engineer role.
                     </p>
-                    <p className="text-white text-lg leading-relaxed opacity-90">
+                    <p className="text-white text-lg md:text-xl font-medium leading-[1.8] md:leading-relaxed opacity-90">
                       This course is designed with{" "}
                       <span className="font-bold underline decoration-white underline-offset-4">industry-first practices</span>,
                       real-time projects, and hands-on learning to make you{" "}
