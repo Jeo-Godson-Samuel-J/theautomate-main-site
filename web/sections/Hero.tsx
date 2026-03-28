@@ -44,7 +44,7 @@ export default function Hero() {
         {/* --- TRUSTED LOGOS SECTION --- */}
         <div className="mt-16 md:mt-24 w-full overflow-hidden">
           <p className="text-xs md:text-sm font-semibold text-black-400 uppercase tracking-widest mb-8">
-            Working at top MNC&apos;s
+            We have trained over 1000+ students and they are now working in top MNC&apos;s
           </p>
 
           <div className="relative flex whitespace-nowrap overflow-hidden bg-white/50 backdrop-blur-sm p-8 rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100/50">
