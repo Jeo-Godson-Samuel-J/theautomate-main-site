@@ -1,4 +1,4 @@
-import { Roboto } from "next/font/google";
+import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -6,10 +6,9 @@ import { Metadata } from "next";
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import LoadingManager from "@/components/ui/LoadingManager";
 
-const roboto = Roboto({
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-roboto",
+  variable: "--font-bricolage",
 });
 
 // Viewport configuration
@@ -51,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth bg-white">
       <body
-        className={`${roboto.variable} font-sans antialiased text-[#023047] bg-white`}
+        className={`${bricolage.variable} font-sans antialiased text-[#023047] bg-white`}
       >
         <LoadingProvider>
           <LoadingManager />

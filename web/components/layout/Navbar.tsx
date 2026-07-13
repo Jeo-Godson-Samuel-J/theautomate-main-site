@@ -5,12 +5,13 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { gsap, useGSAP } from "@/lib/gsap";
 
 const navLinks = [
   { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
   { name: "Courses", href: "/courses" },
   { name: "Blog", href: "/blogs" },
-  { name: "About", href: "/about" },
   { name: "Case Studies", href: "/case-studies" },
 ];
 
@@ -23,11 +24,12 @@ export default function Navbar() {
   const defaultIndex = currentRouteIndex !== -1 ? currentRouteIndex : null;
 
   const [isOpen, setIsOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [indicator, setIndicator] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0 });
   const [scrolled, setScrolled] = useState(false);
 
   const navRef = useRef<HTMLDivElement>(null);
+  const pillRef = useRef<HTMLSpanElement>(null);
+  const trail1Ref = useRef<HTMLSpanElement>(null);
+  const trail2Ref = useRef<HTMLSpanElement>(null);
   const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
@@ -57,10 +59,20 @@ export default function Navbar() {
     };
   }, [defaultIndex, pathname]);
 
-  const moveIndicator = (index: number | null) => {
+  const { contextSafe } = useGSAP({ scope: navRef });
+
+  const moveIndicator = contextSafe((index: number | null) => {
+    const pill = pillRef.current;
+    const t1 = trail1Ref.current;
+    const t2 = trail2Ref.current;
+    
+    if (!pill || !t1 || !t2) return;
+
     if (index === null) {
-      setActiveIndex(null);
-      setIndicator((prev) => ({ ...prev, opacity: 0 }));
+      gsap.to([pill, t1, t2], { opacity: 0, duration: 0.3, overwrite: "auto" });
+      linkRefs.current.forEach((el) => {
+        if (el) gsap.to(el, { color: "#1e293b", duration: 0.3, overwrite: "auto" });
+      });
       return;
     }
 
@@ -71,15 +83,28 @@ export default function Navbar() {
     const navRect = nav.getBoundingClientRect();
     const linkRect = link.getBoundingClientRect();
 
-    setIndicator({
+    gsap.to([pill, t1, t2], {
       left: linkRect.left - navRect.left,
       top: linkRect.top - navRect.top,
       width: linkRect.width,
       height: linkRect.height,
       opacity: 1,
+      duration: 0.6,
+      ease: "elastic.out(1, 0.6)",
+      stagger: 0.04,
+      overwrite: "auto",
     });
-    setActiveIndex(index);
-  };
+
+    linkRefs.current.forEach((el, i) => {
+      if (el) {
+        gsap.to(el, {
+          color: i === index ? "#ffffff" : "#1e293b",
+          duration: 0.3,
+          overwrite: "auto",
+        });
+      }
+    });
+  });
 
   return (
     <>
@@ -102,21 +127,40 @@ export default function Navbar() {
               />
             </Link>
 
+            {/* Hidden SVG Gooey filter definition */}
+            <svg
+              style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}
+              xmlns="http://www.w3.org/2000/svg"
+              version="1.1"
+            >
+              <defs>
+                <filter id="goo">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                  <feColorMatrix
+                    in="blur"
+                    mode="matrix"
+                    values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"
+                    result="goo"
+                  />
+                  <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+                </filter>
+              </defs>
+            </svg>
+
             <div
               ref={navRef}
               className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full p-1 md:flex"
               onMouseLeave={() => moveIndicator(defaultIndex)}
             >
-              <span
-                className="pointer-events-none absolute z-0 rounded-full bg-[#0166A7] transition-all duration-300 ease-out"
-                style={{
-                  left: indicator.left,
-                  top: indicator.top,
-                  width: indicator.width,
-                  height: indicator.height,
-                  opacity: indicator.opacity,
-                }}
-              />
+              {/* Gooey Background Container - ONLY for blobs */}
+              <div 
+                className="pointer-events-none absolute inset-0 z-0" 
+                style={{ filter: "url(#goo)" }}
+              >
+                <span ref={pillRef} className="absolute rounded-full bg-[#0166A7] opacity-0" />
+                <span ref={trail1Ref} className="absolute rounded-full bg-[#0166A7] opacity-0" />
+                <span ref={trail2Ref} className="absolute rounded-full bg-[#0166A7] opacity-0" />
+              </div>
 
               {navLinks.map((link, i) => (
                 <Link
@@ -128,9 +172,7 @@ export default function Navbar() {
                   onMouseEnter={() => moveIndicator(i)}
                   onFocus={() => moveIndicator(i)}
                   onBlur={() => moveIndicator(defaultIndex)}
-                  className={`group relative z-10 px-4 py-2 text-[16px] font-medium tracking-[0.2px] transition-colors duration-200 ${
-                    activeIndex === i ? "text-white" : "text-slate-800/90 hover:text-slate-900"
-                  }`}
+                  className="group relative z-10 px-4 py-2 text-[16px] font-medium tracking-[0.2px] text-slate-800/90"
                 >
                   {link.name}
                 </Link>
@@ -144,6 +186,13 @@ export default function Navbar() {
               >
                 <Link href="/contact">Contact</Link>
               </Button>
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-center rounded-full bg-white/20 p-2.5 text-slate-800 shadow-sm backdrop-blur-md transition-all hover:bg-white/40 md:hidden"
+                aria-label="Toggle Menu"
+              >
+                {isOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
             </div>
           </div>
         </div>

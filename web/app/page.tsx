@@ -4,6 +4,7 @@ import FeaturesGrid from '@/components/layout/Unique';
 import Hero from '@/sections/Hero';
 import StatsSection from '@/sections/StatSection';
 import Testimonials from '@/sections/Testimonials';
+import FAQSection from '@/sections/FAQSection';
 import { client } from '@/lib/sanity.client';
 
 const TESTIMONIALS_QUERY = `*[_type == "testimonial"] | order(_createdAt desc) {
@@ -18,11 +19,12 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen">
       <Hero />
-      <Courses />
       <FeaturesGrid />
+      <Courses />
       <StatsSection />
       <Testimonials initialData={testimonials} />
       <Blog />
+      <FAQSection />
     </main>
   );
 }

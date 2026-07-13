@@ -38,12 +38,12 @@ const features = [
 export default function FeaturesGrid() {
   return (
     <section
-      className="w-full py-16 px-6"
+      className="w-full py-20 md:py-24 px-6"
       style={{
         background: "linear-gradient(135deg, #0a2a4a 0%, #1565a8 50%, #5aaedc 100%)",
       }}
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
             What Makes Us Unique?
@@ -51,7 +51,7 @@ export default function FeaturesGrid() {
           <div className="h-px w-20 bg-gray-300 mx-auto opacity-60" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <div
               key={index}

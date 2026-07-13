@@ -68,17 +68,13 @@ export default function FAQSection() {
             <AccordionItem
               key={index}
               value={`item-${index}`}
-              className="border-none"
+              className="group border border-gray-100 bg-white rounded-[25px] shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all hover:shadow-md data-[state=open]:bg-[#0166A7] data-[state=open]:text-white data-[state=open]:shadow-[0_20px_40px_rgba(1,102,167,0.2)] data-[state=open]:scale-[1.02] data-[state=open]:border-transparent"
             >
-              <div
-                className="group bg-white rounded-[25px] border border-gray-100
-                           shadow-[0_10px_30px_rgba(0,0,0,0.05)]
-                           transition-all hover:shadow-md"
-              >
                 <AccordionTrigger
                   className="
                     flex items-center justify-between gap-4 p-6
                     font-bold text-left text-[#1B262C]
+                    group-data-[state=open]:text-white
                     hover:no-underline
                     [&>svg]:hidden
                   "
@@ -91,28 +87,24 @@ export default function FAQSection() {
                       relative flex h-10 w-10 items-center justify-center
                       rounded-full bg-gray-100 text-[#1B262C]
                       transition-all duration-300
-
-                      /* 👉 HOVER EFFECT GOES HERE 👈 */
-                      /* Example: hover:bg-[#0166A7]/10 hover:scale-105 */
-
-                      data-[state=open]:bg-[#0166A7]
-                      data-[state=open]:text-white
+                      group-hover:bg-[#0166A7]/10
+                      group-data-[state=open]:bg-white
+                      group-data-[state=open]:text-[#0166A7]
                     "
                   >
                     <Plus
                       className="
                         h-5 w-5
                         transition-transform duration-300 ease-out
-                        data-[state=open]:rotate-90
+                        group-data-[state=open]:rotate-45
                       "
                     />
                   </span>
                 </AccordionTrigger>
 
-                <AccordionContent className="px-6 pb-6 pt-0 text-sm text-gray-600 leading-relaxed">
+                <AccordionContent className="px-6 pb-6 pt-0 text-sm text-gray-600 group-data-[state=open]:text-white/90 leading-relaxed">
                   {faq.a}
                 </AccordionContent>
-              </div>
             </AccordionItem>
           ))}
         </Accordion>

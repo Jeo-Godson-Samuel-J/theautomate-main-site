@@ -8,23 +8,6 @@ export default function Footer() {
     return (
         <footer className="relative w-full bg-[#1B262C] text-white pt-32 pb-10 px-6 md:px-12 font-sans">
             <div className="mx-auto">
-
-                {/* Contact Info Card - Absolute positioned to overlap the top */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] bg-[#163E72] rounded-[40px] py-8 px-4 md:px-12 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-8 shadow-2xl">
-                    <div className="flex-1">
-                        <p className="text-gray-300 text-sm mb-1 uppercase tracking-widest border-b border-gray-400/30 inline-block">Address</p>
-                        <p className="font-bold text-lg mt-2">Chennai</p>
-                    </div>
-                    <div className="flex-1 border-x-0 md:border-x border-white/20 px-0 md:px-8">
-                        <p className="text-gray-300 text-sm mb-1 uppercase tracking-widest border-b border-gray-400/30 inline-block">Phone</p>
-                        <p className="font-bold text-lg mt-2">+91-9361142819</p>
-                    </div>
-                    <div className="flex-1">
-                        <p className="text-gray-300 text-sm mb-1 uppercase tracking-widest border-b border-gray-400/30 inline-block">E-mail</p>
-                        <p className="font-bold text-lg mt-2">help@theauto-mate.com</p>
-                    </div>
-                </div>
-
                 {/* Main Footer Content */}
                 <div className="grid grid-cols-1 pb-16 pt-20 lg:grid-cols-12 gap-12 md:pt-0">
 
