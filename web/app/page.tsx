@@ -17,7 +17,7 @@ export default async function HomePage() {
   const testimonials = await client.fetch(TESTIMONIALS_QUERY).catch(() => []);
 
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <Hero />
       <FeaturesGrid />
       <Courses />
@@ -25,6 +25,6 @@ export default async function HomePage() {
       <Testimonials initialData={testimonials} />
       <Blog />
       <FAQSection />
-    </main>
+    </div>
   );
 }
