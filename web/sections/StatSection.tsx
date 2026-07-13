@@ -36,8 +36,8 @@ function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
 
 export default function StatsSection() {
   return (
-    <section className="min-h-[50vh] md:min-h-[80vh] bg-white flex items-center">
-      <div className="max-w-7xl mx-6 md:mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-12">
+    <section className="py-16 md:py-24 bg-white flex items-center">
+      <div className="max-w-7xl mx-6 md:mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-12 md:gap-16">
         {/* Left Content */}
         <div className="lg:w-1/2">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight md:text-nowrap mb-6">
@@ -79,15 +79,15 @@ export default function StatsSection() {
         </div>
 
         {/* Right Content */}
-        <div className="pl-8 relative flex justify-center items-center min-h-[50vh] md:min-h-[60vh] lg:min-h-[80vh]">
+        <div className="lg:w-1/2 flex justify-center items-center w-full">
           {/* Person Image */}
-          <div className="relative">
+          <div className="relative w-full max-w-lg md:max-w-xl">
             <Image
               src="/stats-image.png"
               alt="Student"
               width={1200}
               height={1200}
-              className="object-contain w-full min-h-[300px] md:min-h-[400px] lg:min-h-[600px]"
+              className="object-contain w-full h-auto drop-shadow-xl"
               priority
             />
           </div>

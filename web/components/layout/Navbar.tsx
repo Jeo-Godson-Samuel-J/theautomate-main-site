@@ -1,28 +1,69 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react"; // I recommend Lucide for cleaner code
+import { Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/courses" },
   { name: "Blog", href: "/blogs" },
   { name: "About", href: "/about" },
-  { name: "Contact", href: "/contact" },
   { name: "Case Studies", href: "/case-studies" },
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const currentRouteIndex = navLinks.findIndex((link) => {
+    if (link.href === "/") return pathname === "/";
+    return pathname?.startsWith(link.href);
+  });
+  const defaultIndex = currentRouteIndex !== -1 ? currentRouteIndex : null;
+
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [indicator, setIndicator] = useState({ left: 0, width: 0, center: 0 });
+  const [indicator, setIndicator] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0 });
+  const [scrolled, setScrolled] = useState(false);
 
   const navRef = useRef<HTMLDivElement>(null);
   const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
-  const moveIndicator = (index: number) => {
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    // Ensure the indicator is positioned correctly on mount and resize
+    const timer = setTimeout(() => {
+      moveIndicator(defaultIndex);
+    }, 50);
+
+    const handleResize = () => {
+      moveIndicator(defaultIndex);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [defaultIndex, pathname]);
+
+  const moveIndicator = (index: number | null) => {
+    if (index === null) {
+      setActiveIndex(null);
+      setIndicator((prev) => ({ ...prev, opacity: 0 }));
+      return;
+    }
+
     const nav = navRef.current;
     const link = linkRefs.current[index];
     if (!nav || !link) return;
@@ -32,96 +73,116 @@ export default function Navbar() {
 
     setIndicator({
       left: linkRect.left - navRect.left,
+      top: linkRect.top - navRect.top,
       width: linkRect.width,
-      center: linkRect.left - navRect.left + linkRect.width / 2,
+      height: linkRect.height,
+      opacity: 1,
     });
     setActiveIndex(index);
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-white md:bg-white/80 md:backdrop-blur-lg z-50 px-6 py-4 md:py-8 border-gray-100">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-
-        {/* Logo */}
-        <Link href="/" className="flex items-center z-50">
-          <Image src="/logo.svg" alt="Auto-Mate" width={120} height={40} className="w-auto h-8 md:h-10" />
-        </Link>
-
-        {/* Desktop Navigation */}
+    <>
+      <nav className="fixed inset-x-0 top-0 z-[60] px-3 pt-3 sm:px-4 md:px-6 md:pt-4">
         <div
-          ref={navRef}
-          className="relative hidden md:flex items-center gap-8 font-medium text-black"
-          onMouseLeave={() => setActiveIndex(null)}
+          className={`mx-auto flex h-[72px] w-[min(92vw,1480px)] items-center rounded-full border border-white/20 px-3 shadow-[0_10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl transition-all duration-300 md:h-[78px] md:px-8 ${
+            scrolled
+              ? "mt-2 bg-white/22 shadow-[0_12px_45px_rgba(0,0,0,0.12)]"
+              : "mt-3 bg-white/12"
+          }`}
         >
-          {navLinks.map((link, i) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              ref={(el) => { linkRefs.current[i] = el }}
-              onMouseEnter={() => moveIndicator(i)}
-              className="relative py-2 transition-colors hover:text-[#0166A7]"
-            >
-              {link.name}
+          <div className="relative flex w-full items-center">
+            <Link href="/" className="z-50 flex items-center pr-4">
+              <Image
+                src="/logo.svg"
+                alt="Auto-Mate"
+                width={120}
+                height={40}
+                className="h-8 w-auto md:h-10"
+              />
             </Link>
-          ))}
 
-
-
-          {/* Animated Jumping Dot (Desktop Only) */}
-          {activeIndex !== null && (
-            <span
-              className="absolute -top-1 w-2 h-2 bg-[#0166A7] rounded-full transition-all duration-300 ease-out pointer-events-none"
-              style={{ left: indicator.center - 4 }}
-            />
-          )}
-        </div>
-
-        {/* Mobile Controls */}
-        <div className="md:hidden flex items-center gap-3 z-50">
-          {!isOpen && (
-            <Button asChild className="bg-[#1B262C] text-white px-4 py-2 rounded-full text-xs">
-              <Link href="/courses">Start Learning</Link>
-            </Button>
-          )}
-
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-2 text-[#0166A7] hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
-      </div>
-
-      {/* --- MOBILE MENU OVERLAY --- */}
-      <div className={`
-        fixed inset-0 bg-white z-40 flex flex-col p-8 pt-24 transition-all duration-500 ease-in-out md:hidden
-        ${isOpen
-          ? "translate-y-0 opacity-100 visible pointer-events-auto"
-          : "-translate-y-full opacity-0 invisible pointer-events-none"}
-      `}>
-        <div className="flex flex-col gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              onClick={() => setIsOpen(false)} // Close menu on click
-              className="text-2xl font-bold text-[#1B262C] border-b border-gray-50 pb-4 active:text-[#0166A7]"
+            <div
+              ref={navRef}
+              className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full p-1 md:flex"
+              onMouseLeave={() => moveIndicator(defaultIndex)}
             >
-              {link.name}
-            </Link>
-          ))}
+              <span
+                className="pointer-events-none absolute z-0 rounded-full bg-[#0166A7] transition-all duration-300 ease-out"
+                style={{
+                  left: indicator.left,
+                  top: indicator.top,
+                  width: indicator.width,
+                  height: indicator.height,
+                  opacity: indicator.opacity,
+                }}
+              />
+
+              {navLinks.map((link, i) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  ref={(el) => {
+                    linkRefs.current[i] = el;
+                  }}
+                  onMouseEnter={() => moveIndicator(i)}
+                  onFocus={() => moveIndicator(i)}
+                  onBlur={() => moveIndicator(defaultIndex)}
+                  className={`group relative z-10 px-4 py-2 text-[16px] font-medium tracking-[0.2px] transition-colors duration-200 ${
+                    activeIndex === i ? "text-white" : "text-slate-800/90 hover:text-slate-900"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
+            <div className="ml-auto flex items-center gap-2 md:gap-3">
+              <Button
+                asChild
+                className="rounded-full bg-[#0166A7] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)] transition-all duration-250 hover:scale-[1.03] hover:brightness-110"
+              >
+                <Link href="/contact">Contact</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div
+        id="mobile-nav-menu"
+        className={`fixed inset-0 z-40 flex flex-col bg-slate-950/20 px-4 pb-8 pt-24 transition-all duration-500 ease-in-out md:hidden ${
+          isOpen
+            ? "translate-y-0 opacity-100 visible pointer-events-auto"
+            : "-translate-y-full opacity-0 invisible pointer-events-none"
+        }`}
+      >
+        <div className="mx-auto flex w-full max-w-[440px] flex-col rounded-[2rem] border border-white/25 bg-white/15 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.25)] backdrop-blur-2xl">
+          <div className="flex flex-col gap-5">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className="border-b border-white/20 pb-4 text-[1.05rem] font-semibold text-slate-800 transition-colors duration-200 active:text-[#0166A7]"
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
 
           <div className="mt-8 flex flex-col gap-4">
-            <Button asChild className="w-full bg-[#1B262C] text-white py-6 rounded-2xl text-lg font-bold">
-              <Link href="/courses" onClick={() => setIsOpen(false)}>Start Learning</Link>
+            <Button asChild className="w-full rounded-full bg-[#0166A7] py-6 text-lg font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)]">
+              <Link href="/contact" onClick={() => setIsOpen(false)}>
+                Contact
+              </Link>
             </Button>
-            <p className="text-center text-gray-500 text-sm">
-              Level up your automation skills today.
+            <p className="text-center text-sm text-slate-600">
+              Get in touch with us today.
             </p>
           </div>
         </div>
       </div>
-    </nav>
+    </>
   );
 }

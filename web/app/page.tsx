@@ -18,9 +18,9 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen">
       <Hero />
-      <StatsSection />
-      <FeaturesGrid />
       <Courses />
+      <FeaturesGrid />
+      <StatsSection />
       <Testimonials initialData={testimonials} />
       <Blog />
     </main>

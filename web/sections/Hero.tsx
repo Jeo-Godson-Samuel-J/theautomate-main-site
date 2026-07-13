@@ -5,44 +5,49 @@ import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
-    <section className="relative pt-24 md:pt-14 pb-16 md:pb-24 overflow-hidden bg-white">
+    <section className="relative pt-32 md:pt-40 pb-10 md:pb-12 overflow-hidden bg-white">
 
       {/* --- FLOATING "A" SVGS (Now fully responsive) --- */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        {/* Left Side Group */}
-        {/* We use 'vw' and 'vh' for mobile to keep them relative to the screen edge */}
-        <Image src="/A.svg" className="absolute left-[5vw] top-[15vh] w-10 md:w-20 opacity-25 md:opacity-80" alt="" width={80} height={80} priority />
-        <Image src="/A.svg" className="absolute left-[12vw] top-[45vh] w-12 md:w-20 opacity-20 md:opacity-85" alt="" width={80} height={80} />
-        <Image src="/A.svg" className="absolute left-[2vw] top-[75vh] w-10 md:w-20 opacity-25 md:opacity-80" alt="" width={80} height={80} />
+        {/* Top Left */}
+        <Image src="/A.svg" className="absolute left-[6vw] top-[12vh] w-14 md:w-28 opacity-30 md:opacity-90" alt="" width={112} height={112} priority />
+        
+        {/* Bottom Left */}
+        <Image src="/A.svg" className="absolute left-[10vw] top-[65vh] md:bottom-[22vh] md:top-auto w-12 md:w-24 opacity-30 md:opacity-90" alt="" width={96} height={96} />
 
-        {/* Right Side Group */}
-        <Image src="/A.svg" className="absolute right-[5vw] top-[20vh] w-10 md:w-20 opacity-25 md:opacity-80" alt="" width={80} height={80} />
-        <Image src="/A.svg" className="absolute right-[12vw] top-[55vh] w-12 md:w-20 opacity-10 md:opacity-85" alt="" width={80} height={80} />
-        <Image src="/A.svg" className="absolute right-[2vw] top-[80vh] w-10 md:w-20 opacity-15 md:opacity-80" alt="" width={80} height={80} />
+        {/* Top Right */}
+        <Image src="/A.svg" className="absolute right-[6vw] top-[16vh] w-14 md:w-28 opacity-30 md:opacity-90" alt="" width={112} height={112} />
+        
+        {/* Bottom Right */}
+        <Image src="/A.svg" className="absolute right-[10vw] top-[60vh] md:bottom-[28vh] md:top-auto w-12 md:w-24 opacity-30 md:opacity-90" alt="" width={96} height={96} />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center flex flex-col items-center">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center flex flex-col items-center">
 
         {/* --- MAIN TITLE --- */}
-        <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent 
-                       bg-gradient-to-r from-[#0A3D62] via-[#1E90FF] to-[#0A3D62] leading-tight md:leading-[1.2]">
-          Your Smart Way To <br className="hidden md:block" /> learn Automation
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-[#0F172A] leading-[1.15] md:leading-[1.1]">
+          Your Smart Way To <br className="hidden md:block" />
+          <span className="text-[#0166A7]">learn Automation</span>
         </h1>
 
         {/* --- DESCRIPTION --- */}
-        <p className="mt-6 text-gray-700 text-base md:text-lg max-w-2xl leading-relaxed">
+        <p className="mt-8 text-slate-600 text-lg md:text-[1.15rem] max-w-2xl leading-relaxed mx-auto">
           Lead the next wave of innovation. Auto-Mate provides the critical
           automation skills to engineer tomorrow.
         </p>
 
-        <Link href="/courses" className="w-full md:w-auto">
-          <Button className="mt-8 md:mt-10 bg-brand-dark text-white px-10 py-7 md:py-6 rounded-full text-lg font-bold shadow-lg hover:translate-y-[-1px] transition-all w-[80%] md:w-auto mx-auto cursor-pointer relative z-20">
-            Start Learning
+        {/* --- BUTTONS --- */}
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 relative z-20 w-full sm:w-auto">
+          <Button asChild className="rounded-full bg-[#0166A7] px-8 py-6 text-base font-semibold text-white shadow-[0_8px_20px_rgba(1,102,167,0.25)] hover:bg-[#01538a] hover:shadow-[0_10px_25px_rgba(1,102,167,0.35)] transition-all w-full sm:w-auto">
+            <Link href="/courses">Start Learning</Link>
           </Button>
-        </Link>
+          <Button asChild variant="outline" className="rounded-full border-slate-300 px-8 py-6 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-all w-full sm:w-auto">
+            <Link href="/contact">Contact Us</Link>
+          </Button>
+        </div>
 
         {/* --- TRUSTED LOGOS SECTION --- */}
-        <div className="mt-16 md:mt-24 w-full overflow-hidden">
+        <div className="mt-16 md:mt-20 w-full overflow-hidden">
           <p className="text-xs md:text-sm font-semibold text-black-400 uppercase tracking-widest mb-8">
             We have trained over 1000+ students and they are now working in top MNC&apos;s
           </p>
