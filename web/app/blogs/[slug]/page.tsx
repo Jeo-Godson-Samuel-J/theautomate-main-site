@@ -4,20 +4,18 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 interface SanityImage {
-  _type: 'image';
+  _type: "image";
   asset: {
     _ref: string;
-    _type: 'reference';
+    _type: "reference";
   };
 }
 
 interface SanityCode {
-  _type: 'code';
+  _type: "code";
   code: string;
   language?: string;
 }
-
-
 
 const BLOG_QUERY = `
 *[_type == "blog" && slug.current == $slug][0]{
@@ -32,7 +30,7 @@ const BLOG_QUERY = `
 
 export async function generateStaticParams() {
   const slugs = await client.fetch(
-    `*[_type == "blog" && defined(slug.current)][].slug.current`
+    `*[_type == "blog" && defined(slug.current)][].slug.current`,
   );
 
   return slugs.map((slug: string) => ({ slug }));
@@ -43,7 +41,6 @@ export default async function BlogPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-
   const { slug } = await params;
 
   const blog = await client.fetch(BLOG_QUERY, { slug });
@@ -52,38 +49,38 @@ export default async function BlogPage({
 
   return (
     <main className="bg-white min-h-screen">
-
       {/* ARTICLE WRAPPER */}
-      <article className="
+      <article
+        className="
         max-w-3xl mx-auto
         px-6 py-16
-      ">
-
+      "
+      >
         {/* TITLE */}
-        <h1 className="
+        <h1
+          className="
           text-3xl md:text-4xl
           font-bold
           leading-tight
           mb-6
-        ">
+        "
+        >
           {blog.title}
         </h1>
 
         {/* META */}
-        <div className="
+        <div
+          className="
           flex gap-4
           text-gray-500 text-sm
           mb-8
-        ">
+        "
+        >
           {blog.publishedAt && (
-            <span>
-              {new Date(blog.publishedAt).toDateString()}
-            </span>
+            <span>{new Date(blog.publishedAt).toDateString()}</span>
           )}
 
-          {blog.readingTime && (
-            <span>• {blog.readingTime} min read</span>
-          )}
+          {blog.readingTime && <span>• {blog.readingTime} min read</span>}
         </div>
 
         {/* HERO IMAGE */}
@@ -102,16 +99,19 @@ export default async function BlogPage({
 
         {/* EXCERPT */}
         {blog.excerpt && (
-          <p className="
+          <p
+            className="
             text-lg text-gray-700
             mb-10
-          ">
+          "
+          >
             {blog.excerpt}
           </p>
         )}
 
         {/* CONTENT */}
-        <div className="
+        <div
+          className="
           prose prose-lg
           max-w-none
           prose-headings:font-semibold
@@ -120,7 +120,8 @@ export default async function BlogPage({
           prose-p:leading-relaxed
           prose-li:leading-relaxed
           prose-img:rounded-lg
-        ">
+        "
+        >
           <PortableText
             value={blog.content}
             components={{
@@ -135,12 +136,14 @@ export default async function BlogPage({
                   />
                 ),
                 code: ({ value }: { value: SanityCode }) => (
-                  <pre className="
+                  <pre
+                    className="
                     bg-gray-900 text-green-400
                     p-5 rounded-lg
                     overflow-x-auto
                     my-8
-                  ">
+                  "
+                  >
                     <code>{value.code}</code>
                   </pre>
                 ),
@@ -148,7 +151,6 @@ export default async function BlogPage({
             }}
           />
         </div>
-
       </article>
     </main>
   );

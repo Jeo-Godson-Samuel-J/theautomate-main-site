@@ -1,4 +1,4 @@
-import { client } from "@/lib/sanity.client";
+import { client } from "../sanity.client";
 import { FAQS_QUERY } from "../queries/faqs";
 import type { FAQ } from "../types/faq";
 

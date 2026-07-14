@@ -27,6 +27,7 @@ export const LATEST_BLOGS_QUERY = `*[_type == "blog" && defined(slug.current)] |
   title,
   "slug": slug.current,
   publishedAt,
+  readingTime,
   excerpt,
   coverImage,
   "contentImage": content[_type == "image"][0]
