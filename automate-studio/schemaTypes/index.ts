@@ -4,6 +4,7 @@ import caseStudy from "../schema/caseStudy"
 import masterclassHero from "../schema/masterclassHero"
 import testimonial from "../schema/testimonial"
 import faq from "../schema/faq"
+import plan from "../schema/plan"
 
 export const schemaTypes = [
     blog,
@@ -11,5 +12,6 @@ export const schemaTypes = [
     caseStudy,
     masterclassHero,
     testimonial,
-    faq
+    faq,
+    plan
 ]
