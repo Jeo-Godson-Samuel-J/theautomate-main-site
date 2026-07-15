@@ -1,8 +1,13 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import Image from "next/image";
-import { StarRating } from "@/components/ui/StarRating";
 
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import Image from "next/image";
+import gsap from "gsap";
+
+/* ─────────────────────────────────────────
+   Types  (kept identical to original so
+   page.tsx props stay untouched)
+───────────────────────────────────────── */
 export interface Testimonial {
   name: string;
   image: string;
@@ -13,245 +18,269 @@ interface TestimonialsProps {
   initialData: Testimonial[];
 }
 
-export default function Testimonials({ initialData }: TestimonialsProps) {
-  const testimonials = initialData || [];
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+/* ─────────────────────────────────────────
+   Constants
+───────────────────────────────────────── */
+const AUTOPLAY_MS = 2000;
+const EASE = "power2.inOut";
+const DURATION = 0.55;
 
+/* ─────────────────────────────────────────
+   Individual card  (memoised)
+───────────────────────────────────────── */
+const TestimonialCard = React.memo(function TestimonialCard({
+  t,
+}: {
+  t: Testimonial;
+}) {
+  return (
+    <div
+      className="
+        flex-shrink-0
+        w-[85vw] sm:w-[320px] md:w-[360px] lg:w-[420px]
+        bg-white rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]
+        px-8 py-8 flex flex-col gap-5
+        select-none
+      "
+    >
+      {/* Faded quote icon */}
+      <div
+        aria-hidden="true"
+        className="text-[#0166A7] font-serif leading-none"
+        style={{ fontSize: "4.5rem", lineHeight: 1, opacity: 0.12 }}
+      >
+        {"\u201C"}
+      </div>
+
+      {/* Review text */}
+      <p className="text-slate-600 text-sm md:text-base leading-relaxed -mt-4 flex-1">
+        {t.text}
+      </p>
+
+      {/* Author row */}
+      <div className="flex items-center gap-4 pt-2 border-t border-slate-100">
+        <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 ring-2 ring-[#0166A7]/20">
+          <Image
+            src={t.image || "/avatars/placeholder.png"}
+            alt={t.name}
+            fill
+            sizes="48px"
+            className="object-cover"
+          />
+        </div>
+        <div>
+          <p className="font-semibold text-slate-900 text-sm leading-tight">
+            {t.name}
+          </p>
+          <p className="text-[#0166A7] text-xs mt-0.5 font-medium">Learner</p>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/* ─────────────────────────────────────────
+   Main component
+───────────────────────────────────────── */
+export default function Testimonials({ initialData }: TestimonialsProps) {
+  const testimonials = useMemo(() => initialData ?? [], [initialData]);
   const total = testimonials.length;
 
-  const prev = (activeIndex - 1 + total) % total;
-  const next = (activeIndex + 1) % total;
-
-  const goTo = useCallback(
-    (index: number) => {
-      if (isAnimating || index === activeIndex) return;
-      setIsAnimating(true);
-      setActiveIndex(index);
-      setTimeout(() => setIsAnimating(false), 500);
-    },
-    [activeIndex, isAnimating]
+  /* We render the list THREE times (tripled) so we can loop infinitely
+     without any visible jump.  The strip starts positioned at the
+     centre copy and wraps back to it whenever it drifts outside bounds. */
+  const tripled = useMemo(
+    () => [...testimonials, ...testimonials, ...testimonials],
+    [testimonials]
   );
 
-  const goPrev = useCallback(() => goTo(prev), [goTo, prev]);
-  const goNext = useCallback(() => goTo(next), [goTo, next]);
+  /* ── refs ── */
+  const stripRef = useRef<HTMLDivElement>(null);
+  const tlRef = useRef<gsap.core.Timeline | null>(null);
+  const indexRef = useRef<number>(total); // start in the middle copy
+  const cardWidthRef = useRef<number>(0);
+  const gapRef = useRef<number>(0);
+  const visibleRef = useRef<number>(3);
 
-  // Auto-advance every 5 seconds
+  /* ── measure card + gap once mounted, update on resize ── */
+  const measure = useCallback(() => {
+    if (!stripRef.current) return;
+    const card = stripRef.current.children[0] as HTMLElement | undefined;
+    if (!card) return;
+    const gap = parseInt(getComputedStyle(stripRef.current).gap || "0", 10) || 24;
+    cardWidthRef.current = card.offsetWidth;
+    gapRef.current = gap;
+
+    const vw = window.innerWidth;
+    visibleRef.current = vw < 640 ? 1 : vw < 1024 ? 2 : 3;
+  }, []);
+
+  /* ── build / rebuild the auto-play timeline ── */
+  const buildTimeline = useCallback(() => {
+    if (!stripRef.current || total === 0) return;
+
+    // kill existing
+    tlRef.current?.kill();
+
+    const step = cardWidthRef.current + gapRef.current;
+    const n = tripled.length;
+
+    // Ensure the strip is at the correct starting x for indexRef.current
+    const startX = -(indexRef.current * step);
+    gsap.set(stripRef.current, { x: startX });
+
+    const tl = gsap.timeline({ repeat: -1, repeatDelay: 0 });
+
+    tl.to(stripRef.current, {
+      x: `+=${-step}`,
+      duration: DURATION,
+      ease: EASE,
+      delay: AUTOPLAY_MS / 1000,
+      onComplete: () => {
+        indexRef.current += 1;
+        // if we've entered the last copy, silently snap back to middle copy
+        if (indexRef.current >= total * 2) {
+          indexRef.current = total;
+          gsap.set(stripRef.current, { x: -(indexRef.current * step) });
+        }
+      },
+    });
+
+    tlRef.current = tl;
+  }, [total, tripled.length]);
+
+  /* ── initial setup ── */
   useEffect(() => {
-    autoPlayRef.current = setInterval(() => {
-      goNext();
-    }, 5000);
+    measure();
+    buildTimeline();
+
+    const onResize = () => {
+      measure();
+      buildTimeline();
+    };
+    window.addEventListener("resize", onResize);
     return () => {
-      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+      window.removeEventListener("resize", onResize);
+      tlRef.current?.kill();
     };
-  }, [goNext]);
+  }, [measure, buildTimeline]);
 
-  if (testimonials.length === 0) return null;
+  /* ── manual navigation ── */
+  const navigate = useCallback(
+    (dir: 1 | -1) => {
+      if (!stripRef.current || total === 0) return;
 
-  // Card config: position relative to center
-  const getCardStyle = (
-    position: "center" | "left" | "right"
-  ): React.CSSProperties => {
-    const base: React.CSSProperties = {
-      position: "absolute",
-      width: "clamp(280px, 38vw, 460px)",
-      transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-    };
+      // kill autoplay
+      tlRef.current?.kill();
 
-    if (position === "center") {
-      return {
-        ...base,
-        transform: "translateX(-50%) rotate(0deg) scale(1)",
-        left: "50%",
-        top: "0px",
-        zIndex: 20,
-        opacity: 1,
-      };
-    }
+      const step = cardWidthRef.current + gapRef.current;
+      indexRef.current = Math.max(total, Math.min(total * 2 - 1, indexRef.current + dir));
 
-    if (position === "left") {
-      return {
-        ...base,
-        transform: "translateX(-102%) rotate(-8deg) scale(0.82)",
-        left: "50%",
-        top: "30px",
-        zIndex: 10,
-        opacity: 0.65,
-        filter: "brightness(0.75)",
-      };
-    }
+      gsap.to(stripRef.current, {
+        x: -(indexRef.current * step),
+        duration: DURATION,
+        ease: EASE,
+        onComplete: () => {
+          // restart autoplay after manual navigation
+          buildTimeline();
+        },
+      });
+    },
+    [total, buildTimeline]
+  );
 
-    // right
-    return {
-      ...base,
-      transform: "translateX(2%) rotate(8deg) scale(0.82)",
-      left: "50%",
-      top: "30px",
-      zIndex: 10,
-      opacity: 0.65,
-      filter: "brightness(0.75)",
-    };
-  };
-
-  const renderCard = (
-    t: Testimonial,
-    position: "center" | "left" | "right",
-    onClick?: () => void
-  ) => {
-    const isCenter = position === "center";
-
-    return (
-      <div
-        style={getCardStyle(position)}
-        onClick={!isCenter ? onClick : undefined}
-        className={`rounded-[28px] border border-white/20 backdrop-blur-md
-          px-8 py-6 text-center select-none
-          ${isCenter
-            ? "bg-white/15 shadow-[0_32px_80px_rgba(0,0,0,0.5)] cursor-default"
-            : "bg-white/8 shadow-[0_16px_40px_rgba(0,0,0,0.4)] cursor-pointer hover:opacity-80"
-          }`}
-      >
-        {/* Opening quote */}
-        <div
-          className="pointer-events-none absolute left-6 top-4 select-none font-black leading-none text-[#22D3EE]"
-          style={{ fontSize: "clamp(3rem, 5vw, 4.5rem)", opacity: isCenter ? 0.9 : 0.5 }}
-        >
-          "
-        </div>
-
-        {/* Stars */}
-        {isCenter && (
-          <div className="flex justify-center mb-5 mt-2">
-            <StarRating rating={5} size={16} starClassName="text-[#22D3EE]" />
-          </div>
-        )}
-
-        {/* Text */}
-        <p
-          className="mx-auto leading-relaxed text-white/90"
-          style={{
-            fontSize: isCenter ? "clamp(0.85rem, 1.4vw, 1rem)" : "0.8rem",
-            maxWidth: "32ch",
-          }}
-        >
-          {t.text}
-        </p>
-
-        {/* Author */}
-        <div className={`flex items-center justify-center gap-3 ${isCenter ? "mt-8" : "mt-6"}`}>
-          <div
-            className="rounded-full border-2 border-white/30 overflow-hidden bg-white/10 shrink-0"
-            style={{ width: isCenter ? "52px" : "40px", height: isCenter ? "52px" : "40px" }}
-          >
-            <Image
-              src={t.image || "/avatars/placeholder.png"}
-              alt={t.name}
-              width={52}
-              height={52}
-              className="object-cover w-full h-full"
-            />
-          </div>
-          <div className="text-left">
-            <div className="text-white font-bold leading-tight" style={{ fontSize: isCenter ? "0.95rem" : "0.8rem" }}>
-              {t.name}
-            </div>
-            <div className="text-[#22D3EE]/80 text-xs leading-tight mt-0.5">Learner</div>
-          </div>
-        </div>
-
-        {/* Closing quote */}
-        <div
-          className="pointer-events-none absolute right-6 bottom-4 select-none font-black leading-none text-[#22D3EE]"
-          style={{ fontSize: "clamp(3rem, 5vw, 4.5rem)", opacity: isCenter ? 0.9 : 0.5 }}
-        >
-          "
-        </div>
-      </div>
-    );
-  };
+  if (total === 0) return null;
 
   return (
-    <section className="relative py-16 md:py-12 overflow-hidden bg-[#0A3D62]">
-      {/* Background glows */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#1E90FF] opacity-20 blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#22D3EE] opacity-20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-[#1E90FF] opacity-10 blur-3xl" />
-      </div>
+    <section className="py-16 md:py-24 bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
 
-      {/* Chevron — Far Left */}
-      <button
-        onClick={goPrev}
-        aria-label="Previous testimonial"
-        className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all hover:bg-[#22D3EE]/20 hover:border-[#22D3EE]/50 hover:scale-110 active:scale-95"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      {/* Chevron — Far Right */}
-      <button
-        onClick={goNext}
-        aria-label="Next testimonial"
-        className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all hover:bg-[#22D3EE]/20 hover:border-[#22D3EE]/50 hover:scale-110 active:scale-95"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-
-      <div className="relative max-w-7xl mx-auto text-center px-6">
-        <h2 className="mt-3 text-4xl md:text-5xl font-black text-white tracking-tight">
-          What Learners Say{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#22D3EE] to-[#1E90FF]">
-            About Us
-          </span>
-        </h2>
-        <p className="mt-3 text-white/60 text-base max-w-lg mx-auto">
-          Real words from people across different industries who transformed their careers with us.
-        </p>
-
-        {/* Card Stage — dots overlaid at bottom center */}
-        <div className="relative mx-auto mt-16" style={{ height: "clamp(340px, 45vw, 460px)", maxWidth: "900px" }}>
-          {/* Left side card (prev) */}
-          {total > 1 && renderCard(testimonials[prev], "left", goPrev)}
-
-          {/* Right side card (next) */}
-          {total > 1 && renderCard(testimonials[next], "right", goNext)}
-
-          {/* Center card (active) — rendered last to stay on top */}
-          {renderCard(testimonials[activeIndex], "center")}
-
-          {/* Dots — overlaid at the bottom-center of the card stage */}
-          {(() => {
-            const numDots = Math.min(total, 3);
-            const activeDot = activeIndex % numDots;
-            return (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
-                {Array.from({ length: numDots }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      const stepsForward = (i - activeDot + numDots) % numDots;
-                      goTo((activeIndex + stepsForward) % total);
-                    }}
-                    aria-label={`Go to testimonial group ${i + 1}`}
-                    className="transition-all duration-300 rounded-full"
-                    style={{
-                      width: i === activeDot ? "28px" : "8px",
-                      height: "8px",
-                      background: i === activeDot
-                        ? "linear-gradient(90deg, #22D3EE, #1E90FF)"
-                        : "rgba(255,255,255,0.45)",
-                    }}
-                  />
-                ))}
-              </div>
-            );
-          })()}
+        {/* ── Heading ── */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
+            What{" "}
+            <span className="text-[#0166A7]">Learners</span>{" "}
+            Say About The-Automate
+          </h2>
+          <p className="mt-4 text-slate-500 text-base max-w-xl mx-auto leading-relaxed">
+            Real words from people across different industries who transformed
+            their careers with us.
+          </p>
         </div>
+
+        {/* ── Carousel viewport (clips overflow) ── */}
+        <div className="overflow-hidden">
+          {/* Strip — rendered 3× for seamless loop */}
+          <div
+            ref={stripRef}
+            className="flex gap-6 will-change-transform"
+            style={{ width: "max-content" }}
+          >
+            {tripled.map((t, i) => (
+              <TestimonialCard key={`${t.name}-${i}`} t={t} />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Navigation buttons ── */}
+        <div className="flex items-center justify-center gap-4 mt-10">
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Previous testimonials"
+            className="
+              flex items-center justify-center
+              w-12 h-12 rounded-full
+              bg-[#0166A7] text-white
+              shadow-[0_4px_14px_rgba(1,102,167,0.35)]
+              hover:bg-[#004d7c] hover:scale-110
+              active:scale-95
+              transition-all duration-200
+            "
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={() => navigate(1)}
+            aria-label="Next testimonials"
+            className="
+              flex items-center justify-center
+              w-12 h-12 rounded-full
+              bg-[#0166A7] text-white
+              shadow-[0_4px_14px_rgba(1,102,167,0.35)]
+              hover:bg-[#004d7c] hover:scale-110
+              active:scale-95
+              transition-all duration-200
+            "
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+
       </div>
     </section>
   );

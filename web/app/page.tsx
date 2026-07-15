@@ -1,10 +1,11 @@
 import Blog from '@/sections/Blog';
 import Courses from '@/sections/Courses';
-import FeaturesGrid from '@/components/layout/Unique';
 import Hero from '@/sections/Hero';
-import StatsSection from '@/sections/StatSection';
+import HomeAbout from '@/sections/HomeAbout';
+import HomeCTA from '@/sections/HomeCTA';
 import Testimonials from '@/sections/Testimonials';
 import FAQSection from '@/sections/FAQSection';
+import HomeHighlight from '@/sections/HomeHighlight';
 import { client } from '@/lib/sanity.client';
 
 const TESTIMONIALS_QUERY = `*[_type == "testimonial"] | order(_createdAt desc) {
@@ -19,12 +20,13 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       <Hero />
-      <FeaturesGrid />
+      <HomeHighlight />
       <Courses />
-      <StatsSection />
+      <HomeAbout />
       <Testimonials initialData={testimonials} />
       <Blog />
       <FAQSection />
+      <HomeCTA />
     </div>
   );
 }
