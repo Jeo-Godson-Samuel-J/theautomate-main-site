@@ -1,24 +1,50 @@
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle2, XCircle, LayoutList } from 'lucide-react';
-import { StarRating } from '@/components/ui/StarRating';
-import { urlFor } from '@/lib/sanity.client';
-import { Plan } from '@/lib/types/plan';
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Clock, CheckCircle2, XCircle, LayoutList } from "lucide-react";
+import { StarRating } from "@/components/ui/StarRating";
+import { urlFor } from "@/lib/sanity.client";
+import { Plan } from "@/lib/types/plan";
 
 interface PricingCardProps {
   bundle: Plan;
+  courseSlug?: string;
+  buttonLabel?: string;
+  buttonHref?: string;
 }
 
-export function PricingCard({ bundle }: PricingCardProps) {
+export function PricingCard({
+  bundle,
+  courseSlug,
+  buttonLabel,
+  buttonHref,
+}: PricingCardProps) {
   const imageUrl = bundle.coverImage
     ? urlFor(bundle.coverImage).width(800).url()
-    : '/placeholder.png';
+    : "/placeholder.png";
 
   const batchLabel = bundle.batchOptions?.length
-    ? bundle.batchOptions.join(' or ')
-    : 'Weekday or Weekend';
+    ? bundle.batchOptions.join(" or ")
+    : "Weekday or Weekend";
+
+  const normalizedBatch = bundle.batchOptions?.[0]
+    ? bundle.batchOptions[0].toLowerCase().includes("weekday")
+      ? "weekday"
+      : bundle.batchOptions[0].toLowerCase().includes("weekend")
+        ? "weekend"
+        : "weekend"
+    : "weekend";
+
+  const paymentParams = new URLSearchParams();
+  if (courseSlug) paymentParams.set("course", courseSlug);
+  paymentParams.set("bundleId", bundle._id);
+  paymentParams.set("bundleTitle", bundle.title);
+  paymentParams.set("amount", bundle.price.toString());
+  paymentParams.set("batch", normalizedBatch);
+  const paymentUrl = `/payment?${paymentParams.toString()}`;
+  const actionHref = buttonHref ?? paymentUrl;
+  const actionLabel = buttonLabel ?? "Choose Plan";
 
   return (
     <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] overflow-hidden flex flex-col border border-slate-100 transition-all duration-300 group">
@@ -40,11 +66,15 @@ export function PricingCard({ bundle }: PricingCardProps) {
         {/* Rating & Price */}
         <div className="flex items-center justify-between mb-4">
           <StarRating rating={bundle.rating ?? 5} showNumber size={16} />
-          <span className="font-bold text-slate-900 text-lg">${bundle.price}</span>
+          <span className="font-bold text-slate-900 text-lg">
+            ${bundle.price}
+          </span>
         </div>
 
         {/* Title */}
-        <h3 className="text-xl md:text-2xl font-bold mb-1 text-slate-900">{bundle.title}</h3>
+        <h3 className="text-xl md:text-2xl font-bold mb-1 text-slate-900">
+          {bundle.title}
+        </h3>
         <p className="text-sm text-slate-500 mb-5">By Auto-Mate</p>
 
         {/* Metadata */}
@@ -71,7 +101,13 @@ export function PricingCard({ bundle }: PricingCardProps) {
               ) : (
                 <XCircle className="w-5 h-5 text-slate-300 shrink-0" />
               )}
-              <span className={feature.included ? 'text-slate-700 font-medium' : 'text-slate-400 line-through'}>
+              <span
+                className={
+                  feature.included
+                    ? "text-slate-700 font-medium"
+                    : "text-slate-400 line-through"
+                }
+              >
                 {feature.title}
               </span>
             </li>
@@ -79,9 +115,12 @@ export function PricingCard({ bundle }: PricingCardProps) {
         </ul>
 
         {/* Button */}
-        <Link href="/contact" className="mt-auto">
-          <Button variant="outline" className="w-full rounded-full border-slate-300 text-slate-700 font-bold py-6 hover:bg-[#0166A7] hover:text-white hover:border-[#0166A7] transition-all">
-            Choose Plan
+        <Link href={actionHref} className="mt-auto">
+          <Button
+            variant="outline"
+            className="w-full rounded-full border-slate-300 text-slate-700 font-bold py-6 hover:bg-[#0166A7] hover:text-white hover:border-[#0166A7] transition-all"
+          >
+            {actionLabel}
           </Button>
         </Link>
       </div>

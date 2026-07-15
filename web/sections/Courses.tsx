@@ -1,7 +1,7 @@
-import React from 'react';
-import { PricingCard } from '@/components/ui/PricingCard';
-import { getPlans } from '@/lib/services/plan.services';
-import { Plan } from '@/lib/types/plan';
+import React from "react";
+import { PricingCard } from "@/components/ui/PricingCard";
+import { getPlans } from "@/lib/services/plan.services";
+import { Plan } from "@/lib/types/plan";
 
 export default async function Courses() {
   const plans: Plan[] = await getPlans().catch(() => []);
@@ -16,7 +16,12 @@ export default async function Courses() {
         {plans.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan) => (
-              <PricingCard key={plan._id} bundle={plan} />
+              <PricingCard
+                key={plan._id}
+                bundle={plan}
+                buttonLabel="View Courses"
+                buttonHref={`/plan/${encodeURIComponent(plan._id)}`}
+              />
             ))}
           </div>
         ) : (

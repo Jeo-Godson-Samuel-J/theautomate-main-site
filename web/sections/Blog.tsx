@@ -53,8 +53,9 @@ export default async function Blog() {
               const displayImage = blog.coverImage || blog.contentImage;
 
               return (
-                <article
+                <Link
                   key={blog._id}
+                  href={`/blogs/${blog.slug}`}
                   className="group relative bg-white rounded-[32px] overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
                 >
                   <div className="relative">
@@ -91,17 +92,8 @@ export default async function Blog() {
                       <span>•</span>
                       <span>{blog.readingTime ?? 5} min read</span>
                     </div>
-
-                    <div className="mt-auto">
-                      <Link
-                        href={`/blogs/${blog.slug}`}
-                        className="inline-flex items-center text-sm font-semibold text-slate-900 hover:text-brand-blue transition-colors"
-                      >
-                        Read More →
-                      </Link>
-                    </div>
                   </div>
-                </article>
+                </Link>
               );
             })}
           </div>

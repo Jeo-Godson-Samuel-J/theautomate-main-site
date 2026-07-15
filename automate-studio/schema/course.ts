@@ -1,72 +1,91 @@
-import { defineType, defineField } from "sanity";
+import {defineType, defineField} from 'sanity'
 
 export default defineType({
-  name: "course",
-  title: "Course",
-  type: "document",
+  name: 'course',
+  title: 'Course',
+  type: 'document',
 
   fields: [
     /* ---------------- HERO ---------------- */
 
     defineField({
-      name: "title",
-      title: "Course Title",
-      type: "string",
+      name: 'title',
+      title: 'Course Title',
+      type: 'string',
       validation: (Rule) => Rule.required(),
     }),
 
     defineField({
-      name: "slug",
-      title: "Slug",
-      type: "slug",
-      options: { source: "title" },
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {source: 'title'},
       validation: (Rule) => Rule.required(),
     }),
 
     defineField({
-      name: "tagline",
-      title: "Tagline",
-      type: "string",
+      name: 'bundles',
+      title: 'Bundles',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'plan'}],
+        },
+      ],
+      description: 'Select the plan bundles that include this course.',
     }),
 
     defineField({
-      name: "heroImage",
-      title: "Hero Image / Logo",
-      type: "image",
+      name: 'tagline',
+      title: 'Tagline',
+      type: 'string',
     }),
 
     defineField({
-      name: "rating",
-      title: "Rating",
-      type: "number",
+      name: 'heroImage',
+      title: 'Hero Image / Logo',
+      type: 'image',
+    }),
+
+    defineField({
+      name: 'rating',
+      title: 'Rating',
+      type: 'number',
       validation: (Rule) => Rule.min(1).max(5),
     }),
 
     defineField({
-      name: "instructorName",
-      title: "Instructor Name",
-      type: "string",
+      name: 'instructorName',
+      title: 'Instructor Name',
+      type: 'string',
     }),
 
     defineField({
-      name: "instructorImage",
-      title: "Instructor Image",
-      type: "image",
+      name: 'instructorImage',
+      title: 'Instructor Image',
+      type: 'image',
+    }),
+    defineField({
+      name: 'displayOrder',
+      title: 'Display Order',
+      type: 'number',
+      initialValue: 1,
     }),
 
     /* ---------------- KEY CONCEPTS ---------------- */
 
     defineField({
-      name: "keyConcepts",
-      title: "Key Concepts",
-      type: "array",
+      name: 'keyConcepts',
+      title: 'Key Concepts',
+      type: 'array',
       of: [
         {
-          type: "object",
+          type: 'object',
           fields: [
-            { name: "title", type: "string", title: "Title" },
-            { name: "icon", type: "image", title: "Icon" },
-            { name: "description", type: "string", title: "Description" },
+            {name: 'title', type: 'string', title: 'Title'},
+            {name: 'icon', type: 'image', title: 'Icon'},
+            {name: 'description', type: 'string', title: 'Description'},
           ],
         },
       ],
@@ -75,90 +94,89 @@ export default defineType({
     /* ---------------- DESCRIPTION ---------------- */
 
     defineField({
-      name: "description",
-      title: "Course Description",
-      type: "array",
-      of: [{ type: "block" }],
+      name: 'description',
+      title: 'Course Description',
+      type: 'array',
+      of: [{type: 'block'}],
     }),
 
     /* ---------------- ENROLL CARD ---------------- */
 
     defineField({
-      name: "price",
-      title: "Price",
-      type: "number",
+      name: 'price',
+      title: 'Price',
+      type: 'number',
     }),
 
     defineField({
-      name: "duration",
-      title: "Duration (e.g. 6 Weeks)",
-      type: "string",
+      name: 'duration',
+      title: 'Duration (e.g. 6 Weeks)',
+      type: 'string',
     }),
 
     defineField({
-      name: "level",
-      title: "Level",
-      type: "string",
+      name: 'level',
+      title: 'Level',
+      type: 'string',
       options: {
-        list: ["Beginner", "Intermediate", "Advanced"],
+        list: ['Beginner', 'Intermediate', 'Advanced'],
       },
     }),
 
     /* ---------------- WHO FOR ---------------- */
 
     defineField({
-      name: "whoFor",
-      title: "Who is this course for?",
-      type: "array",
-      of: [{ type: "string" }],
+      name: 'whoFor',
+      title: 'Who is this course for?',
+      type: 'array',
+      of: [{type: 'string'}],
     }),
 
     /* ---------------- WHAT YOU LEARN ---------------- */
 
     defineField({
       name: 'curriculum',
-      title: 'What You\'ll Learn (Curriculum)',
+      title: "What You'll Learn (Curriculum)",
       type: 'array',
       of: [
         {
           type: 'object',
           name: 'module',
           fields: [
-            { name: 'subheading', title: 'Subheading (e.g. Tosca Fundamentals)', type: 'string' },
+            {name: 'subheading', title: 'Subheading (e.g. Tosca Fundamentals)', type: 'string'},
             {
               name: 'points',
               title: 'Major Points',
               type: 'array',
-              of: [{ type: 'string' }]
+              of: [{type: 'string'}],
             },
-            { name: 'summary', title: 'Module Summary (Short Footer Text)', type: 'string' }
-          ]
-        }
-      ]
+            {name: 'summary', title: 'Module Summary (Short Footer Text)', type: 'string'},
+          ],
+        },
+      ],
     }),
 
     /* ---------------- OUTCOMES ---------------- */
 
     defineField({
-      name: "outcomes",
-      title: "Outcomes",
-      type: "array",
-      of: [{ type: "string" }],
+      name: 'outcomes',
+      title: 'Outcomes',
+      type: 'array',
+      of: [{type: 'string'}],
     }),
 
     /* ---------------- HIGHLIGHTS ---------------- */
 
-
     defineField({
-      name: "highlights",
-      title: "Course Highlights",
-      type: "array",
+      name: 'highlights',
+      title: 'Course Highlights',
+      type: 'array',
       of: [
         {
-          type: "object",
+          type: 'object',
           fields: [
-            { name: "icon", type: "image", title: "Icon" },
-            { name: "title", type: "string", title: "Title" },
+            {name: 'icon', type: 'image', title: 'Icon'},
+            {name: 'title', type: 'string', title: 'Title'},
           ],
         },
       ],
@@ -167,27 +185,27 @@ export default defineType({
     /* ---------------- STATS ---------------- */
 
     defineField({
-      name: "hours",
-      title: "Total Hours",
-      type: "number",
+      name: 'hours',
+      title: 'Total Hours',
+      type: 'number',
     }),
 
     defineField({
-      name: "students",
-      title: "Students Enrolled",
-      type: "number",
+      name: 'students',
+      title: 'Students Enrolled',
+      type: 'number',
     }),
 
     defineField({
-      name: "projects",
-      title: "Projects Count",
-      type: "number",
+      name: 'projects',
+      title: 'Projects Count',
+      type: 'number',
     }),
     defineField({
-      name: "batchDetails",
-      title: "Batch Details",
-      type: "array",
-      of: [{ type: "string" }],
+      name: 'batchDetails',
+      title: 'Batch Details',
+      type: 'array',
+      of: [{type: 'string'}],
     }),
   ],
-});
+})

@@ -7,9 +7,12 @@ interface CourseCardProps {
   slug: string;
   title: string;
   image: string;
-  learners: string;
-  duration: string;
+  learners: string | number;
+  duration: string | number;
   description: string;
+  instructorName?: string;
+  instructorImage?: string;
+  price?: number;
 }
 
 export default function CourseCard({
@@ -19,38 +22,44 @@ export default function CourseCard({
   learners,
   duration,
   description,
+  instructorName,
+  instructorImage,
+  price,
 }: CourseCardProps) {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:scale-[1.01] flex flex-col h-full">
-      <div className="relative h-48 md:h-56 w-full bg-slate-50 overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden rounded-[20px] bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+      <div className="relative h-56 w-full overflow-hidden rounded-[20px]">
         <Image
           src={image}
           alt={title}
           fill
           className="object-cover transition-transform duration-500"
         />
-        
       </div>
 
-      <div className="p-4 flex flex-col grow">
-        <h3 className="text-lg md:text-xl font-semibold text-slate-900 mb-3 leading-tight">
-          {title}
-        </h3>
+      <div className="flex flex-1 flex-col p-5 mt-3">
+        <div className="space-y-3">
+          <h3 className="text-2xl font-semibold text-slate-900 leading-tight line-clamp-2">
+            {title}
+          </h3>
 
-        <p className="text-slate-600 text-sm leading-6 mb-4 grow line-clamp-3">
-          {description}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2 mt-3">
+          {description ? (
+            <p className="text-base leading-7 text-slate-600 line-clamp-2">
+              {description}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="mt-6 flex gap-3">
           <Link
             href={`/courses/${slug}`}
-            className="w-full inline-flex items-center justify-center px-4 py-1.5 bg-white border border-brand-blue text-brand-blue rounded-full text-xs font-semibold hover:bg-brand-blue hover:text-white transition"
+            className="inline-flex flex-1 min-w-0 items-center justify-center rounded-full border border-white/70 bg-white/70 px-5 py-3 text-sm font-semibold text-brand-blue shadow-sm backdrop-blur-sm transition hover:bg-brand-blue hover:text-white hover:border-brand-blue hover:shadow-md"
           >
             View Course
           </Link>
-
           <Link
-            href={`/payment?course=${slug}`}
-            className="w-full inline-flex items-center justify-center px-4 py-1.5 bg-white border border-brand-blue text-brand-blue rounded-full text-xs font-semibold hover:bg-brand-blue hover:text-white transition"
+            href={`/plans?course=${slug}`}
+            className="inline-flex flex-1 min-w-0 items-center justify-center rounded-full border border-white/70 bg-white/70 px-8 py-3 text-sm font-semibold text-brand-blue whitespace-nowrap shadow-sm backdrop-blur-sm transition hover:bg-brand-blue hover:text-white hover:border-brand-blue hover:shadow-md"
           >
             Proceed to checkout
           </Link>
