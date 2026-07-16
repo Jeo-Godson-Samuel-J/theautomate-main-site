@@ -56,7 +56,7 @@ export default async function BlogPage({
         px-6 py-16
       "
       >
-        {/* TITLE */}
+        {/* TITLE */} mm mm m;' \'
         <h1
           className="
           text-3xl md:text-4xl
@@ -67,7 +67,6 @@ export default async function BlogPage({
         >
           {blog.title}
         </h1>
-
         {/* META */}
         <div
           className="
@@ -82,7 +81,6 @@ export default async function BlogPage({
 
           {blog.readingTime && <span>• {blog.readingTime} min read</span>}
         </div>
-
         {/* HERO IMAGE */}
         {blog.coverImage && (
           <div className="mb-10">
@@ -96,7 +94,6 @@ export default async function BlogPage({
             />
           </div>
         )}
-
         {/* EXCERPT */}
         {blog.excerpt && (
           <p
@@ -108,7 +105,6 @@ export default async function BlogPage({
             {blog.excerpt}
           </p>
         )}
-
         {/* CONTENT */}
         <div
           className="
