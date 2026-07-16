@@ -1,51 +1,40 @@
-import CourseHero from "@/sections/courses-section/CourseHero";
-import CourseList from "@/sections/courses-section/CourseList";
-import CTA from "@/components/layout/CTA";
-import { client, urlFor } from "@/lib/sanity.client";
-
-const FEATURED_COURSE_QUERY = `
-*[_type == "course" && (slug.current == "playwright" || title match "Playwright")][0]{
-  _id,
-  title,
-  slug,
-  heroImage,
-  students,
-  hours,
-  tagline
-}
-`;
+import CourseCard from "@/components/layout/CourseCard";
+import { getCourses } from "@/lib/services/course.service";
 
 export default async function CoursesPage() {
-  const featured = await client.fetch(FEATURED_COURSE_QUERY);
+  const courses = await getCourses();
 
   return (
-    <main className="pt-20">
-      {/* Standard space for Navbar */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <CourseHero
-          featuredCourse={
-            featured
-              ? {
-                  slug: featured.slug.current,
-                  title: featured.title,
-                  image: featured.heroImage
-                    ? urlFor(featured.heroImage).width(800).url()
-                    : "/placeholder.png",
-                  learners: featured.students || "0+",
-                  duration: featured.hours || "0+",
-                  description: featured.tagline,
-                }
-              : undefined
-          }
-        />
+    <main>
+      <section className="max-w-7xl mx-auto px-6 py-20">
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-6xl font-bold">
+            Most Popular
+            <span className="text-[#0166A7]"> Courses</span>
+          </h1>
+        </div>
 
-        <CourseList />
-        <CTA
-          title="Start Learning Today"
-          description="Join the next wave of innovation. Your journey to mastering automation starts with a single click."
-          buttonText="Contact Us"
-        />
-      </div>
+        <div className="grid lg:grid-cols-3 gap-10">
+          {courses.map((course) => (
+            <CourseCard
+              key={course._id}
+              // COURSES_QUERY returns slug as the raw Sanity object { current: string }.
+              // Extract .current here — CourseCard expects a flat string.
+              slug={course.slug.current}
+              title={course.title}
+              image={course.thumbnail ?? "/placeholder.png"}
+              learners={course.students ?? "0+"}
+              duration={course.duration ?? "—"}
+              description={course.shortDescription ?? ""}
+              rating={course.rating}
+              instructorName={course.instructorName}
+              instructorImage={course.instructorImage}
+              price={course.price}
+              modules={course.modules}
+            />
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

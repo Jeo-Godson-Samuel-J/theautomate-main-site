@@ -1,6 +1,6 @@
 import Blog from '@/sections/Blog';
-import Courses from '@/sections/Courses';
 import Hero from '@/sections/Hero';
+import HomeFeaturedCourses from '@/sections/HomeFeaturedCourses';
 import HomeAbout from '@/sections/HomeAbout';
 import HomeCTA from '@/sections/HomeCTA';
 import Testimonials from '@/sections/Testimonials';
@@ -20,8 +20,8 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       <Hero />
+      <HomeFeaturedCourses />
       <HomeHighlight />
-      <Courses />
       <HomeAbout />
       <Testimonials initialData={testimonials} />
       <Blog />
