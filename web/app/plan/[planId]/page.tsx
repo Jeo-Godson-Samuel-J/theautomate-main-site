@@ -1,12 +1,13 @@
+import { notFound } from "next/navigation";
 import { getPlans } from "@/lib/services/plan.services";
 import CourseGrid from "@/sections/courses-section/CourseGrid";
 import { Plan } from "@/lib/types/plan";
 import { Course } from "@/lib/types/course";
 
 interface PlanPageProps {
-  params: {
+  params: Promise<{
     planId: string;
-  };
+  }>;
 }
 
 const STATIC_PLAN_COURSES: Course[] = [
@@ -49,8 +50,10 @@ const STATIC_PLAN_COURSES: Course[] = [
 ];
 
 export default async function PlanPage({ params }: PlanPageProps) {
+  // Next.js 15: params is a Promise — must be awaited.
+  const { planId: planParam } = await params;
+
   const plans: Plan[] = await getPlans().catch(() => []);
-  const planParam = params.planId;
   const normalizedPlanParam = planParam?.toLowerCase() ?? "";
 
   const plan = plans.find((plan) => {
@@ -60,20 +63,10 @@ export default async function PlanPage({ params }: PlanPageProps) {
 
     return plan._id === planParam || titleSlug === normalizedPlanParam;
   });
-  const courses: Course[] = STATIC_PLAN_COURSES;
 
-  if (!plan) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center px-6 py-20">
-        <div className="max-w-3xl text-center">
-          <h1 className="text-3xl font-bold mb-4">Plan not found</h1>
-          <p className="text-slate-600">
-            We could not find that plan. Please go back and select a valid plan.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (!plan) return notFound();
+
+  const courses: Course[] = STATIC_PLAN_COURSES;
 
   return (
     <section className="py-16 md:py-24 px-6 bg-slate-50">

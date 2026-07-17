@@ -184,7 +184,7 @@ export default async function CoursePage({ params }: Props) {
             <div className="mt-10">
 
               <PlanSelector
-                plans={course.plans}
+                courseSlug={course.slug.current}
               />
 
             </div>

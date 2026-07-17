@@ -67,7 +67,7 @@ export function PricingCard({
         <div className="flex items-center justify-between mb-4">
           <StarRating rating={bundle.rating ?? 5} showNumber size={16} />
           <span className="font-bold text-slate-900 text-lg">
-            ${bundle.price}
+            ₹{bundle.price.toLocaleString("en-IN")}
           </span>
         </div>
 

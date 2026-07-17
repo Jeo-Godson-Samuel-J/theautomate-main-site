@@ -87,3 +87,49 @@ features
 
 }
 `;
+
+/**
+ * Fetches a course's title + the full plan shape required by PricingCard.
+ * Uses the same plans[] reference array already on the course document.
+ */
+export const COURSE_PLANS_QUERY = `
+*[_type=="course" && slug.current==$slug][0]{
+
+_id,
+
+title,
+
+"slug": slug.current,
+
+plans[]->{
+
+_id,
+
+title,
+
+badge,
+
+price,
+
+rating,
+
+reviewCount,
+
+duration,
+
+batchOptions,
+
+coverImage,
+
+features[]{
+
+title,
+
+included
+
+}
+
+}
+
+}
+`;

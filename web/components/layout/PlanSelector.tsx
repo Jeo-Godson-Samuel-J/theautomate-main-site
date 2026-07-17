@@ -1,60 +1,27 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { Plan } from "@/lib/types/course";
+import { ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
-    plans: Plan[];
+  /** slug.current of the course — used to build the /course-plans/[slug] URL */
+  courseSlug: string;
 }
 
-export default function PlanSelector({ plans }: Props) {
-
-    const [open, setOpen] = useState(false);
-
-    return (
-
-        <div>
-
-            <button
-                onClick={() => setOpen(!open)}
-                className="w-full rounded-xl bg-midnightBlue text-white py-4 font-semibold"
-            >
-
-                Add to Cart
-
-            </button>
-
-            {open && (
-
-                <div className="mt-5 space-y-4">
-
-                    {plans.map(plan => (
-
-                        <Link
-                            key={plan._id}
-                            href={`/checkout?plan=${plan._id}`}
-                            className="block rounded-xl border p-4 hover:bg-blue-50 transition"
-                        >
-
-                            <div className="font-bold">
-                                {plan.title}
-                            </div>
-
-                            <div className="text-sm text-gray-500">
-                                ${plan.price}
-                            </div>
-
-                        </Link>
-
-                    ))}
-
-                </div>
-
-            )}
-
-        </div>
-
-    );
-
+/**
+ * Replaces the old inline plan-dropdown approach.
+ * Clicking "Add to Cart" navigates to /course-plans/[slug] where the full
+ * plan selection UI (PricingCard grid) is shown.
+ */
+export default function PlanSelector({ courseSlug }: Props) {
+  return (
+    <Button
+      asChild
+      className="w-full rounded-xl bg-[#0A3D62] hover:bg-[#0166A7] text-white py-6 font-semibold flex items-center justify-center gap-2 transition-colors duration-200"
+    >
+      <Link href={`/course-plans/${courseSlug}`}>
+        <ShoppingCart size={20} />
+        Add to Cart
+      </Link>
+    </Button>
+  );
 }
