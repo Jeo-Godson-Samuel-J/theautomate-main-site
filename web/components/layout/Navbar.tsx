@@ -25,7 +25,9 @@ export default function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
+  const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
   const trail1Ref = useRef<HTMLSpanElement>(null);
@@ -34,7 +36,16 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 10);
+      
+      if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
     };
 
     handleScroll();
@@ -108,16 +119,19 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed inset-x-0 top-0 z-[60] px-3 pt-3 sm:px-4 md:px-6 md:pt-4">
-        <div
-          className={`mx-auto flex h-[72px] w-[min(92vw,1480px)] items-center rounded-full border border-white/20 px-3 shadow-[0_10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl transition-all duration-300 md:h-[78px] md:px-8 ${
-            scrolled
-              ? "mt-2 bg-white/22 shadow-[0_12px_45px_rgba(0,0,0,0.12)]"
-              : "mt-3 bg-white/12"
-          }`}
-        >
-          <div className="relative flex w-full items-center">
-            <Link href="/" className="z-50 flex items-center pr-4">
+      <nav className="fixed inset-x-0 top-0 z-[60] pt-3 sm:px-4 md:px-6 md:pt-4 pointer-events-none flex justify-center">
+        <div className="mx-auto flex w-full max-w-[1480px] px-3 sm:px-0 justify-start pointer-events-auto">
+          <div
+            className={`flex h-[72px] items-center rounded-full border border-white/20 px-3 shadow-[0_10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[78px] md:px-8 overflow-hidden ${
+              scrolled
+                ? "mt-2 bg-white/22 shadow-[0_12px_45px_rgba(0,0,0,0.12)]"
+                : "mt-3 bg-white/12"
+            } ${
+              isVisible ? "w-[min(92vw,1480px)] sm:w-full" : "w-[160px] md:w-[230px]"
+            }`}
+          >
+          <div className="relative flex w-full items-center justify-between">
+            <Link href="/" className="z-50 flex shrink-0 items-center pr-4">
               <Image
                 src="/logo.svg"
                 alt="Auto-Mate"
@@ -148,10 +162,11 @@ export default function Navbar() {
             </svg>
 
             <div
-              ref={navRef}
-              className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full p-1 md:flex"
-              onMouseLeave={() => moveIndicator(defaultIndex)}
+              className={`absolute left-1/2 -translate-x-1/2 items-center gap-2 rounded-full p-1 hidden md:flex transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isVisible ? "opacity-100 scale-100" : "opacity-0 scale-50 -translate-x-[150%] pointer-events-none"
+              }`}
             >
+              <div ref={navRef} className="flex items-center gap-2" onMouseLeave={() => moveIndicator(defaultIndex)}>
               {/* Gooey Background Container - ONLY for blobs */}
               <div 
                 className="pointer-events-none absolute inset-0 z-0" 
@@ -177,9 +192,12 @@ export default function Navbar() {
                   {link.name}
                 </Link>
               ))}
+              </div>
             </div>
 
-            <div className="ml-auto flex items-center gap-2 md:gap-3">
+            <div className={`ml-auto flex shrink-0 items-center gap-2 md:gap-3 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isVisible ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-20 scale-75 pointer-events-none"
+            }`}>
               <Button
                 asChild
                 className="rounded-full bg-[#0166A7] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)] transition-all duration-250 hover:scale-[1.03] hover:brightness-110"
@@ -195,6 +213,7 @@ export default function Navbar() {
               </button>
             </div>
           </div>
+        </div>
         </div>
       </nav>
 

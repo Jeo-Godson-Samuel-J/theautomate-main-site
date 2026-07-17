@@ -36,13 +36,13 @@ interface Props {
    Constants
 ───────────────────────────────────────── */
 const AUTOPLAY_MS = 3000;
-const DURATION    = 0.55;
-const EASE        = "power2.inOut";
+const DURATION = 0.55;
+const EASE = "power2.inOut";
 
 /** Cards visible at once per breakpoint */
 function getVisible(): number {
   if (typeof window === "undefined") return 3;
-  if (window.innerWidth < 640)  return 1;
+  if (window.innerWidth < 640) return 1;
   if (window.innerWidth < 1024) return 2;
   return 3;
 }
@@ -148,17 +148,17 @@ const CourseCard = React.memo(function CourseCard({ c }: { c: CourseCardData }) 
 export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
   const total = courses.length;
 
-  const [visible,     setVisible]     = useState(getVisible);
+  const [visible, setVisible] = useState(getVisible);
   const [activeIndex, setActiveIndex] = useState(0);  // leftmost visible card
 
-  const trackRef   = useRef<HTMLDivElement>(null);
-  const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const animating  = useRef(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const animating = useRef(false);
 
   /* true when more cards exist than the viewport can show at once */
   const canScroll = total > visible;
   /* last valid starting index: last group of `visible` cards */
-  const maxIndex  = Math.max(0, total - visible);
+  const maxIndex = Math.max(0, total - visible);
 
   /* ── sync visible count on resize ── */
   useEffect(() => {
@@ -224,7 +224,7 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
     const clamped = Math.min(activeIndex, Math.max(0, total - visible));
     gsap.set(trackRef.current, { x: `${-(clamped * (100 / visible))}%` });
     setActiveIndex(clamped);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   /* ── manual navigation ── */
@@ -245,7 +245,7 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
         {/* Heading */}
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
-            Our <span className="text-[#0166A7]">Featured</span> Courses
+            Our Featured <span className="text-[#0166A7]">Courses</span>
           </h2>
           <p className="mt-4 text-slate-500 text-base max-w-xl mx-auto leading-relaxed">
             Hands-on, industry-focused courses designed to take you from
@@ -261,7 +261,7 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
           <div
             ref={trackRef}
             className="flex will-change-transform"
-            /* Each child is (100/visible)% wide; track natural width = total*(100/visible)% */
+          /* Each child is (100/visible)% wide; track natural width = total*(100/visible)% */
           >
             {courses.map((c) => (
               <div
@@ -306,7 +306,7 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
                   aria-label={`Go to slide ${i + 1}`}
                   className="transition-all duration-300 rounded-full"
                   style={{
-                    width:  i === activeIndex ? "28px" : "8px",
+                    width: i === activeIndex ? "28px" : "8px",
                     height: "8px",
                     background: i === activeIndex ? "#0166A7" : "#cbd5e1",
                   }}

@@ -133,7 +133,7 @@ export default function Story() {
 
   return (
     <div id="about-story-section" className="px-6 py-14 md:py-20 md:px-16">
-      <h2 className="text-4xl font-bold text-center mb-12 text-black">
+      <h2 className="text-4xl font-bold text-center mb-12 text-[#0166A7]">
         Our Plans
       </h2>
       <div className="relative max-w-7xl mx-auto">
@@ -145,6 +145,7 @@ export default function Story() {
               side={index % 2 === 1 ? "right" : "left"}
               brief={item}
               plan={plans[index]}
+              imageSrc={index === 0 ? "/images/person.jpeg" : undefined}
             />
           ))}
         </div>
@@ -157,6 +158,7 @@ function TimelineItem({
   side,
   brief,
   plan,
+  imageSrc,
 }: {
   side: "left" | "right";
   brief: {
@@ -168,10 +170,13 @@ function TimelineItem({
     }[];
   };
   plan?: Plan;
+  imageSrc?: string;
 }) {
-  const imageUrl = plan?.coverImage
-    ? urlFor(plan.coverImage).width(1200).url()
-    : "/placeholder.png";
+  const imageUrl = imageSrc
+    ? imageSrc
+    : plan?.coverImage
+      ? urlFor(plan.coverImage).width(1200).url()
+      : "/placeholder.png";
 
   return (
     <motion.div
