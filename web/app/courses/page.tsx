@@ -1,5 +1,6 @@
 import CourseCard from "@/components/layout/CourseCard";
 import { getCourses } from "@/lib/services/course.service";
+import { urlFor } from "@/lib/sanity.client";
 
 export default async function CoursesPage() {
   const courses = await getCourses();
@@ -18,19 +19,18 @@ export default async function CoursesPage() {
           {courses.map((course) => (
             <CourseCard
               key={course._id}
-              // COURSES_QUERY returns slug as the raw Sanity object { current: string }.
-              // Extract .current here — CourseCard expects a flat string.
-              slug={course.slug.current}
+              slug={course.slug}
               title={course.title}
-              image={course.thumbnail ?? "/placeholder.png"}
-              learners={course.students ?? "0+"}
-              duration={course.duration ?? "—"}
-              description={course.shortDescription ?? ""}
+              heroImageUrl={
+                course.heroImage
+                  ? urlFor(course.heroImage).width(400).url()
+                  : "/placeholder.png"
+              }
+              tagline={course.tagline}
               rating={course.rating}
-              instructorName={course.instructorName}
-              instructorImage={course.instructorImage}
-              price={course.price}
-              modules={course.modules}
+              duration={course.duration}
+              hours={course.hours}
+              students={course.students}
             />
           ))}
         </div>

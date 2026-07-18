@@ -18,8 +18,9 @@ export interface CourseCardData {
   _id: string;
   title: string;
   slug: string;
-  thumbnail: string;
-  shortDescription: string;
+  /** Pre-resolved URL from urlFor(image) — set by the server component */
+  image: string;
+  tagline: string;
   rating: number;
   students: number;
   duration: string;
@@ -59,11 +60,11 @@ const CourseCard = React.memo(function CourseCard({ c }: { c: CourseCardData }) 
         hover:shadow-[0_8px_32px_rgba(1,102,167,0.15)]
         transition-shadow duration-300 select-none"
     >
-      {/* Thumbnail */}
+      {/* Hero image */}
       <div className="relative w-full aspect-[16/10] overflow-hidden flex-shrink-0">
-        {c.thumbnail ? (
+        {c.image ? (
           <Image
-            src={c.thumbnail}
+            src={c.image}
             alt={c.title}
             fill
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
@@ -87,9 +88,9 @@ const CourseCard = React.memo(function CourseCard({ c }: { c: CourseCardData }) 
         <h3 className="text-lg font-bold text-slate-900 leading-snug line-clamp-2">
           {c.title}
         </h3>
-        {c.shortDescription && (
+        {c.tagline && (
           <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">
-            {c.shortDescription}
+            {c.tagline}
           </p>
         )}
 
@@ -99,6 +100,7 @@ const CourseCard = React.memo(function CourseCard({ c }: { c: CourseCardData }) 
               <Clock3 size={11} /> {c.duration}
             </span>
           )}
+
           {c.students > 0 && (
             <span className="flex items-center gap-1.5 text-xs border border-slate-200 rounded-full px-3 py-1 text-slate-600">
               <Users size={11} /> {c.students.toLocaleString()} students

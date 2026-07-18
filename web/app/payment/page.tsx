@@ -19,6 +19,10 @@ interface SearchParams {
   name?: string;
   email?: string;
   phone?: string;
+  // Aliases used when navigating directly with explicit param names
+  planId?: string;
+  planName?: string;
+  planPrice?: string;
 }
 
 interface Props {
@@ -48,9 +52,10 @@ export default async function PaymentPage({ searchParams }: Props) {
   const params = await searchParams;
 
   const courseSlug  = params.course      ?? "";
-  const bundleId    = params.bundleId    ?? "";
-  const bundleTitle = params.bundleTitle ?? "";
-  const amount      = Number(params.amount ?? 0);
+  // Accept both bundleId (PricingCard) and planId (direct navigation)
+  const bundleId    = params.bundleId    ?? params.planId    ?? "";
+  const bundleTitle = params.bundleTitle ?? params.planName  ?? "";
+  const amount      = Number(params.amount ?? params.planPrice ?? 0);
   const batch       = params.batch       ?? "weekend";
   const name        = params.name        ?? "";
   const email       = params.email       ?? "";

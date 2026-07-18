@@ -12,6 +12,8 @@ interface PricingCardProps {
   courseSlug?: string;
   buttonLabel?: string;
   buttonHref?: string;
+  /** When true, shows a "Recommended" badge on the card */
+  recommended?: boolean;
 }
 
 export function PricingCard({
@@ -19,6 +21,7 @@ export function PricingCard({
   courseSlug,
   buttonLabel,
   buttonHref,
+  recommended = false,
 }: PricingCardProps) {
   const imageUrl = bundle.coverImage
     ? urlFor(bundle.coverImage).width(800).url()
@@ -47,9 +50,18 @@ export function PricingCard({
   const actionLabel = buttonLabel ?? "Choose Plan";
 
   return (
-    <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] overflow-hidden flex flex-col border border-slate-100 transition-all duration-300 group">
+    <div className={`bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] overflow-hidden flex flex-col border transition-all duration-300 group relative
+      ${recommended ? "border-[#0166A7] ring-2 ring-[#0166A7]/30" : "border-slate-100"}`}>
+
+      {/* Recommended banner — only shown when flagged */}
+      {recommended && (
+        <div className="absolute top-0 left-0 right-0 z-10 bg-[#0166A7] text-white text-xs font-bold uppercase tracking-widest text-center py-1.5">
+          ⭐ Recommended for this course
+        </div>
+      )}
+
       {/* Image & Badge */}
-      <div className="h-48 md:h-56 relative overflow-hidden">
+      <div className={`h-48 md:h-56 relative overflow-hidden ${recommended ? "mt-8" : ""}`}>
         <Image
           src={imageUrl}
           alt={bundle.title}

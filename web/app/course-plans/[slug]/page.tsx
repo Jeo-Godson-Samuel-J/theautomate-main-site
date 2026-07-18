@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCoursePlans } from "@/lib/services/course.service";
+import { getPlans } from "@/lib/services/plan.services";
 import { PricingCard } from "@/components/ui/PricingCard";
 
 interface Props {
@@ -9,11 +10,19 @@ interface Props {
 export default async function CoursePlansPage({ params }: Props) {
   const { slug } = await params;
 
-  const data = await getCoursePlans(slug);
+  // Fetch ALL plans + course info (for title + recommended bundle IDs) in parallel
+  const [allPlans, courseData] = await Promise.all([
+    getPlans().catch(() => []),
+    getCoursePlans(slug).catch(() => null),
+  ]);
 
-  if (!data) return notFound();
+  // Course must exist — 404 if not found
+  if (!courseData) return notFound();
 
-  const { title, plans } = data;
+  // Collect the IDs of plans the course recommends via bundles[]
+  const recommendedIds = new Set(
+    (courseData.bundles ?? []).map((b) => b._id)
+  );
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -25,35 +34,30 @@ export default async function CoursePlansPage({ params }: Props) {
             Choose Your Plan
           </p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight">
-            {title}
+            {courseData.title}
           </h1>
           <p className="mt-4 text-slate-500 text-base max-w-xl mx-auto">
-            Select the plan that works best for you. All plans include
-            full access to the course content.
+            All plans include full access to the course content. Choose the
+            one that fits your goals.
           </p>
         </div>
 
-        {/* Plan cards — reuses existing PricingCard exactly as-is */}
-        {plans && plans.length > 0 ? (
+        {allPlans.length === 0 ? (
+          <p className="text-center text-slate-500 py-20 text-lg">
+            No plans available yet — please check back soon.
+          </p>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {plans.map((plan) => (
+            {allPlans.map((plan) => (
               <PricingCard
                 key={plan._id}
                 bundle={plan}
                 courseSlug={slug}
-                /*
-                  PricingCard already builds the /payment URL internally when
-                  courseSlug is provided:
-                  /payment?course=<slug>&bundleId=<planId>&bundleTitle=...&amount=...
-                */
                 buttonLabel="Buy Plan"
+                recommended={recommendedIds.has(plan._id)}
               />
             ))}
           </div>
-        ) : (
-          <p className="text-center text-slate-500 py-20 text-lg">
-            No plans are assigned to this course yet. Please check back soon.
-          </p>
         )}
 
       </section>

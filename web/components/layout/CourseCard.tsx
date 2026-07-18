@@ -1,122 +1,104 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Star, BookOpen, Clock3, Users } from "lucide-react";
+import { Star, Clock3, Users, Timer, ArrowRight } from "lucide-react";
 
-/**
- * CourseCard receives individual flat props — NOT a Course object.
- *
- * Every call site (CourseGrid, CoursesPage) already strips the Sanity
- * slug object to a plain string before passing it here, so this
- * component must accept `slug: string`, not `slug: { current: string }`.
- */
 interface CourseCardProps {
   slug: string;
   title: string;
-  image: string;
-  /** Number of enrolled learners, e.g. "4,200+" or 4200 */
-  learners: string | number;
-  /** Course duration, e.g. "36" hours or "6 Weeks" */
-  duration: string | number;
-  description: string;
+  tagline?: string;
+  /** Fully-resolved image URL — already processed by urlFor() at the call site */
+  heroImageUrl: string;
   rating?: number;
-  instructorName?: string;
-  /** Fully-resolved URL string — already processed by urlFor() at the call site */
-  instructorImage?: string;
-  price?: number;
-  modules?: number;
+  duration?: string;
+  hours?: number;
+  students?: number;
 }
 
 export default function CourseCard({
   slug,
   title,
-  image,
-  learners,
-  duration,
-  description,
+  tagline,
+  heroImageUrl,
   rating,
-  instructorName,
-  instructorImage,
-  price,
-  modules,
+  duration,
+  hours,
+  students,
 }: CourseCardProps) {
   return (
     <Link
       href={`/courses/${slug}`}
-      className="group bg-white rounded-3xl border overflow-hidden hover:shadow-xl duration-300 flex flex-col"
+      className="
+        group flex flex-col bg-white rounded-[28px]
+        border border-slate-100
+        shadow-[0_2px_16px_rgba(0,0,0,0.06)]
+        hover:shadow-[0_8px_32px_rgba(1,102,167,0.14)]
+        hover:-translate-y-1
+        transition-all duration-300
+        overflow-hidden
+      "
     >
-      {/* Thumbnail */}
-      <div className="relative aspect-[16/10]">
+      {/* Hero image */}
+      <div className="relative aspect-[16/10] overflow-hidden">
         <Image
-          src={image}
+          src={heroImageUrl}
           alt={title}
           fill
-          sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover group-hover:scale-105 duration-300"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
 
+        {/* Rating badge */}
         {rating != null && (
-          <div className="absolute top-4 left-4 bg-white rounded-full px-3 py-1 flex items-center gap-2 shadow">
-            <Star size={16} className="fill-yellow-400 text-yellow-400" />
-            <span className="font-semibold text-sm">{rating}</span>
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
+            <Star size={13} className="fill-yellow-400 text-yellow-400" />
+            <span className="text-xs font-bold text-slate-800">{rating}</span>
           </div>
         )}
       </div>
 
       {/* Body */}
-      <div className="p-6 flex flex-col flex-1">
-        <h3 className="text-xl font-bold leading-tight line-clamp-2">
+      <div className="flex flex-col flex-1 p-6 gap-3">
+        <h3 className="text-lg font-extrabold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#0166A7] transition-colors duration-200">
           {title}
         </h3>
 
-        {description && (
-          <p className="mt-2 text-sm text-slate-500 line-clamp-2">
-            {description}
+        {tagline && (
+          <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">
+            {tagline}
           </p>
         )}
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {modules != null && (
-            <div className="flex items-center gap-1.5 border rounded-full px-3 py-1 text-xs">
-              <BookOpen size={13} />
-              {modules} Modules
-            </div>
-          )}
-          <div className="flex items-center gap-1.5 border rounded-full px-3 py-1 text-xs">
-            <Clock3 size={13} />
-            {duration}{typeof duration === "number" ? " hrs" : ""}
-          </div>
-          <div className="flex items-center gap-1.5 border rounded-full px-3 py-1 text-xs">
-            <Users size={13} />
-            {learners}{typeof learners === "number" ? " students" : ""}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-between items-center mt-auto pt-6">
-          {instructorName && (
-            <div className="flex items-center gap-2">
-              {instructorImage ? (
-                <Image
-                  src={instructorImage}
-                  alt={instructorName}
-                  width={36}
-                  height={36}
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">
-                  {instructorName.charAt(0)}
-                </div>
-              )}
-              <span className="text-sm font-semibold">{instructorName}</span>
-            </div>
-          )}
-
-          {price != null && (
-            <span className="text-2xl font-bold text-[#0166A7]">
-              ₹{price.toLocaleString("en-IN")}
+        {/* Stats row */}
+        <div className="flex flex-wrap gap-2 mt-auto pt-3">
+          {duration && (
+            <span className="flex items-center gap-1.5 text-xs font-medium border border-slate-200 rounded-full px-3 py-1 text-slate-600">
+              <Clock3 size={11} />
+              {duration}
             </span>
           )}
+          {hours != null && (
+            <span className="flex items-center gap-1.5 text-xs font-medium border border-slate-200 rounded-full px-3 py-1 text-slate-600">
+              <Timer size={11} />
+              {hours}h
+            </span>
+          )}
+          {students != null && (
+            <span className="flex items-center gap-1.5 text-xs font-medium border border-slate-200 rounded-full px-3 py-1 text-slate-600">
+              <Users size={11} />
+              {students.toLocaleString()} students
+            </span>
+          )}
+        </div>
+
+        {/* CTA row */}
+        <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-1">
+          <span className="text-sm font-semibold text-[#0166A7] group-hover:underline">
+            View Course
+          </span>
+          <ArrowRight
+            size={16}
+            className="text-[#0166A7] group-hover:translate-x-1 transition-transform duration-200"
+          />
         </div>
       </div>
     </Link>

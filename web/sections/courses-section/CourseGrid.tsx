@@ -6,13 +6,13 @@ import CourseCard from "@/components/layout/CourseCard";
 interface CourseItem {
   _id: string;
   title: string;
+  /** Pre-resolved image URL from urlFor(heroImage) */
   image?: string;
-  students?: string | number;
-  hours?: string | number;
+  students?: number;
+  hours?: number;
+  duration?: string;
   tagline?: string;
-  instructorName?: string;
-  instructorImage?: string;
-  price?: number;
+  rating?: number;
   slug: string;
 }
 
@@ -47,13 +47,12 @@ export default function CourseGrid({ courses }: CourseGridProps) {
               key={course._id}
               slug={course.slug}
               title={course.title}
-              image={course.image ?? "/placeholder.png"}
-              learners={course.students ?? "0+"}
-              duration={course.hours ?? "0+"}
-              description={course.tagline ?? ""}
-              instructorName={course.instructorName}
-              instructorImage={course.instructorImage}
-              price={course.price}
+              heroImageUrl={course.image ?? "/placeholder.png"}
+              tagline={course.tagline}
+              rating={course.rating}
+              duration={course.duration}
+              hours={course.hours}
+              students={course.students}
             />
           ))}
         </div>

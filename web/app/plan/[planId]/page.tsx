@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { getPlans } from "@/lib/services/plan.services";
 import CourseGrid from "@/sections/courses-section/CourseGrid";
 import { Plan } from "@/lib/types/plan";
-import { Course } from "@/lib/types/course";
 
 interface PlanPageProps {
   params: Promise<{
@@ -10,47 +9,41 @@ interface PlanPageProps {
   }>;
 }
 
-const STATIC_PLAN_COURSES: Course[] = [
+/**
+ * Static placeholder courses shown under a plan.
+ * TODO: Replace with a Sanity query that finds courses referencing this plan.
+ */
+const STATIC_PLAN_COURSES = [
   {
     _id: "static-playwright",
     title: "Playwright Automation",
     tagline: "Master modern end-to-end testing with Playwright.",
     image: "/placeholder.png",
-    students: "5,000+",
-    hours: "40",
+    students: 5000,
+    hours: 40,
     slug: "playwright",
-    instructorName: "Auto-Mate Academy",
-    instructorImage: undefined,
-    price: 14999,
   },
   {
     _id: "static-genai",
     title: "GenAI for QA Automation",
     tagline: "Leverage AI to automate testing and generate smarter workflows.",
     image: "/placeholder.png",
-    students: "3,500+",
-    hours: "32",
+    students: 3500,
+    hours: 32,
     slug: "genai-qa",
-    instructorName: "Auto-Mate Academy",
-    instructorImage: undefined,
-    price: 15999,
   },
   {
     _id: "static-selenium",
     title: "Selenium Automation",
     tagline: "Build robust browser automation with Selenium and JavaScript.",
     image: "/placeholder.png",
-    students: "4,200+",
-    hours: "36",
+    students: 4200,
+    hours: 36,
     slug: "selenium",
-    instructorName: "Auto-Mate Academy",
-    instructorImage: undefined,
-    price: 13999,
   },
 ];
 
 export default async function PlanPage({ params }: PlanPageProps) {
-  // Next.js 15: params is a Promise — must be awaited.
   const { planId: planParam } = await params;
 
   const plans: Plan[] = await getPlans().catch(() => []);
@@ -65,8 +58,6 @@ export default async function PlanPage({ params }: PlanPageProps) {
   });
 
   if (!plan) return notFound();
-
-  const courses: Course[] = STATIC_PLAN_COURSES;
 
   return (
     <section className="py-16 md:py-24 px-6 bg-slate-50">
@@ -83,7 +74,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
           </p>
         </div>
 
-        <CourseGrid courses={courses} />
+        <CourseGrid courses={STATIC_PLAN_COURSES} />
       </div>
     </section>
   );

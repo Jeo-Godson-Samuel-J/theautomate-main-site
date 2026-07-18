@@ -1,58 +1,69 @@
-import { PortableTextBlock } from "@portabletext/types";
+import { Plan } from "./plan";
+
+export interface KeyConcept {
+  title: string;
+  icon: any; // Sanity image object
+  description: string;
+}
+
+export interface CurriculumModule {
+  subheading: string;
+  points: string[];
+  summary: string;
+}
+
+export interface Highlight {
+  icon: any; // Sanity image object
+  title: string;
+}
 
 export interface Course {
   _id: string;
 
   title: string;
 
-  slug: {
-    current: string;
-  };
+  /**
+   * Both COURSES_QUERY and COURSE_BY_SLUG_QUERY alias slug to a flat string:
+   *   "slug": slug.current
+   * Access as a plain string everywhere — no .current needed.
+   */
+  slug: string;
 
-  category: string;
+  tagline: string;
 
-  thumbnail: string;
-
-  heroImage: string;
-
-  shortDescription: string;
+  heroImage: any; // Sanity image object — use urlFor() to resolve
 
   rating: number;
 
   students: number;
 
-  modules: number;
+  hours: number;
 
   duration: string;
 
   price: number;
 
+  level: string;
+
   instructorName: string;
 
-  instructorImage: string;
+  instructorImage: any; // Sanity image object — use urlFor() to resolve
 
-  about: PortableTextBlock[];
+  description: any[]; // Portable Text blocks
 
-  whatYouWillLearn: string[];
+  keyConcepts: KeyConcept[];
 
-  prerequisites: string[];
+  whoFor: string[];
 
-  whoIsThisCourseFor: string[];
+  curriculum: CurriculumModule[];
 
-  plans: Plan[];
-}
+  outcomes: string[];
 
-export interface Plan {
-  _id: string;
+  highlights: Highlight[];
 
-  title: string;
+  projects: number;
 
-  price: number;
+  batchDetails: string[];
 
-  badge: string;
-
-  features: {
-    text: string;
-    included: boolean;
-  }[];
+  bundles: Plan[];
 }
