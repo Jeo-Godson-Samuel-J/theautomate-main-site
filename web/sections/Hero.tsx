@@ -7,7 +7,7 @@ import FloatingStudents from "@/components/ui/FloatingStudents";
 
 export default function Hero() {
   return (
-    <section className="relative pt-24 md:pt-36 pb-16 md:pb-20 bg-white overflow-hidden">
+    <section className="relative pt-24 md:pt- pb-16 md:pb-20 bg-white overflow-hidden">
 
       {/*
         ── Content + floating images share the same relative container ──
@@ -22,12 +22,6 @@ export default function Hero() {
 
         {/* ── Centered hero text ── */}
         <div className="relative z-10 flex flex-col items-center text-center">
-
-          {/* Badge */}
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#0166A7]/20 bg-[#EAF6FF] px-4 py-1.5 text-xs font-semibold text-[#0166A7] mb-8 tracking-wide uppercase">
-            🎓 Trusted by 1000+ students
-          </span>
-
           {/* Heading */}
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-[#0F172A] leading-[1.1]">
             Learn and Grow with

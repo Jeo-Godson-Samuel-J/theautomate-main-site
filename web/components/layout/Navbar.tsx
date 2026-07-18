@@ -166,7 +166,7 @@ export default function Navbar() {
                 isVisible ? "opacity-100 scale-100" : "opacity-0 scale-50 -translate-x-[150%] pointer-events-none"
               }`}
             >
-              <div ref={navRef} className="flex items-center gap-2" onMouseLeave={() => moveIndicator(defaultIndex)}>
+              <div ref={navRef} className="relative flex items-center gap-2" onMouseLeave={() => moveIndicator(defaultIndex)}>
               {/* Gooey Background Container - ONLY for blobs */}
               <div 
                 className="pointer-events-none absolute inset-0 z-0" 
