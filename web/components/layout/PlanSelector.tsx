@@ -9,7 +9,7 @@ interface Props {
 
 /**
  * Replaces the old inline plan-dropdown approach.
- * Clicking "Add to Cart" navigates to /course-plans/[slug] where the full
+ * Clicking "View Plans" navigates to /course-plans/[slug] where the full
  * plan selection UI (PricingCard grid) is shown.
  */
 export default function PlanSelector({ courseSlug }: Props) {
@@ -20,7 +20,7 @@ export default function PlanSelector({ courseSlug }: Props) {
     >
       <Link href={`/course-plans/${courseSlug}`}>
         <ShoppingCart size={20} />
-        Add to Cart
+        View Plans
       </Link>
     </Button>
   );

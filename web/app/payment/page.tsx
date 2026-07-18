@@ -30,7 +30,7 @@ interface Props {
 }
 
 const COURSE_TITLE_QUERY = `
-  *[_type=="course" && slug.current==$slug][0]{ title }
+  *[_type=="courseDetails" && slug.current==$slug][0]{ title }
 `;
 
 const PLAN_QUERY = `
@@ -51,20 +51,24 @@ const PLAN_QUERY = `
 export default async function PaymentPage({ searchParams }: Props) {
   const params = await searchParams;
 
-  const courseSlug  = params.course      ?? "";
+  const courseSlug = params.course ?? "";
   // Accept both bundleId (PricingCard) and planId (direct navigation)
-  const bundleId    = params.bundleId    ?? params.planId    ?? "";
-  const bundleTitle = params.bundleTitle ?? params.planName  ?? "";
-  const amount      = Number(params.amount ?? params.planPrice ?? 0);
-  const batch       = params.batch       ?? "weekend";
-  const name        = params.name        ?? "";
-  const email       = params.email       ?? "";
-  const phone       = params.phone       ?? "";
+  const bundleId = params.bundleId ?? params.planId ?? "";
+  const bundleTitle = params.bundleTitle ?? params.planName ?? "";
+  const amount = Number(params.amount ?? params.planPrice ?? 0);
+  const batch = params.batch ?? "weekend";
+  const name = params.name ?? "";
+  const email = params.email ?? "";
+  const phone = params.phone ?? "";
 
   // Fetch course title + plan in parallel — both are optional graceful fallbacks
   const [courseData, planData] = await Promise.all([
     courseSlug
-      ? client.fetch<{ title: string } | null>(COURSE_TITLE_QUERY, { slug: courseSlug }).catch(() => null)
+      ? client
+          .fetch<{ title: string } | null>(COURSE_TITLE_QUERY, {
+            slug: courseSlug,
+          })
+          .catch(() => null)
       : Promise.resolve(null),
     bundleId
       ? client.fetch(PLAN_QUERY, { planId: bundleId }).catch(() => null)
@@ -73,12 +77,14 @@ export default async function PaymentPage({ searchParams }: Props) {
 
   const courseTitle = courseData?.title ?? courseSlug;
   const resolvedBundle = planData ?? null;
-  const resolvedPrice  = resolvedBundle?.price ?? amount;
-  const resolvedTitle  = resolvedBundle?.title ?? bundleTitle;
+  const resolvedPrice = resolvedBundle?.price ?? amount;
+  const resolvedTitle = resolvedBundle?.title ?? bundleTitle;
 
   return (
     <main className="min-h-screen bg-slate-50/30">
-      <Suspense fallback={<div className="p-20 text-center">Loading checkout…</div>}>
+      <Suspense
+        fallback={<div className="p-20 text-center">Loading checkout…</div>}
+      >
         <PaymentPageClient
           courseSlug={courseSlug}
           courseTitle={courseTitle}

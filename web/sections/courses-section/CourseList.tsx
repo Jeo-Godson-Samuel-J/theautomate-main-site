@@ -3,7 +3,7 @@ import CourseGrid from "./CourseGrid";
 export const revalidate = 60;
 
 const COURSES_QUERY = `
-*[_type == "course"]{
+*[_type == "courseDetails"]{
   _id,
   title,
   heroImage,

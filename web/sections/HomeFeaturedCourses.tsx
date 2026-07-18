@@ -19,6 +19,7 @@ export default async function HomeFeaturedCourses() {
     slug: c.slug,
     image: c.heroImage ? urlFor(c.heroImage).width(800).height(500).fit("crop").url() : "/placeholder.png",
     tagline: c.tagline ?? "",
+    hoverDescription: c.hoverDescription,
     rating: c.rating ?? 0,
     students: typeof c.students === "number" ? c.students : 0,
     duration: c.duration ?? "",
@@ -27,6 +28,11 @@ export default async function HomeFeaturedCourses() {
     instructorImage: c.instructorImage
       ? urlFor(c.instructorImage).width(80).height(80).fit("crop").url()
       : "",
+    level: c.level,
+    _updatedAt: c._updatedAt,
+    outcomes: c.outcomes,
+    keyConcepts: c.keyConcepts,
+    hours: c.hours,
   }));
 
   if (top3.length === 0) return null;

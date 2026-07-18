@@ -91,7 +91,7 @@ export default function Testimonials({ initialData }: TestimonialsProps) {
      centre copy and wraps back to it whenever it drifts outside bounds. */
   const tripled = useMemo(
     () => [...testimonials, ...testimonials, ...testimonials],
-    [testimonials]
+    [testimonials],
   );
 
   /* ── refs ── */
@@ -107,7 +107,8 @@ export default function Testimonials({ initialData }: TestimonialsProps) {
     if (!stripRef.current) return;
     const card = stripRef.current.children[0] as HTMLElement | undefined;
     if (!card) return;
-    const gap = parseInt(getComputedStyle(stripRef.current).gap || "0", 10) || 24;
+    const gap =
+      parseInt(getComputedStyle(stripRef.current).gap || "0", 10) || 24;
     cardWidthRef.current = card.offsetWidth;
     gapRef.current = gap;
 
@@ -174,7 +175,10 @@ export default function Testimonials({ initialData }: TestimonialsProps) {
       tlRef.current?.kill();
 
       const step = cardWidthRef.current + gapRef.current;
-      indexRef.current = Math.max(total, Math.min(total * 2 - 1, indexRef.current + dir));
+      indexRef.current = Math.max(
+        total,
+        Math.min(total * 2 - 1, indexRef.current + dir),
+      );
 
       gsap.to(stripRef.current, {
         x: -(indexRef.current * step),
@@ -186,7 +190,7 @@ export default function Testimonials({ initialData }: TestimonialsProps) {
         },
       });
     },
-    [total, buildTimeline]
+    [total, buildTimeline],
   );
 
   if (total === 0) return null;
@@ -194,13 +198,11 @@ export default function Testimonials({ initialData }: TestimonialsProps) {
   return (
     <section className="py-16 md:py-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-
         {/* ── Heading ── */}
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
-            What{" "}
-            <span className="text-[#0166A7]">Learners</span>{" "}
-            Say About The-Automate
+            What <span className="text-[#0166A7]">Learners</span> Say About{" "}
+            <span className="text-[#0166A7]">The-Automate</span>
           </h2>
           <p className="mt-4 text-slate-500 text-base max-w-xl mx-auto leading-relaxed">
             Real words from people across different industries who transformed
@@ -280,7 +282,6 @@ export default function Testimonials({ initialData }: TestimonialsProps) {
             </svg>
           </button>
         </div>
-
       </div>
     </section>
   );

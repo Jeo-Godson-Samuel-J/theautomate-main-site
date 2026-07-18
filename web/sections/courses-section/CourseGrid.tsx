@@ -12,8 +12,15 @@ interface CourseItem {
   hours?: number;
   duration?: string;
   tagline?: string;
+  hoverDescription?: string;
   rating?: number;
+  price?: number;
+  instructorName?: string;
   slug: string;
+  level?: string;
+  _updatedAt?: string;
+  outcomes?: string[];
+  keyConcepts?: { title: string }[];
 }
 
 interface CourseGridProps {
@@ -42,17 +49,25 @@ export default function CourseGrid({ courses }: CourseGridProps) {
     <section className="py-4 md:py-6">
       <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 xl:gap-10">
-          {visibleCourses.map((course) => (
+          {visibleCourses.map((course, index) => (
             <CourseCard
               key={course._id}
               slug={course.slug}
               title={course.title}
               heroImageUrl={course.image ?? "/placeholder.png"}
               tagline={course.tagline}
+              hoverDescription={course.hoverDescription}
               rating={course.rating}
               duration={course.duration}
               hours={course.hours}
               students={course.students}
+              price={course.price}
+              instructorName={course.instructorName}
+              level={course.level}
+              updatedAt={course._updatedAt}
+              outcomes={course.outcomes}
+              keyConcepts={course.keyConcepts}
+              index={index}
             />
           ))}
         </div>

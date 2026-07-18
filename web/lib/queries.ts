@@ -1,5 +1,5 @@
 export const POPULAR_COURSES_QUERY = `
-*[_type == "course" && (slug.current == "playwright-automation" || slug.current == "genai-for-qa-automation" || slug.current == "selenium-automation")] | order(
+*[_type == "courseDetails" && (slug.current == "playwright-automation" || slug.current == "genai-for-qa-automation" || slug.current == "selenium-automation")] | order(
   select(
     slug.current == "playwright" => 0,
     slug.current == "gen-ai" => 1,
@@ -17,7 +17,7 @@ export const POPULAR_COURSES_QUERY = `
 }[0...3]
 `;
 
-export const ALL_COURSES_QUERY = `*[_type == "course" && defined(slug.current)] | order(title asc) {
+export const ALL_COURSES_QUERY = `*[_type == "courseDetails" && defined(slug.current)] | order(title asc) {
   title,
   "slug": slug.current
 }`;

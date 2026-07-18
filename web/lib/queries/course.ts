@@ -1,14 +1,19 @@
 export const COURSES_QUERY = `
-*[_type=="course"] | order(displayOrder asc){
+*[_type=="courseDetails"] | order(displayOrder asc){
   _id,
   title,
   "slug": slug.current,
   tagline,
+  hoverDescription,
   rating,
   students,
   hours,
   duration,
   price,
+  level,
+  _updatedAt,
+  outcomes,
+  keyConcepts[]{ title },
   instructorImage,
   instructorName,
   heroImage
@@ -16,7 +21,7 @@ export const COURSES_QUERY = `
 `;
 
 export const COURSE_BY_SLUG_QUERY = `
-*[_type=="course" && slug.current==$slug][0]{
+*[_type=="courseDetails" && slug.current==$slug][0]{
   _id,
   title,
   "slug": slug.current,
@@ -72,7 +77,7 @@ export const COURSE_BY_SLUG_QUERY = `
  * Uses the bundles[] reference array on the course document.
  */
 export const COURSE_PLANS_QUERY = `
-*[_type=="course" && slug.current==$slug][0]{
+*[_type=="courseDetails" && slug.current==$slug][0]{
   _id,
   title,
   "slug": slug.current,

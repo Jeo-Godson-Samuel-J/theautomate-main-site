@@ -1,44 +1,94 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Star, Clock3, Users, Timer, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star, Check } from "lucide-react";
 
 interface CourseCardProps {
   slug: string;
   title: string;
   tagline?: string;
+  hoverDescription?: string;
+  instructorName?: string;
   /** Fully-resolved image URL — already processed by urlFor() at the call site */
   heroImageUrl: string;
   rating?: number;
+  students?: number;
+  price?: number;
   duration?: string;
   hours?: number;
-  students?: number;
+  index?: number;
 }
 
 export default function CourseCard({
   slug,
   title,
   tagline,
+  instructorName,
   heroImageUrl,
   rating,
-  duration,
-  hours,
   students,
+  price,
+  level,
+  updatedAt,
+  outcomes,
+  hours,
+  keyConcepts,
+  index,
+  hoverDescription,
 }: CourseCardProps) {
+  const router = useRouter();
+
+  // The user requested to not have the instructor's name below the title.
+  const subtitle = tagline;
+
+  // Use hoverDescription if provided, else fallback to tagline for the popup
+  const popupDescription = hoverDescription || tagline;
+
+  const isRightEdge = index !== undefined && (index + 1) % 3 === 0;
+
+  // Format the updated date (e.g. "June 2026")
+  let formattedDate = "";
+  if (updatedAt) {
+    try {
+      formattedDate = new Date(updatedAt).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
+    } catch (e) {
+      // fallback if invalid
+    }
+  }
+
+  // Fallback for outcomes if empty
+  const displayOutcomes = (outcomes && outcomes.length > 0)
+    ? outcomes
+    : (keyConcepts && keyConcepts.length > 0)
+      ? keyConcepts.map(kc => kc.title)
+      : [
+        "Hands-on project experience",
+        "Comprehensive industry-standard curriculum",
+        "Learn from seasoned professionals"
+      ];
+
+  const displayLevel = level || "Beginner";
+  const displayHours = hours || 12;
+
   return (
     <Link
       href={`/courses/${slug}`}
       className="
-        group flex flex-col bg-white rounded-[28px]
-        border border-slate-100
-        shadow-[0_2px_16px_rgba(0,0,0,0.06)]
-        hover:shadow-[0_8px_32px_rgba(1,102,167,0.14)]
-        hover:-translate-y-1
+        group relative flex flex-col bg-white rounded-[24px]
+        border border-slate-200
+        hover:shadow-xl
         transition-all duration-300
-        overflow-hidden
+        p-4
+        h-full
       "
     >
       {/* Hero image */}
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[16px]">
         <Image
           src={heroImageUrl}
           alt={title}
@@ -46,60 +96,116 @@ export default function CourseCard({
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
-
-        {/* Rating badge */}
-        {rating != null && (
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
-            <Star size={13} className="fill-yellow-400 text-yellow-400" />
-            <span className="text-xs font-bold text-slate-800">{rating}</span>
-          </div>
-        )}
       </div>
 
       {/* Body */}
-      <div className="flex flex-col flex-1 p-6 gap-3">
-        <h3 className="text-lg font-extrabold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#0166A7] transition-colors duration-200">
+      <div className="flex flex-col flex-1 pt-5 pb-2 px-1 gap-1">
+        <h3 className="text-xl font-bold text-slate-800 leading-snug">
           {title}
         </h3>
 
-        {tagline && (
-          <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">
-            {tagline}
+        {subtitle && (
+          <p className="text-[15px] text-slate-500 mt-1">
+            {subtitle}
           </p>
         )}
 
-        {/* Stats row */}
-        <div className="flex flex-wrap gap-2 mt-auto pt-3">
-          {duration && (
-            <span className="flex items-center gap-1.5 text-xs font-medium border border-slate-200 rounded-full px-3 py-1 text-slate-600">
-              <Clock3 size={11} />
-              {duration}
+        <div className="mt-auto flex flex-col">
+          {/* Stats row */}
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            <span className="bg-[#c3e8e4] text-[#1b5e55] text-sm font-bold px-3 py-1 rounded-md">
+              Bestseller
             </span>
+
+            {rating != null && (
+              <span className="flex items-center gap-1.5 text-sm font-medium border border-slate-300 rounded-md px-3 py-1 text-slate-600">
+                <Star size={14} className="fill-[#d97706] text-[#d97706]" />
+                {rating}
+              </span>
+            )}
+
+            {students != null && (
+              <span className="text-sm font-medium border border-slate-300 rounded-md px-3 py-1 text-slate-500">
+                {students.toLocaleString()} ratings
+              </span>
+            )}
+          </div>
+
+          {/* Price row */}
+          {price != null && (
+            <div className="mt-6 mb-1">
+              <span className="text-2xl font-bold text-slate-900">
+                ₹{price.toFixed(2)}
+              </span>
+            </div>
           )}
-          {hours != null && (
-            <span className="flex items-center gap-1.5 text-xs font-medium border border-slate-200 rounded-full px-3 py-1 text-slate-600">
-              <Timer size={11} />
-              {hours}h
-            </span>
-          )}
-          {students != null && (
-            <span className="flex items-center gap-1.5 text-xs font-medium border border-slate-200 rounded-full px-3 py-1 text-slate-600">
-              <Users size={11} />
-              {students.toLocaleString()} students
+        </div>
+      </div>
+
+      {/* Hover Popover */}
+      <div
+        className={`absolute top-1/2 -translate-y-1/2 w-[440px] bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200 p-8 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[100] pointer-events-none group-hover:pointer-events-auto flex flex-col gap-5
+          ${isRightEdge ? '-left-[460px]' : '-right-[460px]'}
+        `}
+      >
+        {/* Pointer / Arrow */}
+        <div
+          className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white transform rotate-45 rounded-sm
+            ${isRightEdge
+              ? '-right-2 border-t border-r border-slate-200'
+              : '-left-2 border-b border-l border-slate-200'
+            }
+          `}
+        ></div>
+
+        <h3 className="text-xl font-bold text-slate-900 leading-snug">
+          {title}
+        </h3>
+
+        <div className="flex items-center gap-3">
+          <span className="bg-[#c3e8e4] text-[#1b5e55] text-sm font-bold px-3 py-1 rounded">
+            Bestseller
+          </span>
+          {formattedDate && (
+            <span className="text-base font-semibold text-green-700">
+              Updated {formattedDate}
             </span>
           )}
         </div>
 
-        {/* CTA row */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-1">
-          <span className="text-sm font-semibold text-[#0166A7] group-hover:underline">
-            View Course
-          </span>
-          <ArrowRight
-            size={16}
-            className="text-[#0166A7] group-hover:translate-x-1 transition-transform duration-200"
-          />
+        <div className="text-sm text-slate-500 font-medium">
+          {displayHours} total hours · {displayLevel} Level · Subtitles
         </div>
+
+        {popupDescription && (
+          <p className="text-base text-slate-600 leading-relaxed">
+            {popupDescription}
+          </p>
+        )}
+
+        {displayOutcomes && displayOutcomes.length > 0 && (
+          <ul className="flex flex-col gap-4 mt-2">
+            {displayOutcomes.slice(0, 3).map((outcome, i) => (
+              <li key={i} className="flex gap-3 items-start">
+                <Check size={20} className="text-slate-600 shrink-0 mt-0.5" />
+                <span className="text-sm text-slate-600 leading-relaxed">
+                  {outcome}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <button
+          className="mt-5 w-full bg-brand-blue hover:bg-brand-dark text-white text-lg font-bold py-4 rounded-xl transition-colors"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            router.push(`/course-plans/${slug}`);
+          }}
+        >
+          View Plans
+        </button>
       </div>
     </Link>
   );

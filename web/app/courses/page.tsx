@@ -16,7 +16,7 @@ export default async function CoursesPage() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-10">
-          {courses.map((course) => (
+          {courses.map((course, index) => (
             <CourseCard
               key={course._id}
               slug={course.slug}
@@ -27,10 +27,17 @@ export default async function CoursesPage() {
                   : "/placeholder.png"
               }
               tagline={course.tagline}
+              instructorName={course.instructorName}
               rating={course.rating}
               duration={course.duration}
               hours={course.hours}
               students={course.students}
+              price={course.price}
+              level={course.level}
+              updatedAt={course._updatedAt}
+              outcomes={course.outcomes}
+              keyConcepts={course.keyConcepts}
+              index={index}
             />
           ))}
         </div>

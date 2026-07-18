@@ -9,7 +9,7 @@ import React, {
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
-import { Clock3, Users, Star } from "lucide-react";
+import GlobalCourseCard from "@/components/layout/CourseCard";
 
 /* ─────────────────────────────────────────
    Types
@@ -21,12 +21,18 @@ export interface CourseCardData {
   /** Pre-resolved URL from urlFor(image) — set by the server component */
   image: string;
   tagline: string;
+  hoverDescription?: string;
   rating: number;
   students: number;
   duration: string;
   price: number;
   instructorName: string;
   instructorImage: string;
+  level?: string;
+  _updatedAt?: string;
+  outcomes?: string[];
+  keyConcepts?: { title: string }[];
+  hours?: number;
 }
 
 interface Props {
@@ -47,96 +53,6 @@ function getVisible(): number {
   if (window.innerWidth < 1024) return 2;
   return 3;
 }
-
-/* ─────────────────────────────────────────
-   Card
-───────────────────────────────────────── */
-const CourseCard = React.memo(function CourseCard({ c }: { c: CourseCardData }) {
-  return (
-    <Link
-      href={`/courses/${c.slug}`}
-      className="bg-white rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]
-        overflow-hidden flex flex-col h-full
-        hover:shadow-[0_8px_32px_rgba(1,102,167,0.15)]
-        transition-shadow duration-300 select-none"
-    >
-      {/* Hero image */}
-      <div className="relative w-full aspect-[16/10] overflow-hidden flex-shrink-0">
-        {c.image ? (
-          <Image
-            src={c.image}
-            alt={c.title}
-            fill
-            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
-            className="object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400 text-sm">
-            No image
-          </div>
-        )}
-        {c.rating > 0 && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 bg-white rounded-full px-2.5 py-1 shadow text-xs font-semibold">
-            <Star size={12} className="fill-yellow-400 text-yellow-400" />
-            {c.rating}
-          </div>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="p-6 flex flex-col flex-1 gap-3">
-        <h3 className="text-lg font-bold text-slate-900 leading-snug line-clamp-2">
-          {c.title}
-        </h3>
-        {c.tagline && (
-          <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">
-            {c.tagline}
-          </p>
-        )}
-
-        <div className="flex flex-wrap gap-2 mt-auto pt-2">
-          {c.duration && (
-            <span className="flex items-center gap-1.5 text-xs border border-slate-200 rounded-full px-3 py-1 text-slate-600">
-              <Clock3 size={11} /> {c.duration}
-            </span>
-          )}
-
-          {c.students > 0 && (
-            <span className="flex items-center gap-1.5 text-xs border border-slate-200 rounded-full px-3 py-1 text-slate-600">
-              <Users size={11} /> {c.students.toLocaleString()} students
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-          <div className="flex items-center gap-2">
-            {c.instructorImage ? (
-              <Image
-                src={c.instructorImage}
-                alt={c.instructorName ?? "Instructor"}
-                width={32}
-                height={32}
-                className="rounded-full object-cover w-8 h-8"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-[#EAF6FF] flex items-center justify-center text-[#0166A7] text-xs font-bold">
-                {c.instructorName?.charAt(0) ?? "A"}
-              </div>
-            )}
-            <span className="text-xs font-semibold text-slate-700">
-              {c.instructorName}
-            </span>
-          </div>
-          {c.price > 0 && (
-            <span className="text-base font-bold text-[#0166A7]">
-              ₹{c.price.toLocaleString("en-IN")}
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
-});
 
 /* ─────────────────────────────────────────
    Carousel
@@ -259,19 +175,35 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
           Viewport — clips the sliding track.
           Cards each take `100 / visible`% of the viewport width via flex.
         */}
-        <div className="overflow-hidden">
+        <div className="overflow-hidden pb-32 -mb-32 pt-32 -mt-32">
           <div
             ref={trackRef}
             className="flex will-change-transform"
           /* Each child is (100/visible)% wide; track natural width = total*(100/visible)% */
           >
-            {courses.map((c) => (
+            {courses.map((c, index) => (
               <div
                 key={c._id}
-                className="flex-shrink-0 px-3"
+                className="flex-shrink-0 px-3 flex flex-col"
                 style={{ width: `${100 / visible}%` }}
               >
-                <CourseCard c={c} />
+                <GlobalCourseCard
+                  slug={c.slug}
+                  title={c.title}
+                  heroImageUrl={c.image || "/placeholder.png"}
+                  tagline={c.tagline}
+                  hoverDescription={c.hoverDescription}
+                  instructorName={c.instructorName}
+                  rating={c.rating}
+                  students={c.students}
+                  price={c.price}
+                  level={c.level}
+                  updatedAt={c._updatedAt}
+                  outcomes={c.outcomes}
+                  keyConcepts={c.keyConcepts}
+                  hours={c.hours}
+                  index={index}
+                />
               </div>
             ))}
           </div>
