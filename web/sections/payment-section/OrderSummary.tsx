@@ -159,16 +159,29 @@ export default function OrderSummary({
               // We don't block the success state if sync fails, but we log it
             }
 
+            const successMsg = verifyData.isNewUser
+              ? "Account created! Redirecting you to the Learning Portal..."
+              : "Payment verified! Redirecting you to the Learning Portal...";
+
             setModal({
               isOpen: true,
               status: "success",
-              message: "Success! Your enrollment is complete. Welcome abroad!",
+              message: successMsg,
             });
+
+            // Redirect to the Learning Portal after a brief delay
+            if (verifyData.redirectUrl) {
+              setTimeout(() => {
+                window.location.href = verifyData.redirectUrl;
+              }, 2000);
+            }
           } else {
             setModal({
               isOpen: true,
               status: "error",
-              message: "Payment verification failed. Please contact support.",
+              message:
+                verifyData.error ||
+                "Payment verification failed. Please contact support.",
             });
           }
         },
