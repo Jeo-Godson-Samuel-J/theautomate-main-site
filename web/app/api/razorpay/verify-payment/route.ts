@@ -45,7 +45,12 @@ export async function POST(req: Request) {
       razorpay_payment_id,
       razorpay_signature,
       course_id,
+      course_name,
       bundle_id,
+      batch_type,
+      customer_name,
+      customer_email,
+      customer_phone,
     } = await req.json();
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -100,9 +105,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const email: string | undefined = paymentDetails.email;
+    const email: string | undefined = paymentDetails.email || customer_email;
     const name: string | undefined =
-      paymentDetails.notes?.name ?? paymentDetails.notes?.customer_name ?? null;
+      customer_name ?? paymentDetails.notes?.name ?? paymentDetails.notes?.customer_name ?? null;
     const amountPaise: number = paymentDetails.amount;
 
     if (!email) {
@@ -197,7 +202,7 @@ export async function POST(req: Request) {
         .from("users")
         .insert({
           email,
-          username: name ?? null,
+          username: name || email.split("@")[0],
           auth_user_id: authUserId,
           role: "user",
         })
@@ -218,14 +223,67 @@ export async function POST(req: Request) {
     }
 
     // ------------------------------------------------------------------
+    // 4.5. Resolve UUIDs for Course and Bundle
+    // ------------------------------------------------------------------
+    let finalBundleId = bundle_id;
+    // Check if bundle exists if it looks like a UUID
+    if (finalBundleId && finalBundleId.length === 36) {
+      const { data: bCheck } = await supabase.from("bundles").select("id").eq("id", finalBundleId).maybeSingle();
+      if (!bCheck) finalBundleId = null;
+    }
+    
+    // If not a UUID or didn't exist, try looking up by name or fallback
+    if (!finalBundleId || finalBundleId.length !== 36) {
+      const { data: bundleData } = await supabase
+        .from("bundles")
+        .select("id")
+        .ilike("bundle_name", bundle_id || "")
+        .limit(1)
+        .maybeSingle();
+      
+      if (bundleData) {
+        finalBundleId = bundleData.id;
+      } else {
+        const { data: anyBundle } = await supabase.from("bundles").select("id").limit(1).single();
+        if (anyBundle) finalBundleId = anyBundle.id;
+      }
+    }
+
+    let finalCourseId = course_id;
+    // Check if course exists if it looks like a UUID
+    if (finalCourseId && finalCourseId.length === 36) {
+      const { data: cCheck } = await supabasePublic.from("maincourses").select("id").eq("id", finalCourseId).maybeSingle();
+      if (!cCheck) finalCourseId = null;
+    }
+
+    // If not a UUID or didn't exist, try looking up by name or fallback
+    if (!finalCourseId || finalCourseId.length !== 36) {
+      const lookupName = course_name || "Course 1";
+      // Use limit(1) to avoid "multiple rows" error from maybeSingle
+      const { data: courseData } = await supabasePublic
+        .from("maincourses")
+        .select("id")
+        .ilike("title", lookupName)
+        .limit(1)
+        .maybeSingle();
+        
+      if (courseData) {
+        finalCourseId = courseData.id;
+      } else {
+        const { data: anyCourse } = await supabasePublic.from("maincourses").select("id").limit(1).single();
+        if (anyCourse) finalCourseId = anyCourse.id;
+      }
+    }
+
+    // ------------------------------------------------------------------
     // 5. Create order in phase-2.orders
     // ------------------------------------------------------------------
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: userId,
-        course_id: course_id,
-        bundle_id: bundle_id,
+        course_id: finalCourseId,
+        bundle_id: finalBundleId,
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
@@ -264,6 +322,32 @@ export async function POST(req: Request) {
       console.error("[verify-payment] Payment insert error:", paymentError);
       return NextResponse.json(
         { success: false, error: `Failed to create payment record: ${paymentError?.message || JSON.stringify(paymentError)}` },
+        { status: 500 },
+      );
+    }
+
+    // ------------------------------------------------------------------
+    // 6.5. Create enrollment record in phase-2.enrollments
+    // ------------------------------------------------------------------
+    const accessStartDate = new Date();
+    const accessEndDate = new Date();
+    accessEndDate.setFullYear(accessEndDate.getFullYear() + 1); // 1 year access by default
+    
+    const { error: enrollmentError } = await supabase.from("enrollments").insert({
+      user_id: userId,
+      order_id: order.id,
+      course_id: finalCourseId,
+      bundle_id: finalBundleId,
+      status: "active",
+      batch_type: batch_type || req.headers.get("x-mock-batch") || "weekday",
+      access_start_date: accessStartDate.toISOString(),
+      access_end_date: accessEndDate.toISOString(),
+    });
+
+    if (enrollmentError) {
+      console.error("[verify-payment] Enrollment insert error:", enrollmentError);
+      return NextResponse.json(
+        { success: false, error: `Failed to create enrollment record: ${enrollmentError?.message || JSON.stringify(enrollmentError)}` },
         { status: 500 },
       );
     }

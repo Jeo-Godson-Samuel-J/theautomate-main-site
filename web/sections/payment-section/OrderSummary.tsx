@@ -129,6 +129,13 @@ export default function OrderSummary({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              course_id: courseKey,
+              course_name: courseName,
+              bundle_id: bundleTitle,
+              batch_type: batch,
+              customer_name: userData.name,
+              customer_email: userData.email,
+              customer_phone: userData.phone,
             }),
           });
 
