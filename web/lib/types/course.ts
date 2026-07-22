@@ -31,6 +31,8 @@ export interface Course {
 
   tagline: string;
 
+  hoverDescription?: string;
+
   heroImage: any; // Sanity image object — use urlFor() to resolve
 
   rating: number;
@@ -66,4 +68,6 @@ export interface Course {
   batchDetails: string[];
 
   bundles: Plan[];
+
+  _updatedAt?: string;
 }
