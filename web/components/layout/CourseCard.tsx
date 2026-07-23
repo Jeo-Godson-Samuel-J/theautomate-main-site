@@ -19,6 +19,10 @@ interface CourseCardProps {
   duration?: string;
   hours?: number;
   index?: number;
+  level?: string;
+  updatedAt?: string;
+  outcomes?: string[];
+  keyConcepts?: { title: string }[];
 }
 
 export default function CourseCard({

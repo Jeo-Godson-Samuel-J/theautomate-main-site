@@ -31,6 +31,10 @@ export interface Course {
 
   tagline: string;
 
+  hoverDescription?: string;
+  
+  _updatedAt?: string;
+
   heroImage: any; // Sanity image object — use urlFor() to resolve
 
   rating: number;
