@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Trash2, ShoppingCart, CreditCard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getPlanDisplayNameFromTitle } from "@/lib/plan-display";
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -38,7 +39,7 @@ export default function CartPage() {
   // Total is the sum of each item's selectedPlanPrice
   const total = cartItems.reduce(
     (sum, item) => sum + item.selectedPlanPrice,
-    0
+    0,
   );
 
   // Build checkout URL.
@@ -75,13 +76,12 @@ export default function CartPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Your Cart</h1>
           <p className="mt-2 text-gray-500">
-            {cartItems.length}{" "}
-            {cartItems.length === 1 ? "course" : "courses"} in your cart
+            {cartItems.length} {cartItems.length === 1 ? "course" : "courses"}{" "}
+            in your cart
           </p>
         </div>
 
@@ -104,7 +104,6 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-
             {/* ── Cart items ── */}
             <div className="space-y-4 lg:col-span-2">
               {cartItems.map((item) => (
@@ -139,7 +138,7 @@ export default function CartPage() {
                       {/* Plan badge row */}
                       <div className="mt-2 flex items-center gap-3 flex-wrap">
                         <span className="inline-block rounded-full bg-[#EAF4FD] px-3 py-1 text-xs font-semibold text-[#0166A7]">
-                          {item.selectedPlanTitle}
+                          {getPlanDisplayNameFromTitle(item.selectedPlanTitle)}
                         </span>
                         <span className="text-base font-bold text-slate-800">
                           ₹{item.selectedPlanPrice.toLocaleString("en-IN")}
@@ -184,7 +183,7 @@ export default function CartPage() {
                       </span>
                       <br />
                       <span className="text-xs text-gray-400">
-                        {item.selectedPlanTitle}
+                        {getPlanDisplayNameFromTitle(item.selectedPlanTitle)}
                       </span>
                     </div>
                     <span className="font-semibold text-gray-900 whitespace-nowrap">

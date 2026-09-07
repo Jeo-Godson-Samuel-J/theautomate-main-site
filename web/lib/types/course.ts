@@ -17,6 +17,15 @@ export interface Highlight {
   title: string;
 }
 
+export interface SampleVideo {
+  _key?: string;
+  title: string;
+  description?: string;
+  url?: string;
+  mimeType?: string;
+  poster?: any; // Sanity image object
+}
+
 export interface Course {
   _id: string;
 
@@ -60,6 +69,8 @@ export interface Course {
   instructorImage: any; // Sanity image object — use urlFor() to resolve
 
   description: any[]; // Portable Text blocks
+
+  sampleVideos?: SampleVideo[];
 
   keyConcepts: KeyConcept[];
 

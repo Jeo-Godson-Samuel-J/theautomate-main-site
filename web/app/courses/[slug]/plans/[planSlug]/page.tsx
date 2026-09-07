@@ -4,6 +4,7 @@ import { getCoursePlans } from "@/lib/services/course.service";
 import { PlanDetailCard } from "@/components/layout/plan-detail/PlanDetailCard";
 import { ViewPlanOrderSummary } from "@/components/layout/plan-detail/ViewPlanOrderSummary";
 import { PremiumContactForm } from "@/components/layout/plan-detail/PremiumContactForm";
+import { getPlanDisplayName } from "@/lib/plan-display";
 
 interface Props {
   params: Promise<{ slug: string; planSlug: string }>;
@@ -30,21 +31,28 @@ export default async function PlanDetailPage({ params }: Props) {
   if (!courseData || !plan) return notFound();
 
   const isPremium = plan.badge.toLowerCase() === "premium";
+  const displayName = getPlanDisplayName(plan);
 
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Breadcrumb / header strip */}
       <section className="bg-white border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center gap-2 text-sm text-slate-500">
-          <a href={`/courses/${courseSlug}`} className="hover:text-[#0166A7] transition-colors">
+          <a
+            href={`/courses/${courseSlug}`}
+            className="hover:text-[#0166A7] transition-colors"
+          >
             {courseData.title}
           </a>
           <span>/</span>
-          <a href={`/courses/${courseSlug}/plans`} className="hover:text-[#0166A7] transition-colors">
+          <a
+            href={`/courses/${courseSlug}/plans`}
+            className="hover:text-[#0166A7] transition-colors"
+          >
             Plans
           </a>
           <span>/</span>
-          <span className="text-slate-900 font-medium">{plan.badge}</span>
+          <span className="text-slate-900 font-medium">{displayName}</span>
         </div>
       </section>
 
@@ -61,6 +69,7 @@ export default async function PlanDetailPage({ params }: Props) {
             ) : (
               <ViewPlanOrderSummary
                 plan={plan}
+                courseId={courseData._id}
                 courseSlug={courseSlug}
                 courseTitle={courseData.title}
               />

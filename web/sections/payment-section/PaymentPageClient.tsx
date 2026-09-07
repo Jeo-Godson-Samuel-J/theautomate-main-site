@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import OrderSummary from "./OrderSummary";
 import { getCart, CartItem, clearCart } from "@/lib/services/cart";
+import { getPlanDisplayNameFromTitle } from "@/lib/plan-display";
 
 interface Props {
   courseSlug: string;
@@ -73,10 +74,11 @@ export default function PaymentPageClient({
     // Skip upgrade check entirely for cart checkouts
     if (fromCart) return;
 
-    // Only check if it's a valid looking email and they are trying to buy Pro/Premium
+    // Only check if it's a valid looking email and they are trying to buy Pro/Live Sessions
     const isProPlan =
       bundleTitle.toLowerCase().includes("pro") ||
-      bundleTitle.toLowerCase().includes("premium");
+      bundleTitle.toLowerCase().includes("premium") ||
+      bundleTitle.toLowerCase().includes("live sessions");
     if (!email || !email.includes("@") || !isProPlan) {
       setFinalPrice(bundlePrice);
       setIsUpgradeEligible(false);
@@ -206,7 +208,7 @@ export default function PaymentPageClient({
                           {item.courseTitle}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {item.selectedPlanTitle}
+                          {getPlanDisplayNameFromTitle(item.selectedPlanTitle)}
                         </p>
                       </div>
                       <span className="text-sm font-bold text-[#0A3D62] whitespace-nowrap ml-4">
@@ -373,7 +375,9 @@ export default function PaymentPageClient({
             courseKey={courseSlug}
             productUuid={resolvedProductUuid || productUuid}
             bundleTitle={bundleTitle}
-            customAmount={fromCart && cartItems.length > 0 ? cartTotal : finalPrice}
+            customAmount={
+              fromCart && cartItems.length > 0 ? cartTotal : finalPrice
+            }
             targetBundlePrice={bundlePrice}
             batch={batch}
             userData={{ name, email, phone, comments }}

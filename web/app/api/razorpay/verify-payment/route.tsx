@@ -382,7 +382,9 @@ export async function POST(req: Request) {
     // If not a UUID or didn't exist, try looking up by name or fallback
     if (!finalBundleId || finalBundleId.length !== 36) {
       // Frontend often sends "Starter Plan" but DB has "Starter", so we match by the first word
-      const bundleKeyword = (bundle_id || "").split(" ")[0];
+      const bundleKeyword = bundle_id?.toLowerCase().startsWith("live sessions")
+        ? "premium"
+        : (bundle_id || "").split(" ")[0];
 
       const { data: bundleData } = await supabase
         .from("bundles")

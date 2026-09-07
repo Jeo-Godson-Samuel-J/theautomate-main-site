@@ -7,6 +7,7 @@ import { urlFor } from "@/lib/sanity.client";
 import { StarRating } from "@/components/ui/StarRating";
 import ContactCTA from "@/sections/HomeCTA";
 import PlanSelector from "@/components/layout/PlanSelector";
+import SampleVideoPreview from "@/components/course/SampleVideoPreview";
 
 interface Props {
   params: Promise<{
@@ -38,6 +39,7 @@ export default async function CoursePage({ params }: Props) {
   //   totalReviews > 0     → show stars + count
   const hasReviews = liveRating !== null && liveRating.totalReviews > 0;
   const ratingError = liveRating === null;
+  const featuredSampleVideo = course.sampleVideos?.find((video) => video.url);
 
   return (
     <main>
@@ -117,11 +119,13 @@ export default async function CoursePage({ params }: Props) {
                           alt={concept.title}
                           width={48}
                           height={48}
-                          className="rounded-lg flex-shrink-0"
+                          className="rounded-lg shrink-0"
                         />
                       )}
                       <div>
-                        <h3 className="font-semibold text-lg">{concept.title}</h3>
+                        <h3 className="font-semibold text-lg">
+                          {concept.title}
+                        </h3>
                         {concept.description && (
                           <p className="text-slate-500 text-sm mt-1">
                             {concept.description}
@@ -193,32 +197,61 @@ export default async function CoursePage({ params }: Props) {
         </div>
 
         <div>
-          <div className="sticky top-28 rounded-3xl bg-blue-50 p-8">
-            {course.level && (
-              <div className="text-sm uppercase">{course.level}</div>
+          <div className="sticky top-28 space-y-5">
+            {featuredSampleVideo?.url && (
+              <SampleVideoPreview
+                courseTitle={course.title}
+                featuredVideo={{
+                  key: featuredSampleVideo._key ?? featuredSampleVideo.url,
+                  title: featuredSampleVideo.title,
+                  url: featuredSampleVideo.url,
+                  mimeType: featuredSampleVideo.mimeType,
+                  poster: featuredSampleVideo.poster
+                    ? urlFor(featuredSampleVideo.poster).width(900).url()
+                    : undefined,
+                }}
+                videos={course.sampleVideos
+                  .filter((video) => video.url)
+                  .slice(0, 5)
+                  .map((video) => ({
+                    key: video._key ?? video.url!,
+                    title: video.title,
+                    url: video.url!,
+                    mimeType: video.mimeType,
+                    poster: video.poster
+                      ? urlFor(video.poster).width(320).url()
+                      : undefined,
+                  }))}
+              />
             )}
 
-            <div className="text-5xl font-bold mt-4">
-              ₹{course.price?.toLocaleString("en-IN") ?? "—"}
-            </div>
-
-            <hr className="my-8" />
-
-            <div className="space-y-4">
-              {course.duration && (
-                <div>🎥 {course.duration} on-demand videos</div>
+            <div className="rounded-3xl bg-blue-50 p-8">
+              {course.level && (
+                <div className="text-sm uppercase">{course.level}</div>
               )}
-              {course.hours != null && (
-                <div>⏱️ {course.hours} hours of content</div>
-              )}
-              {course.students != null && (
-                <div>👥 {course.students} students</div>
-              )}
-              <div>⭐ Certificate Included</div>
-            </div>
 
-            <div className="mt-10">
-              <PlanSelector courseSlug={course.slug} />
+              <div className="text-5xl font-bold mt-4">
+                ₹{course.price?.toLocaleString("en-IN") ?? "—"}
+              </div>
+
+              <hr className="my-8" />
+
+              <div className="space-y-4">
+                {course.duration && (
+                  <div>🎥 {course.duration} on-demand videos</div>
+                )}
+                {course.hours != null && (
+                  <div>⏱️ {course.hours} hours of content</div>
+                )}
+                {course.students != null && (
+                  <div>👥 {course.students} students</div>
+                )}
+                <div>⭐ Certificate Included</div>
+              </div>
+
+              <div className="mt-10">
+                <PlanSelector courseSlug={course.slug} />
+              </div>
             </div>
           </div>
         </div>

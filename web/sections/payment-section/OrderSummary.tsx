@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Script from "next/script";
 import PaymentStatusModal from "./PaymentStatusModal";
 import { CartItem, clearCart } from "@/lib/services/cart";
+import { getPlanDisplayNameFromTitle } from "@/lib/plan-display";
 
 interface SummaryProps {
   courseName: string;
@@ -99,7 +100,7 @@ export default function OrderSummary({
           courseKey,
           productUuid,
           bundleTitle,
-          amount: finalPrice,          // full cart total or single-course price
+          amount: finalPrice, // full cart total or single-course price
           email: userData.email,
           targetBundlePrice: targetBundlePrice || customAmount,
         }),
@@ -120,7 +121,8 @@ export default function OrderSummary({
         setModal({
           isOpen: true,
           status: "error",
-          message: "Razorpay Key ID is missing. Please check deployment settings.",
+          message:
+            "Razorpay Key ID is missing. Please check deployment settings.",
         });
         return;
       }
@@ -309,7 +311,7 @@ export default function OrderSummary({
                         {item.courseTitle}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        {item.selectedPlanTitle}
+                        {getPlanDisplayNameFromTitle(item.selectedPlanTitle)}
                       </p>
                     </div>
                     <span className="font-bold text-sm text-[#0A3D62] whitespace-nowrap">

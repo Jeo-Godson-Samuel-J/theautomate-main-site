@@ -10,6 +10,7 @@ import { PlanFeatureList } from "@/components/ui/PlanFeatureList";
 import { urlFor } from "@/lib/sanity.client";
 import { Plan } from "@/lib/types/plan";
 import { addToCart, removeFromCart, getCart } from "@/lib/services/cart";
+import { getPlanDisplayName } from "@/lib/plan-display";
 
 interface PricingCardProps {
   bundle: Plan;
@@ -56,6 +57,7 @@ export function PricingCard({
   const batchLabel = bundle.batchOptions?.length
     ? bundle.batchOptions.join(" or ")
     : "Weekday or Weekend";
+  const displayName = getPlanDisplayName(bundle);
 
   // ---------------------------------------------------------------------------
   // Cart state — keyed on (courseId, bundle._id) so Course A + Starter and
@@ -70,10 +72,11 @@ export function PricingCard({
     const checkCart = () => {
       const cart = getCart();
       const thisPlanInCart = cart.some(
-        (item) => item.courseId === courseId && item.selectedPlanId === bundle._id
+        (item) =>
+          item.courseId === courseId && item.selectedPlanId === bundle._id,
       );
       const anyPlanInCart = cart.some((item) => item.courseId === courseId);
-      
+
       setAddedToCart(thisPlanInCart);
       setIsOtherPlanInCart(!thisPlanInCart && anyPlanInCart);
     };
@@ -100,7 +103,7 @@ export function PricingCard({
         courseTitle: courseTitle ?? courseSlug ?? "Course",
         courseSlug: courseSlug ?? "",
         selectedPlanId: bundle._id,
-        selectedPlanTitle: bundle.title,
+        selectedPlanTitle: displayName,
         selectedPlanPrice: bundle.price,
         thumbnailUrl: bundle.coverImage
           ? urlFor(bundle.coverImage).width(400).url()
@@ -115,7 +118,7 @@ export function PricingCard({
   const paymentParams = new URLSearchParams();
   if (courseSlug) paymentParams.set("course", courseSlug);
   paymentParams.set("bundleId", bundle._id);
-  paymentParams.set("bundleTitle", bundle.title);
+  paymentParams.set("bundleTitle", displayName);
   paymentParams.set("amount", bundle.price.toString());
   const paymentUrl = `/payment?${paymentParams.toString()}`;
   const buyHref = buttonHref ?? paymentUrl;
@@ -147,12 +150,12 @@ export function PricingCard({
       >
         <Image
           src={imageUrl}
-          alt={bundle.title}
+          alt={displayName}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-slate-700 shadow-sm border border-slate-100">
-          {bundle.badge}
+          {displayName}
         </div>
       </div>
 
@@ -168,7 +171,7 @@ export function PricingCard({
 
         {/* Title */}
         <h3 className="text-xl md:text-2xl font-bold mb-1 text-slate-900">
-          {bundle.title}
+          {displayName}
         </h3>
         <p className="text-sm text-slate-500 mb-5">By Auto-Mate</p>
 

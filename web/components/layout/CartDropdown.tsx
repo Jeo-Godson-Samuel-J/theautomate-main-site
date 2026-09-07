@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ShoppingCart, X } from "lucide-react";
 import { CartItem, removeFromCart, getCart } from "@/lib/services/cart";
 import Link from "next/link";
+import { getPlanDisplayNameFromTitle } from "@/lib/plan-display";
 
 export default function CartDropdown() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -50,8 +51,8 @@ export default function CartDropdown() {
                       {item.courseTitle}
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {item.selectedPlanTitle} —{" "}
-                      ₹{item.selectedPlanPrice.toLocaleString("en-IN")}
+                      {getPlanDisplayNameFromTitle(item.selectedPlanTitle)} — ₹
+                      {item.selectedPlanPrice.toLocaleString("en-IN")}
                     </p>
                   </div>
 

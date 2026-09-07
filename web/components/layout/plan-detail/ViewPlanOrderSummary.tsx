@@ -6,9 +6,13 @@ import { CreditCard, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Plan } from "@/lib/types/plan";
+import { getPlanDisplayName } from "@/lib/plan-display";
+import { getCart, CartItem } from "@/lib/services/cart";
+import Link from "next/link";
 
 interface ViewPlanOrderSummaryProps {
   plan: Plan;
+  courseId: string;
   courseSlug: string;
   courseTitle: string;
 }
@@ -20,16 +24,35 @@ interface ViewPlanOrderSummaryProps {
  */
 export function ViewPlanOrderSummary({
   plan,
+  courseId,
   courseSlug,
   courseTitle,
 }: ViewPlanOrderSummaryProps) {
   const router = useRouter();
+  const displayName = getPlanDisplayName(plan);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  React.useEffect(() => {
+    const loadCart = () => setCartItems(getCart());
+
+    loadCart();
+    window.addEventListener("cart-updated", loadCart);
+    window.addEventListener("storage", loadCart);
+    return () => {
+      window.removeEventListener("cart-updated", loadCart);
+      window.removeEventListener("storage", loadCart);
+    };
+  }, []);
+
+  const anotherPlanInCart = cartItems.some(
+    (item) => item.courseId === courseId && item.selectedPlanId !== plan._id,
+  );
 
   const handleProceed = () => {
     const params = new URLSearchParams();
     params.set("course", courseSlug);
     params.set("bundleId", plan._id);
-    params.set("bundleTitle", plan.title);
+    params.set("bundleTitle", displayName);
     params.set("amount", plan.price.toString());
     router.push(`/payment?${params.toString()}`);
   };
@@ -50,7 +73,7 @@ export function ViewPlanOrderSummary({
             <h3 className="font-bold text-[#0A3D62] text-lg leading-tight">
               {courseTitle}
             </h3>
-            <p className="text-sm text-slate-500">{plan.title}</p>
+            <p className="text-sm text-slate-500">{displayName}</p>
           </div>
           <span className="font-bold text-xl text-[#0A3D62] whitespace-nowrap">
             ₹{plan.price.toLocaleString("en-IN")}
@@ -85,13 +108,22 @@ export function ViewPlanOrderSummary({
         </div>
 
         {/* CTA */}
-        <Button
-          onClick={handleProceed}
-          className="w-full bg-[#1B262C] hover:bg-gray-600 h-14 rounded-full text-sm font-bold transition-all duration-300 shadow-xl active:scale-95"
-        >
-          <CreditCard className="w-5 h-5 mr-2" />
-          Proceed to Checkout
-        </Button>
+        {anotherPlanInCart ? (
+          <Button
+            asChild
+            className="w-full bg-[#1B262C] hover:bg-gray-600 h-14 rounded-full text-sm font-bold transition-all duration-300 shadow-xl active:scale-95"
+          >
+            <Link href="/cart">Review Cart</Link>
+          </Button>
+        ) : (
+          <Button
+            onClick={handleProceed}
+            className="w-full bg-[#1B262C] hover:bg-gray-600 h-14 rounded-full text-sm font-bold transition-all duration-300 shadow-xl active:scale-95"
+          >
+            <CreditCard className="w-5 h-5 mr-2" />
+            Proceed to Checkout
+          </Button>
+        )}
 
         <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider">
           🔒 Verified &amp; Secure Checkout

@@ -45,7 +45,7 @@ export function PremiumContactForm({ courseTitle }: PremiumContactFormProps) {
 
     const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
 
-    const baseMessage = `Hi,\nI'm interested in the Premium plan.\nCourse: ${courseTitle}\nPlan: Premium\nName: ${name}\nEmail: ${email}\nPhone: ${phone}`;
+    const baseMessage = `Hi,\nI'm interested in the Live Sessions plan.\nCourse: ${courseTitle}\nPlan: Live Sessions\nName: ${name}\nEmail: ${email}\nPhone: ${phone}`;
     const fullMessage = message.trim()
       ? `${baseMessage}\nMessage: ${message.trim()}`
       : baseMessage;
@@ -72,7 +72,10 @@ export function PremiumContactForm({ courseTitle }: PremiumContactFormProps) {
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         {/* Name */}
         <div className="space-y-1.5">
-          <Label htmlFor="pm-name" className="text-sm font-semibold text-gray-700">
+          <Label
+            htmlFor="pm-name"
+            className="text-sm font-semibold text-gray-700"
+          >
             Name <span className="text-red-500">*</span>
           </Label>
           <Input
@@ -83,14 +86,15 @@ export function PremiumContactForm({ courseTitle }: PremiumContactFormProps) {
             onChange={(e) => setName(e.target.value)}
             className="h-12 rounded-xl"
           />
-          {errors.name && (
-            <p className="text-xs text-red-500">{errors.name}</p>
-          )}
+          {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
         </div>
 
         {/* Email */}
         <div className="space-y-1.5">
-          <Label htmlFor="pm-email" className="text-sm font-semibold text-gray-700">
+          <Label
+            htmlFor="pm-email"
+            className="text-sm font-semibold text-gray-700"
+          >
             Email <span className="text-red-500">*</span>
           </Label>
           <Input
@@ -108,7 +112,10 @@ export function PremiumContactForm({ courseTitle }: PremiumContactFormProps) {
 
         {/* Phone */}
         <div className="space-y-1.5">
-          <Label htmlFor="pm-phone" className="text-sm font-semibold text-gray-700">
+          <Label
+            htmlFor="pm-phone"
+            className="text-sm font-semibold text-gray-700"
+          >
             Phone Number <span className="text-red-500">*</span>
           </Label>
           <Input
@@ -126,7 +133,10 @@ export function PremiumContactForm({ courseTitle }: PremiumContactFormProps) {
 
         {/* Message */}
         <div className="space-y-1.5">
-          <Label htmlFor="pm-message" className="text-sm font-semibold text-gray-700">
+          <Label
+            htmlFor="pm-message"
+            className="text-sm font-semibold text-gray-700"
+          >
             Additional Message
           </Label>
           <Textarea

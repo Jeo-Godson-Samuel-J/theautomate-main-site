@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
     // Helper to determine hierarchy
     const getTierLevel = (name: string) => {
       const lower = name.toLowerCase();
-      if (lower.includes("premium")) return 3;
+      if (lower.includes("premium") || lower.includes("live sessions"))
+        return 3;
       if (lower.includes("pro")) return 2;
       return 1; // Default to Starter
     };

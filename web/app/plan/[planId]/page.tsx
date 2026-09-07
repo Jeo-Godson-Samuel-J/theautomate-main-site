@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getPlans } from "@/lib/services/plan.services";
 import CourseGrid from "@/sections/courses-section/CourseGrid";
 import { Plan } from "@/lib/types/plan";
+import { getPlanDisplayName } from "@/lib/plan-display";
 
 interface PlanPageProps {
   params: Promise<{
@@ -58,6 +59,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
   });
 
   if (!plan) return notFound();
+  const displayName = getPlanDisplayName(plan);
 
   return (
     <section className="py-16 md:py-24 px-6 bg-slate-50">
@@ -67,7 +69,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
             Plan Courses
           </p>
           <h1 className="mt-4 text-4xl md:text-5xl font-extrabold text-slate-900">
-            {plan.title}
+            {displayName}
           </h1>
           <p className="mt-4 text-slate-600 max-w-3xl mx-auto">
             Explore all courses included with this plan.

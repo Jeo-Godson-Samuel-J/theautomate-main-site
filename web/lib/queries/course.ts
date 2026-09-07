@@ -37,6 +37,14 @@ export const COURSE_BY_SLUG_QUERY = `
   instructorName,
   heroImage,
   description,
+  sampleVideos[]{
+    _key,
+    title,
+    description,
+    "url": video.asset->url,
+    "mimeType": video.asset->mimeType,
+    poster
+  },
   keyConcepts[]{
     title,
     icon,

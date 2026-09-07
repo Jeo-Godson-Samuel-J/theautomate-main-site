@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plan } from "@/lib/types/plan";
+import { getPlanDisplayName } from "@/lib/plan-display";
 
 interface CourseOption {
   title: string;
@@ -164,7 +165,7 @@ export default function PaymentDetails({
               <SelectContent>
                 {bundles.map((bundle) => (
                   <SelectItem key={bundle._id} value={bundle._id}>
-                    {bundle.title}
+                    {getPlanDisplayName(bundle)}
                   </SelectItem>
                 ))}
               </SelectContent>
