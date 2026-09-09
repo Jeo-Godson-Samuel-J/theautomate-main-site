@@ -12,9 +12,15 @@ import PaymentPageClient from "@/sections/payment-section/PaymentPageClient";
 
 interface SearchParams {
   course?: string;
+  /** Explicit Sanity _id of the course (passed by PricingCard Buy Now) */
+  courseId?: string;
+  /** Human-readable course title passed directly in the URL */
+  courseTitle?: string;
   bundleId?: string;
   bundleTitle?: string;
   amount?: string;
+  /** Plan duration e.g. "1 month" */
+  duration?: string;
   batch?: string;
   name?: string;
   email?: string;
@@ -64,6 +70,8 @@ export default async function PaymentPage({ searchParams }: Props) {
   const phone = params.phone ?? "";
   // fromCart=1 means PaymentPageClient will read all items from localStorage
   const fromCart = params.fromCart === "1";
+  // Explicit course title / id passed directly from the Buy Now URL params
+  const urlCourseTitle = params.courseTitle ?? "";
 
   // When coming from cart with multiple items, skip the Sanity fetches —
   // the client will read everything it needs from localStorage.
@@ -82,7 +90,8 @@ export default async function PaymentPage({ searchParams }: Props) {
       : Promise.resolve(null),
   ]);
 
-  const courseTitle = courseData?.title ?? courseSlug;
+  // Resolve course title: Sanity fetch → URL param → slug fallback
+  const courseTitle = courseData?.title ?? (urlCourseTitle || courseSlug);
   const resolvedBundle = planData ?? null;
   const resolvedPrice = resolvedBundle?.price ?? amount;
   const resolvedTitle = resolvedBundle?.title ?? bundleTitle;

@@ -3,14 +3,22 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Clock, LayoutList, Trash2, CircleSlash } from "lucide-react";
+import {
+  Clock,
+  LayoutList,
+  Trash2,
+  CircleSlash,
+  ShoppingCart,
+} from "lucide-react";
 import { StarRating } from "@/components/ui/StarRating";
 import { PlanFeatureList } from "@/components/ui/PlanFeatureList";
 import { urlFor } from "@/lib/sanity.client";
 import { Plan } from "@/lib/types/plan";
 import { addToCart, removeFromCart, getCart } from "@/lib/services/cart";
 import { getPlanDisplayName } from "@/lib/plan-display";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PricingCardProps {
   bundle: Plan;
@@ -18,7 +26,7 @@ interface PricingCardProps {
   /**
    * Sanity courseDetails._id for the course this card belongs to.
    * Required for correct cart identity. When omitted (e.g. the generic
-   * /plans page), cart add/remove is disabled gracefully.
+   * /plans page), cart add/remove falls back to plan-level identity.
    */
   courseId?: string;
   /** Human-readable course name stored in the cart item. */
@@ -32,14 +40,13 @@ interface PricingCardProps {
 }
 
 /**
- * Plan card used on the course plans grid.
+ * Plan card used on the course plans grid and generic /plans page.
  *
- * Cart identity: (courseId, bundle._id) — two courses with the same plan
- * are independent cart items.
+ * - Clicking anywhere on the card navigates to the plan detail page.
+ * - Buttons: [Add to Cart]  [Buy Now]
+ *   • Premium plan: [View Plan] only (no cart / buy)
  *
- * Button behaviour per badge:
- *  - Starter / Pro  → [View Plan]  [Add to Cart / Added to Cart]
- *  - Premium        → [View Plan]  (no cart action)
+ * Cart identity: (courseId ?? bundle._id, bundle._id) so plans are always unique.
  */
 export function PricingCard({
   bundle,
@@ -50,6 +57,9 @@ export function PricingCard({
   buttonHref,
   recommended = false,
 }: PricingCardProps) {
+  const router = useRouter();
+  const { isLoggedIn, openAuth } = useAuth();
+
   const imageUrl = bundle.coverImage
     ? urlFor(bundle.coverImage).width(800).url()
     : "/placeholder.png";
@@ -60,81 +70,127 @@ export function PricingCard({
   const displayName = getPlanDisplayName(bundle);
 
   // ---------------------------------------------------------------------------
-  // Cart state — keyed on (courseId, bundle._id) so Course A + Starter and
-  // Course B + Starter are completely independent.
+  // Navigation URLs
   // ---------------------------------------------------------------------------
+  const badgeSlug = bundle.badge.toLowerCase();
+  const titleSlug = bundle.title
+    ? bundle.title.toLowerCase().replace(/\s+/g, "-")
+    : bundle._id;
+
+  // View-plan href: course-specific → /courses/[slug]/plans/[badgeSlug]
+  //                 generic          → /plan/[titleSlug]
+  const viewPlanHref = courseSlug
+    ? `/courses/${courseSlug}/plans/${badgeSlug}`
+    : `/plan/${titleSlug}`;
+
+  const paymentParams = new URLSearchParams();
+  // Course identifiers
+  if (courseSlug) paymentParams.set("course", courseSlug);
+  if (courseId) paymentParams.set("courseId", courseId);
+  if (courseTitle) paymentParams.set("courseTitle", courseTitle);
+  // Plan details
+  paymentParams.set("bundleId", bundle._id);
+  paymentParams.set("bundleTitle", displayName);
+  paymentParams.set("amount", bundle.price.toString());
+  if (bundle.duration) paymentParams.set("duration", bundle.duration);
+  const paymentUrl = `/payment?${paymentParams.toString()}`;
+  const buyHref = buttonHref ?? paymentUrl;
+  const buyLabel = buttonLabel ?? "Buy Now";
+
+  const isPremium = badgeSlug === "premium";
+
+  // ---------------------------------------------------------------------------
+  // Cart state — keyed on (resolvedCourseId, bundle._id)
+  // ---------------------------------------------------------------------------
+  const resolvedCourseId = courseId ?? bundle._id;
   const [addedToCart, setAddedToCart] = useState(false);
   const [isOtherPlanInCart, setIsOtherPlanInCart] = useState(false);
 
   useEffect(() => {
-    if (!courseId) return;
-
     const checkCart = () => {
       const cart = getCart();
       const thisPlanInCart = cart.some(
         (item) =>
-          item.courseId === courseId && item.selectedPlanId === bundle._id,
+          item.courseId === resolvedCourseId &&
+          item.selectedPlanId === bundle._id,
       );
-      const anyPlanInCart = cart.some((item) => item.courseId === courseId);
-
+      const anyPlanInCart = cart.some(
+        (item) => item.courseId === resolvedCourseId,
+      );
       setAddedToCart(thisPlanInCart);
       setIsOtherPlanInCart(!thisPlanInCart && anyPlanInCart);
     };
 
-    checkCart(); // initial
-
+    checkCart();
     window.addEventListener("cart-updated", checkCart);
     window.addEventListener("storage", checkCart);
     return () => {
       window.removeEventListener("cart-updated", checkCart);
       window.removeEventListener("storage", checkCart);
     };
-  }, [courseId, bundle._id]);
+  }, [resolvedCourseId, bundle._id]);
+
+  const getCartItemPayload = () => ({
+    courseId: resolvedCourseId,
+    courseTitle: courseTitle ?? courseSlug ?? displayName,
+    courseSlug: courseSlug ?? titleSlug,
+    selectedPlanId: bundle._id,
+    selectedPlanTitle: displayName,
+    selectedPlanPrice: bundle.price,
+    thumbnailUrl: bundle.coverImage
+      ? urlFor(bundle.coverImage).width(400).url()
+      : null,
+  });
+
+  /** The actual cart add (called directly when logged in, or deferred after login) */
+  const doAddToCart = () => {
+    addToCart(getCartItemPayload());
+  };
 
   const handleCartToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (!courseId) return; // guard — no courseId means we cannot build a valid cart item
+    e.stopPropagation();
 
     if (addedToCart) {
-      removeFromCart(courseId, bundle._id);
-    } else {
-      addToCart({
-        courseId,
-        courseTitle: courseTitle ?? courseSlug ?? "Course",
-        courseSlug: courseSlug ?? "",
-        selectedPlanId: bundle._id,
-        selectedPlanTitle: displayName,
-        selectedPlanPrice: bundle.price,
-        thumbnailUrl: bundle.coverImage
-          ? urlFor(bundle.coverImage).width(400).url()
-          : null,
-      });
+      // Remove doesn't need auth guard
+      removeFromCart(resolvedCourseId, bundle._id);
+      return;
     }
+
+    if (!isLoggedIn) {
+      openAuth({ type: "addToCart", payload: getCartItemPayload() });
+      return;
+    }
+
+    doAddToCart();
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isLoggedIn) {
+      openAuth({ type: "buyNow", payload: buyHref });
+      return;
+    }
+
+    router.push(buyHref);
   };
 
   // ---------------------------------------------------------------------------
-  // Navigation URLs
+  // Whole-card click → navigate to view plan page
   // ---------------------------------------------------------------------------
-  const paymentParams = new URLSearchParams();
-  if (courseSlug) paymentParams.set("course", courseSlug);
-  paymentParams.set("bundleId", bundle._id);
-  paymentParams.set("bundleTitle", displayName);
-  paymentParams.set("amount", bundle.price.toString());
-  const paymentUrl = `/payment?${paymentParams.toString()}`;
-  const buyHref = buttonHref ?? paymentUrl;
-  const buyLabel = buttonLabel ?? "Buy Plan";
+  const handleCardClick = () => {
+    router.push(viewPlanHref);
+  };
 
-  const badgeSlug = bundle.badge.toLowerCase();
-  const viewPlanHref = courseSlug
-    ? `/courses/${courseSlug}/plans/${badgeSlug}`
-    : `/plans`;
-
-  const isPremium = badgeSlug === "premium";
-  const canAddToCart = Boolean(courseId); // only meaningful when courseId is known
+  /** Stop event from bubbling up to the card click handler */
+  const stopProp = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
     <div
-      className={`bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] overflow-hidden flex flex-col border transition-all duration-300 group relative
+      onClick={handleCardClick}
+      className={`bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] overflow-hidden flex flex-col border transition-all duration-300 group relative cursor-pointer
         ${recommended ? "border-[#0166A7] ring-2 ring-[#0166A7]/30" : "border-slate-100"}`}
     >
       {/* Recommended banner */}
@@ -194,77 +250,69 @@ export function PricingCard({
           <PlanFeatureList features={bundle.features ?? []} />
         </div>
 
-        {/* Action buttons */}
-        {isPremium ? (
-          /* Premium: View Plan only — no cart */
-          <Link href={viewPlanHref} className="mt-auto">
-            <Button
-              variant="outline"
-              className="w-full rounded-full border-[#0166A7] text-[#0166A7] font-bold py-6 hover:bg-[#0166A7] hover:text-white hover:border-[#0166A7] transition-all"
-            >
-              View Plan
-            </Button>
-          </Link>
-        ) : (
-          /* Starter / Pro: View Plan + Add to Cart */
-          <div className="mt-auto flex gap-3">
-            <Link href={viewPlanHref} className="flex-1">
+        {/* ------------------------------------------------------------------ */}
+        {/* Action buttons — stop propagation so card-click doesn't also fire  */}
+        {/* ------------------------------------------------------------------ */}
+        <div className="mt-auto" onClick={stopProp}>
+          {isPremium ? (
+            /* Premium: View Plan only */
+            <Link href={viewPlanHref} onClick={stopProp}>
               <Button
                 variant="outline"
-                className="w-full rounded-full border-slate-300 text-slate-600 font-semibold py-6 hover:border-[#0166A7] hover:text-[#0166A7] transition-all"
+                className="w-full rounded-full border-[#0166A7] text-[#0166A7] font-bold py-6 hover:bg-[#0166A7] hover:text-white hover:border-[#0166A7] transition-all"
               >
                 View Plan
               </Button>
             </Link>
-
-            {canAddToCart ? (
-              <div className="flex-1">
-                {isOtherPlanInCart ? (
-                  <div
-                    title="Another plan for this course is already in your cart. Remove it from the cart to choose a different plan."
-                    className="w-full h-full cursor-not-allowed"
-                  >
-                    <Button
-                      variant="outline"
-                      disabled
-                      className="w-full rounded-full font-bold py-6 transition-all flex items-center justify-center gap-2 bg-slate-50 text-slate-500 border-slate-200 pointer-events-none"
-                    >
-                      <CircleSlash className="w-4 h-4" /> Unavailable
-                    </Button>
-                  </div>
-                ) : (
+          ) : (
+            /* Starter / Pro: Add to Cart + Buy Now */
+            <div className="flex gap-3">
+              {/* Add to Cart */}
+              {isOtherPlanInCart ? (
+                <div
+                  title="Another plan for this course is already in your cart. Remove it first to choose a different plan."
+                  className="flex-1 cursor-not-allowed"
+                >
                   <Button
                     variant="outline"
-                    onClick={handleCartToggle}
-                    className={`w-full rounded-full font-bold py-6 transition-all flex items-center justify-center gap-2 ${
-                      addedToCart
-                        ? "bg-[#0166A7] border-[#0166A7] text-white hover:bg-white hover:text-[#0166A7] hover:border-[#0166A7]"
-                        : "border-slate-300 text-slate-700 hover:bg-[#0166A7] hover:text-white hover:border-[#0166A7]"
-                    }`}
+                    disabled
+                    className="w-full rounded-full font-bold py-6 flex items-center justify-center gap-2 bg-slate-50 text-slate-400 border-slate-200 pointer-events-none"
                   >
-                    {addedToCart ? (
-                      <>
-                        Added to Cart <Trash2 className="w-4 h-4" />
-                      </>
-                    ) : (
-                      "Add to Cart"
-                    )}
+                    <CircleSlash className="w-4 h-4" /> Unavailable
                   </Button>
-                )}
-              </div>
-            ) : (
-              /* Fallback for pages that don't provide courseId (e.g. /plans) */
-              <Link href={buyHref} className="flex-1">
+                </div>
+              ) : (
                 <Button
                   variant="outline"
-                  className="w-full rounded-full border-slate-300 text-slate-700 font-bold py-6 hover:bg-[#0166A7] hover:text-white hover:border-[#0166A7] transition-all"
+                  onClick={handleCartToggle}
+                  className={`flex-1 rounded-full font-bold py-6 transition-all flex items-center justify-center gap-2 ${
+                    addedToCart
+                      ? "bg-[#0166A7] border-[#0166A7] text-white hover:bg-white hover:text-[#0166A7] hover:border-[#0166A7]"
+                      : "border-slate-300 text-slate-700 hover:bg-[#0166A7] hover:text-white hover:border-[#0166A7]"
+                  }`}
                 >
-                  {buyLabel}
+                  {addedToCart ? (
+                    <>
+                      Added <Trash2 className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4" /> Add to Cart
+                    </>
+                  )}
                 </Button>
-              </Link>
-            )}
-          </div>
-        )}
+              )}
+
+              {/* Buy Now */}
+              <Button
+                className="flex-1 rounded-full bg-[#0166A7] text-white font-bold py-6 hover:bg-[#014f82] transition-all border-0"
+                onClick={handleBuyNow}
+              >
+                {buyLabel}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

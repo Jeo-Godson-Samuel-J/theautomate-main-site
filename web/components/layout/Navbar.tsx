@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { gsap, useGSAP } from "@/lib/gsap";
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, User, LogOut, MessageSquare } from 'lucide-react';
 import { getCart } from "@/lib/services/cart";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -29,9 +30,14 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [cartCount, setCartCount] = useState(0);
+  
+  const { isLoggedIn, user, logout } = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
   const trail1Ref = useRef<HTMLSpanElement>(null);
   const trail2Ref = useRef<HTMLSpanElement>(null);
@@ -104,6 +110,16 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
     const handleResize = () => {
       moveIndicator(defaultIndex);
     };
@@ -140,8 +156,8 @@ export default function Navbar() {
       <nav className="fixed inset-x-0 top-0 z-[60] pt-3 sm:px-4 md:px-6 md:pt-4 pointer-events-none flex justify-center">
         <div className="mx-auto flex w-full max-w-[1480px] px-3 sm:px-0 justify-start pointer-events-auto">
           <div
-            className={`flex h-[72px] items-center rounded-full border border-slate-200/50 bg-white px-3 shadow-[0_10px_40px_rgba(0,0,0,0.06)] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[78px] md:px-8 overflow-hidden ${scrolled
-              ? "mt-2 shadow-[0_12px_45px_rgba(0,0,0,0.1)] border-slate-300/40"
+            className={`flex h-[72px] items-center rounded-full border border-slate-200/80 bg-slate-50/80 backdrop-blur-xl px-3 shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[78px] md:px-8 overflow-visible ${scrolled
+              ? "mt-2 shadow-[0_12px_45px_rgba(0,0,0,0.1)] border-slate-300/80 bg-white/90"
               : "mt-3"
               } ${isVisible ? "w-[min(92vw,1480px)] sm:w-full" : "w-[160px] md:w-[230px]"
               }`}
@@ -219,12 +235,52 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
-                <Button
-                  asChild
-                  className="rounded-full bg-[#0166A7] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)] transition-all duration-250 hover:scale-[1.03] hover:brightness-110"
-                >
-                  <Link href="/contact">Contact</Link>
-                </Button>
+                
+                {isLoggedIn ? (
+                  <div className="relative" ref={profileRef}>
+                    <button
+                      onClick={() => setIsProfileOpen(!isProfileOpen)}
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 border border-slate-200 text-[#0166A7] hover:bg-slate-200 transition-colors"
+                    >
+                      <User size={20} />
+                    </button>
+
+                    {isProfileOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white p-2 shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 flex flex-col pointer-events-auto">
+                        <div className="px-3 py-2 border-b border-slate-50 mb-1">
+                          <p className="text-sm font-semibold text-slate-900 truncate">{user?.name}</p>
+                          <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                        </div>
+                        <Link
+                          href="/contact"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#0166A7] transition-colors"
+                        >
+                          <MessageSquare size={16} />
+                          Contact
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            setShowLogoutAlert(true);
+                          }}
+                          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left"
+                        >
+                          <LogOut size={16} />
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Button
+                    asChild
+                    className="rounded-full bg-[#0166A7] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)] transition-all duration-250 hover:scale-[1.03] hover:brightness-110"
+                  >
+                    <Link href="/contact">Contact</Link>
+                  </Button>
+                )}
+                
                 <button
                   onClick={() => setIsOpen(!isOpen)}
                   className="flex items-center justify-center rounded-full bg-white/20 p-2.5 text-slate-800 shadow-sm backdrop-blur-md transition-all hover:bg-white/40 md:hidden"
@@ -259,18 +315,89 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="mt-8 flex flex-col gap-4">
-            <Button asChild className="w-full rounded-full bg-[#0166A7] py-6 text-lg font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)]">
-              <Link href="/contact" onClick={() => setIsOpen(false)}>
-                Contact
-              </Link>
-            </Button>
-            <p className="text-center text-sm text-slate-600">
-              Get in touch with us today.
-            </p>
+            <div className="mt-8 flex flex-col gap-4">
+            {isLoggedIn ? (
+              <>
+                <div className="flex items-center gap-3 px-2 border-b border-slate-100 pb-4 mb-2">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 border border-slate-200 text-[#0166A7]">
+                    <User size={24} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-slate-900">{user?.name}</span>
+                    <span className="text-xs text-slate-500">{user?.email}</span>
+                  </div>
+                </div>
+                <Button asChild className="w-full rounded-full bg-slate-100 text-slate-800 hover:bg-slate-200 py-6 text-lg font-semibold shadow-none">
+                  <Link href="/contact" onClick={() => setIsOpen(false)}>
+                    Contact Support
+                  </Link>
+                </Button>
+                <Button 
+                  onClick={() => { setIsOpen(false); setShowLogoutAlert(true); }}
+                  className="w-full rounded-full bg-red-50 text-red-600 hover:bg-red-100 py-6 text-lg font-semibold shadow-none"
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild className="w-full rounded-full bg-[#0166A7] py-6 text-lg font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)]">
+                  <Link href="/contact" onClick={() => setIsOpen(false)}>
+                    Contact
+                  </Link>
+                </Button>
+                <p className="text-center text-sm text-slate-600">
+                  Get in touch with us today.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      <LogoutModal 
+        isOpen={showLogoutAlert} 
+        onClose={() => setShowLogoutAlert(false)} 
+        onConfirm={() => {
+          setShowLogoutAlert(false);
+          logout();
+        }} 
+      />
     </>
+  );
+}
+
+export function LogoutModal({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose: () => void, onConfirm: () => void }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      <div 
+        className="w-full max-w-[400px] rounded-[24px] bg-white p-8 shadow-2xl"
+        style={{ animation: "authModalIn 0.2s cubic-bezier(0.34,1.46,0.64,1) both" }}
+      >
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-600">
+          <LogOut size={28} />
+        </div>
+        <h3 className="text-center text-xl font-bold text-slate-900 mb-2">Are you sure?</h3>
+        <p className="text-center text-sm text-slate-500 mb-8 leading-relaxed">
+          You are about to log out of your account. You will need to sign in again to access your courses.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-[14px] bg-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 rounded-[14px] bg-red-600 px-4 py-3.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(220,38,38,0.3)] hover:bg-red-700 transition-colors"
+          >
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

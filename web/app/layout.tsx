@@ -5,6 +5,8 @@ import Footer from "@/components/layout/Footer";
 import { Metadata } from "next";
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import LoadingManager from "@/components/ui/LoadingManager";
+import { AuthProvider } from "@/contexts/AuthContext";
+import AuthModal from "@/components/ui/AuthModal";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -52,14 +54,17 @@ export default function RootLayout({
       <body
         className={`${bricolage.variable} font-sans antialiased text-[#023047] bg-white`}
       >
-        <LoadingProvider>
-          <LoadingManager />
-          <Navbar />
-          <main className="md:py-18 pt-12 md:pt-18 pb-24 md:pb-0">
-            {children}
-          </main>
-          <Footer />
-        </LoadingProvider>
+        <AuthProvider>
+          <LoadingProvider>
+            <LoadingManager />
+            <Navbar />
+            <AuthModal />
+            <main className="md:py-18 pt-12 md:pt-18 pb-24 md:pb-0">
+              {children}
+            </main>
+            <Footer />
+          </LoadingProvider>
+        </AuthProvider>
       </body>
     </html>
   );
