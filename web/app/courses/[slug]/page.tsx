@@ -39,7 +39,8 @@ export default async function CoursePage({ params }: Props) {
   //   totalReviews > 0     → show stars + count
   const hasReviews = liveRating !== null && liveRating.totalReviews > 0;
   const ratingError = liveRating === null;
-  const featuredSampleVideo = course.sampleVideos?.find((video) => video.url);
+  const sampleVideos = course.sampleVideos ?? [];
+  const featuredSampleVideo = sampleVideos.find((video) => video.url);
 
   return (
     <main>
@@ -210,7 +211,7 @@ export default async function CoursePage({ params }: Props) {
                     ? urlFor(featuredSampleVideo.poster).width(900).url()
                     : undefined,
                 }}
-                videos={course.sampleVideos
+                videos={sampleVideos
                   .filter((video) => video.url)
                   .slice(0, 5)
                   .map((video) => ({
