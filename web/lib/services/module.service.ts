@@ -17,6 +17,9 @@ export interface CourseModule {
   title: string;
   duration: string | null;
   order_index: number;
+  description?: string;
+  thumbnail_url?: string;
+  video_cf_id?: string;
 }
 
 export async function getCourseModules(
@@ -26,21 +29,47 @@ export async function getCourseModules(
 
   try {
     const supabase = getClient();
-    const { data, error } = await supabase
-      .from("coursemodules")
-      .select("id, title, duration, order_index")
-      .eq("maincourse_id", productUuid)
-      .order("order_index", { ascending: true, nullsFirst: false });
+    
+    // Fetch all courses for this product, ordered by creation date
+    const { data: courses, error: courseError } = await supabase
+      .from("maincourses")
+      .select("id")
+      .eq("product_id", productUuid)
+      .order("created_at", { ascending: true });
 
-    if (error) {
+    if (courseError || !courses || courses.length === 0) {
+      // Fallback: perhaps the productUuid is actually a maincourse_id from an older setup
+      const { data: fallbackModules, error: fallbackError } = await supabase
+        .from("coursemodules")
+        .select("id, title, duration, order_index, description, thumbnail_url, video_cf_id")
+        .eq("maincourse_id", productUuid)
+        .order("order_index", { ascending: true, nullsFirst: false });
+
+      if (!fallbackError && fallbackModules && fallbackModules.length > 0) {
+        return fallbackModules;
+      }
+
       console.error(
-        `[module.service] Failed to fetch modules for product ${productUuid}:`,
-        error.message
+        `[module.service] Failed to find courses for product ${productUuid}:`,
+        courseError?.message
       );
       return [];
     }
 
-    return data || [];
+    // Find the first course that actually has modules
+    for (const course of courses) {
+      const { data, error } = await supabase
+        .from("coursemodules")
+        .select("id, title, duration, order_index, description, thumbnail_url, video_cf_id")
+        .eq("maincourse_id", course.id)
+        .order("order_index", { ascending: true, nullsFirst: false });
+
+      if (!error && data && data.length > 0) {
+        return data;
+      }
+    }
+
+    return [];
   } catch (err) {
     console.error(
       `[module.service] Unexpected error for product ${productUuid}:`,

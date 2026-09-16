@@ -36,14 +36,7 @@ export default async function CoursePage({ params }: Props) {
     ? await getCourseModules(course.productUuid)
     : [];
 
-  const displayModules = courseModules.length > 0
-    ? courseModules
-    : (course.sampleVideos || []).map((v, i) => ({
-        id: v._key || String(i),
-        title: v.title,
-        duration: null,
-        order_index: i,
-      }));
+  const displayModules = courseModules;
 
   const heroImageUrl = course.heroImage
     ? urlFor(course.heroImage).width(1200).url()
@@ -55,8 +48,7 @@ export default async function CoursePage({ params }: Props) {
   //   totalReviews > 0     → show stars + count
   const hasReviews = liveRating !== null && liveRating.totalReviews > 0;
   const ratingError = liveRating === null;
-  const sampleVideos = course.sampleVideos ?? [];
-  const featuredSampleVideo = sampleVideos.find((video) => video.url);
+  const featuredSampleVideo = displayModules.length > 0 ? displayModules[0] : undefined;
 
   return (
     <main className="bg-white text-slate-900">
@@ -221,12 +213,16 @@ export default async function CoursePage({ params }: Props) {
             )}
 
             {/* Course Content (Modules List) */}
-            {displayModules && displayModules.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-bold mb-6">Course content</h2>
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Course content</h2>
+              {displayModules && displayModules.length > 0 ? (
                 <CourseContentAccordion curriculum={course.curriculum || []} modules={displayModules} />
-              </section>
-            )}
+              ) : (
+                <div className="p-6 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 text-sm font-medium text-center">
+                  No preview available
+                </div>
+              )}
+            </section>
             
           </div>
 
@@ -237,31 +233,31 @@ export default async function CoursePage({ params }: Props) {
               
               {/* Video Preview */}
               <div className="bg-white">
-                {featuredSampleVideo?.url ? (
+                {featuredSampleVideo ? (
                   <div className="p-1 pb-0">
                     <SampleVideoPreview
                       courseTitle={course.title}
                       featuredVideo={{
-                        key: featuredSampleVideo._key ?? featuredSampleVideo.url,
-                        title: featuredSampleVideo.title,
-                        url: featuredSampleVideo.url,
-                        mimeType: featuredSampleVideo.mimeType,
-                        poster: featuredSampleVideo.poster
-                          ? urlFor(featuredSampleVideo.poster).width(600).url()
-                          : heroImageUrl,
+                        key: (featuredSampleVideo as any)._key ?? (featuredSampleVideo as any).id ?? String((featuredSampleVideo as any).url),
+                        title: (featuredSampleVideo as any).title,
+                        url: (featuredSampleVideo as any).url,
+                        cloudflareId: (featuredSampleVideo as any).video_cf_id,
+                        description: (featuredSampleVideo as any).description,
+                        duration: (featuredSampleVideo as any).duration,
+                        poster: (featuredSampleVideo as any).thumbnail_url || ((featuredSampleVideo as any).poster
+                          ? urlFor((featuredSampleVideo as any).poster).width(600).url()
+                          : heroImageUrl),
+                        isLocked: false,
                       }}
-                      videos={sampleVideos
-                        .filter((video) => video.url)
-                        .slice(0, 5)
-                        .map((video) => ({
-                          key: video._key ?? video.url!,
-                          title: video.title,
-                          url: video.url!,
-                          mimeType: video.mimeType,
-                          poster: video.poster
-                            ? urlFor(video.poster).width(320).url()
-                            : undefined,
-                        }))}
+                      videos={displayModules.map((mod, index) => ({
+                        key: mod.id,
+                        title: mod.title,
+                        cloudflareId: mod.video_cf_id || undefined,
+                        poster: mod.thumbnail_url || undefined,
+                        description: mod.description || undefined,
+                        duration: mod.duration || undefined,
+                        isLocked: index >= 5,
+                      }))}
                     />
                   </div>
                 ) : (

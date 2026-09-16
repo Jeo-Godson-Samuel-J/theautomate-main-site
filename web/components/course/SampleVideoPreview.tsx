@@ -1,14 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Play, X } from "lucide-react";
+import { Play, X, Lock } from "lucide-react";
+import Link from "next/link";
 
 interface PreviewVideo {
   key: string;
   title: string;
-  url: string;
+  url?: string;
   mimeType?: string;
   poster?: string;
+  description?: string;
+  duration?: string;
+  isLocked?: boolean;
+  cloudflareId?: string;
 }
 
 interface SampleVideoPreviewProps {
@@ -47,7 +52,10 @@ export default function SampleVideoPreview({
       if (idx === 0) {
         setSelectedVideo(featuredVideo);
       } else if (idx > 0 && idx <= videos.length) {
-        setSelectedVideo(videos[idx - 1]);
+        const vid = videos[idx - 1];
+        if (!vid.isLocked) {
+          setSelectedVideo(vid);
+        }
       }
       setIsOpen(true);
     };
@@ -61,6 +69,16 @@ export default function SampleVideoPreview({
   const openPreview = () => {
     setSelectedVideo(featuredVideo);
     setIsOpen(true);
+  };
+
+  const handleVideoSelect = (video: PreviewVideo) => {
+    if (video.isLocked) {
+      setIsOpen(false);
+      // Navigate to the plans page for this course
+      window.location.href = `${window.location.pathname}/plans`;
+    } else {
+      setSelectedVideo(video);
+    }
   };
 
   return (
@@ -112,8 +130,8 @@ export default function SampleVideoPreview({
             if (event.target === event.currentTarget) setIsOpen(false);
           }}
         >
-          <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-2xl bg-[#11131c] text-white shadow-2xl">
-            <div className="flex items-start justify-between gap-5 px-5 py-4 md:px-6">
+          <div className="max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-[#11131c] text-white shadow-2xl flex flex-col">
+            <div className="flex items-start justify-between gap-5 px-5 py-4 md:px-6 shrink-0">
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-400">
                   Course Preview
@@ -132,22 +150,38 @@ export default function SampleVideoPreview({
               </button>
             </div>
 
-            <div className="max-h-[calc(92vh-76px)] overflow-y-auto">
-              <video
-                key={selectedVideo.key}
-                controls
-                autoPlay
-                playsInline
-                preload="metadata"
-                poster={selectedVideo.poster}
-                className="aspect-video w-full bg-black object-cover"
-              >
-                <source src={selectedVideo.url} type={selectedVideo.mimeType} />
-                Your browser does not support video playback.
-              </video>
+            <div className="flex-1 overflow-y-auto">
+              <div className="w-full bg-black aspect-video relative">
+                {selectedVideo.cloudflareId ? (
+                  <iframe
+                    src={`https://iframe.videodelivery.net/${selectedVideo.cloudflareId}?autoplay=true`}
+                    className="border-0 w-full h-full absolute inset-0"
+                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowFullScreen
+                  />
+                ) : selectedVideo.url ? (
+                  <video
+                    key={selectedVideo.key}
+                    controls
+                    autoPlay
+                    playsInline
+                    preload="metadata"
+                    poster={selectedVideo.poster}
+                    className="w-full h-full absolute inset-0 object-cover"
+                  >
+                    <source src={selectedVideo.url} type={selectedVideo.mimeType} />
+                    Your browser does not support video playback.
+                  </video>
+                ) : (
+                  <div className="w-full h-full absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                    Video unavailable
+                  </div>
+                )}
+              </div>
 
-              <div className="px-5 pb-3 pt-4 md:px-6">
-                <h3 className="text-sm font-bold">Free Sample Videos:</h3>
+              <div className="px-5 pb-3 pt-6 md:px-6 shrink-0">
+                <h3 className="text-lg font-bold">Course Modules</h3>
+                <p className="text-sm text-slate-400 mt-1">First 5 modules are free to preview</p>
               </div>
 
               <div className="border-t border-white/15">
@@ -158,26 +192,59 @@ export default function SampleVideoPreview({
                     <button
                       key={video.key}
                       type="button"
-                      onClick={() => setSelectedVideo(video)}
-                      className={`flex w-full items-center gap-3 border-b border-white/15 px-5 py-3 text-left transition-colors md:px-6 ${
+                      onClick={() => handleVideoSelect(video)}
+                      className={`flex w-full items-start gap-4 border-b border-white/15 px-5 py-4 text-left transition-colors md:px-6 ${
                         isSelected ? "bg-[#292b43]" : "hover:bg-white/5"
                       }`}
                     >
-                      <span
-                        className="flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden bg-slate-800 bg-cover bg-center"
-                        style={
-                          video.poster
-                            ? { backgroundImage: `url(${video.poster})` }
-                            : undefined
-                        }
-                      >
-                        {!video.poster && <Play className="h-4 w-4" />}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-200">
-                        {video.title}
-                      </span>
-                      {isSelected && (
-                        <Play className="h-4 w-4 shrink-0 fill-current" />
+                      <div className="relative shrink-0">
+                        <span
+                          className="flex h-16 w-28 items-center justify-center overflow-hidden rounded bg-slate-800 bg-cover bg-center"
+                          style={
+                            video.poster
+                              ? { backgroundImage: `url(${video.poster})` }
+                              : undefined
+                          }
+                        >
+                          {!video.poster && !video.isLocked && <Play className="h-6 w-6" />}
+                        </span>
+                        {video.isLocked && (
+                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center backdrop-blur-[1px]">
+                            <Lock className="h-5 w-5 text-white/90" />
+                          </div>
+                        )}
+                        {video.duration && (
+                          <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide">
+                            {video.duration}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-slate-200">
+                            {video.title}
+                          </span>
+                          {video.isLocked && (
+                            <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-medium">
+                              Locked
+                            </span>
+                          )}
+                        </div>
+                        {video.description && (
+                          <p className="mt-1 text-sm text-slate-400 line-clamp-2">
+                            {video.description}
+                          </p>
+                        )}
+                        {video.isLocked && (
+                          <p className="mt-2 text-xs text-blue-400 font-medium hover:text-blue-300">
+                            Unlock now to view →
+                          </p>
+                        )}
+                      </div>
+                      {isSelected && !video.isLocked && (
+                        <div className="flex h-full items-center">
+                          <Play className="h-5 w-5 shrink-0 fill-current text-white/80" />
+                        </div>
                       )}
                     </button>
                   );
