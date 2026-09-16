@@ -41,6 +41,23 @@ export default function SampleVideoPreview({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    const handleOpenPreview = (event: CustomEvent<{ index: number }>) => {
+      const idx = event.detail?.index ?? 0;
+      if (idx === 0) {
+        setSelectedVideo(featuredVideo);
+      } else if (idx > 0 && idx <= videos.length) {
+        setSelectedVideo(videos[idx - 1]);
+      }
+      setIsOpen(true);
+    };
+
+    window.addEventListener("open-preview", handleOpenPreview as EventListener);
+    return () => {
+      window.removeEventListener("open-preview", handleOpenPreview as EventListener);
+    };
+  }, [featuredVideo, videos]);
+
   const openPreview = () => {
     setSelectedVideo(featuredVideo);
     setIsOpen(true);

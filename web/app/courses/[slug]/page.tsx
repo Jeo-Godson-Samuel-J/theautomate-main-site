@@ -3,11 +3,14 @@ import { notFound } from "next/navigation";
 import { PortableText } from "@portabletext/react";
 import { getCourseBySlug } from "@/lib/services/course.service";
 import { getCourseRating } from "@/lib/services/rating.service";
+import { getCourseModules } from "@/lib/services/module.service";
 import { urlFor } from "@/lib/sanity.client";
 import { StarRating } from "@/components/ui/StarRating";
 import ContactCTA from "@/sections/HomeCTA";
 import PlanSelector from "@/components/layout/PlanSelector";
 import SampleVideoPreview from "@/components/course/SampleVideoPreview";
+import CourseContentAccordion from "@/components/course/CourseContentAccordion";
+import { Check, ChevronRight } from "lucide-react";
 
 interface Props {
   params: Promise<{
@@ -29,6 +32,19 @@ export default async function CoursePage({ params }: Props) {
     ? await getCourseRating(course.productUuid)
     : { averageRating: 0, totalReviews: 0 };
 
+  const courseModules = course.productUuid 
+    ? await getCourseModules(course.productUuid)
+    : [];
+
+  const displayModules = courseModules.length > 0
+    ? courseModules
+    : (course.sampleVideos || []).map((v, i) => ({
+        id: v._key || String(i),
+        title: v.title,
+        duration: null,
+        order_index: i,
+      }));
+
   const heroImageUrl = course.heroImage
     ? urlFor(course.heroImage).width(1200).url()
     : "/placeholder.png";
@@ -43,77 +59,112 @@ export default async function CoursePage({ params }: Props) {
   const featuredSampleVideo = sampleVideos.find((video) => video.url);
 
   return (
-    <main>
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-7xl font-bold text-center">{course.title}</h1>
-
-          <div className="mt-8 flex justify-center items-center gap-8 flex-wrap">
-            {/* Live rating from Supabase — replaces static course.rating */}
-            {!ratingError && (
-              <div className="flex items-center gap-2">
-                {hasReviews ? (
-                  <>
-                    <StarRating
-                      rating={liveRating!.averageRating}
-                      showNumber={false}
-                      size={20}
-                    />
-                    <span className="text-base font-semibold text-slate-700">
-                      {liveRating!.averageRating.toFixed(1)}
-                    </span>
-                    <span className="text-sm text-slate-500">
-                      ({liveRating!.totalReviews}{" "}
-                      {liveRating!.totalReviews === 1 ? "review" : "reviews"})
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-sm text-slate-400">No reviews yet</span>
-                )}
+    <main className="bg-white text-slate-900">
+      {/* Hero Section */}
+      <section className="bg-brand-deep text-white py-12 lg:py-16 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-3 gap-10">
+            {/* Left Content (2/3 width on desktop) */}
+            <div className="lg:col-span-2 space-y-5">
+              {/* Category Breadcrumbs Placeholder */}
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-300">
+                <span className="cursor-pointer hover:text-white">Courses</span>
+                <ChevronRight className="w-4 h-4" />
+                <span>{course.title}</span>
               </div>
-            )}
 
-            {course.students != null && (
-              <div className="text-slate-600">({course.students} students)</div>
-            )}
-            {course.instructorName && (
-              <div className="text-slate-600">{course.instructorName}</div>
-            )}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                {/* Course Logo */}
+                <div className="shrink-0">
+                  <Image
+                    src={heroImageUrl}
+                    alt={`${course.title} logo`}
+                    width={100}
+                    height={100}
+                    className="rounded-xl shadow-lg border border-white/20 object-cover w-24 h-24"
+                  />
+                </div>
+                
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-bold leading-tight">{course.title}</h1>
+                  
+                  <div className="flex flex-wrap items-center gap-4 text-sm mt-4">
+                {!ratingError && (
+                  <div className="flex items-center gap-2">
+                    {hasReviews ? (
+                      <>
+                        <span className="text-amber-400 font-bold">{liveRating!.averageRating.toFixed(1)}</span>
+                        <StarRating
+                          rating={liveRating!.averageRating}
+                          showNumber={false}
+                          size={16}
+                        />
+                        <span className="text-slate-300 underline cursor-pointer hover:text-white">
+                          ({liveRating!.totalReviews}{" "}
+                          {liveRating!.totalReviews === 1 ? "rating" : "ratings"})
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-slate-400">No ratings yet</span>
+                    )}
+                  </div>
+                )}
+                {course.students != null && (
+                  <div className="text-slate-300">{course.students} students</div>
+                )}
+                  </div>
+                </div>
+              </div>
+              
+              {course.instructorName && (
+                <div className="text-slate-200 text-sm">
+                  Created by <span className="underline cursor-pointer hover:text-white">{course.instructorName}</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Right column placeholder in hero to maintain grid structure */}
+            <div className="hidden lg:block"></div>
           </div>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2">
-          <Image
-            src={heroImageUrl}
-            alt={course.title}
-            width={1200}
-            height={700}
-            className="rounded-3xl"
-          />
-
-          <div className="space-y-16 mt-16">
-            {/* Description */}
-            {course.description && course.description.length > 0 && (
-              <section>
-                <h2 className="text-4xl font-bold mb-6">About the Course</h2>
-                <div className="text-lg leading-9 prose prose-lg max-w-none">
-                  <PortableText value={course.description} />
+      {/* Main Content & Sidebar Grid */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <div className="grid lg:grid-cols-3 gap-10 relative">
+          
+          {/* Left Column - Main Details */}
+          <div className="lg:col-span-2 space-y-12 lg:pr-8 pt-8 pb-4">
+            
+            {/* What you'll learn */}
+            {course.curriculum && course.curriculum.length > 0 && (
+              <div className="border border-slate-200 rounded-lg p-6 sm:p-8 bg-slate-50/50">
+                <h2 className="text-2xl font-bold mb-6">What you'll learn</h2>
+                <div className="grid sm:grid-cols-2 gap-x-6 gap-y-4">
+                  {course.curriculum.map((mod, index) => (
+                    <div key={index}>
+                      <div className="flex items-start gap-3">
+                        <Check className="w-5 h-5 shrink-0 text-slate-700 mt-0.5" />
+                        <div>
+                           <span className="text-sm text-slate-700">{mod.subheading}</span>
+                           {mod.summary && (
+                             <p className="mt-1 text-xs text-slate-500 italic">{mod.summary}</p>
+                           )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </section>
+              </div>
             )}
 
-            {/* Key Concepts */}
+            {/* Course Content / Key Concepts */}
             {course.keyConcepts && course.keyConcepts.length > 0 && (
               <section>
-                <h2 className="text-4xl font-bold mb-6">Key Concepts</h2>
-                <div className="grid sm:grid-cols-2 gap-6">
+                <h2 className="text-2xl font-bold mb-6">Course content</h2>
+                <div className="space-y-4">
                   {course.keyConcepts.map((concept, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50"
-                    >
+                    <div key={index} className="flex items-start gap-4 p-4 rounded-lg bg-slate-50 border border-slate-100">
                       {concept.icon && (
                         <Image
                           src={urlFor(concept.icon).width(48).url()}
@@ -124,13 +175,9 @@ export default async function CoursePage({ params }: Props) {
                         />
                       )}
                       <div>
-                        <h3 className="font-semibold text-lg">
-                          {concept.title}
-                        </h3>
+                        <h3 className="font-semibold text-slate-900">{concept.title}</h3>
                         {concept.description && (
-                          <p className="text-slate-500 text-sm mt-1">
-                            {concept.description}
-                          </p>
+                          <p className="text-slate-600 text-sm mt-1">{concept.description}</p>
                         )}
                       </div>
                     </div>
@@ -139,119 +186,136 @@ export default async function CoursePage({ params }: Props) {
               </section>
             )}
 
-            {/* Curriculum */}
-            {course.curriculum && course.curriculum.length > 0 && (
+            {/* Requirements */}
+            {course.whoFor && course.whoFor.length > 0 && (
               <section>
-                <h2 className="text-4xl font-bold mb-6">
-                  What You&apos;ll Learn
-                </h2>
-                <div className="space-y-8">
-                  {course.curriculum.map((mod, index) => (
-                    <div key={index} className="p-6 rounded-2xl bg-slate-50">
-                      <h3 className="text-xl font-bold mb-3">
-                        {mod.subheading}
-                      </h3>
-                      {mod.points && mod.points.length > 0 && (
-                        <ul className="space-y-2">
-                          {mod.points.map((point, pi) => (
-                            <li key={pi}>• {point}</li>
-                          ))}
-                        </ul>
-                      )}
-                      {mod.summary && (
-                        <p className="mt-3 text-sm text-slate-500 italic">
-                          {mod.summary}
-                        </p>
-                      )}
-                    </div>
+                <h2 className="text-2xl font-bold mb-4">Requirements</h2>
+                <ul className="space-y-2 list-disc list-inside text-slate-700">
+                  {course.whoFor.map((item, index) => (
+                    <li key={index}>{item}</li>
                   ))}
-                </div>
+                </ul>
               </section>
             )}
 
-            {/* Who is this for */}
-            {course.whoFor && course.whoFor.length > 0 && (
+            {/* Description */}
+            {course.description && course.description.length > 0 && (
               <section>
-                <h2 className="text-4xl font-bold mb-6">
-                  Who is this Course For?
-                </h2>
-                <ul className="space-y-3">
-                  {course.whoFor.map((item, index) => (
-                    <li key={index}>• {item}</li>
-                  ))}
-                </ul>
+                <h2 className="text-2xl font-bold mb-4">Description</h2>
+                <div className="text-slate-700 leading-relaxed prose prose-slate max-w-none prose-headings:font-bold prose-a:text-blue-600">
+                  <PortableText value={course.description} />
+                </div>
               </section>
             )}
 
             {/* Outcomes */}
             {course.outcomes && course.outcomes.length > 0 && (
               <section>
-                <h2 className="text-4xl font-bold mb-6">Outcomes</h2>
-                <ul className="space-y-3">
+                <h2 className="text-2xl font-bold mb-4">Outcomes</h2>
+                <ul className="space-y-2 list-disc list-inside text-slate-700">
                   {course.outcomes.map((item, index) => (
-                    <li key={index}>• {item}</li>
+                    <li key={index}>{item}</li>
                   ))}
                 </ul>
               </section>
             )}
-          </div>
-        </div>
 
-        <div>
-          <div className="sticky top-28 space-y-5">
-            {featuredSampleVideo?.url && (
-              <SampleVideoPreview
-                courseTitle={course.title}
-                featuredVideo={{
-                  key: featuredSampleVideo._key ?? featuredSampleVideo.url,
-                  title: featuredSampleVideo.title,
-                  url: featuredSampleVideo.url,
-                  mimeType: featuredSampleVideo.mimeType,
-                  poster: featuredSampleVideo.poster
-                    ? urlFor(featuredSampleVideo.poster).width(900).url()
-                    : undefined,
-                }}
-                videos={sampleVideos
-                  .filter((video) => video.url)
-                  .slice(0, 5)
-                  .map((video) => ({
-                    key: video._key ?? video.url!,
-                    title: video.title,
-                    url: video.url!,
-                    mimeType: video.mimeType,
-                    poster: video.poster
-                      ? urlFor(video.poster).width(320).url()
-                      : undefined,
-                  }))}
-              />
+            {/* Course Content (Modules List) */}
+            {displayModules && displayModules.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-bold mb-6">Course content</h2>
+                <CourseContentAccordion curriculum={course.curriculum || []} modules={displayModules} />
+              </section>
             )}
+            
+          </div>
 
-            <div className="rounded-3xl bg-blue-50 p-8">
-              {course.level && (
-                <div className="text-sm uppercase">{course.level}</div>
-              )}
-
-              <div className="text-5xl font-bold mt-4">
-                ₹{course.price?.toLocaleString("en-IN") ?? "—"}
+          {/* Right Column - Floating Sidebar */}
+          <div className="relative">
+            {/* The negative top margin pulls it up over the dark hero section on large screens */}
+            <div className="lg:-mt-[280px] lg:sticky lg:top-8 z-10 rounded-xl bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-200 overflow-hidden">
+              
+              {/* Video Preview */}
+              <div className="bg-white">
+                {featuredSampleVideo?.url ? (
+                  <div className="p-1 pb-0">
+                    <SampleVideoPreview
+                      courseTitle={course.title}
+                      featuredVideo={{
+                        key: featuredSampleVideo._key ?? featuredSampleVideo.url,
+                        title: featuredSampleVideo.title,
+                        url: featuredSampleVideo.url,
+                        mimeType: featuredSampleVideo.mimeType,
+                        poster: featuredSampleVideo.poster
+                          ? urlFor(featuredSampleVideo.poster).width(600).url()
+                          : heroImageUrl,
+                      }}
+                      videos={sampleVideos
+                        .filter((video) => video.url)
+                        .slice(0, 5)
+                        .map((video) => ({
+                          key: video._key ?? video.url!,
+                          title: video.title,
+                          url: video.url!,
+                          mimeType: video.mimeType,
+                          poster: video.poster
+                            ? urlFor(video.poster).width(320).url()
+                            : undefined,
+                        }))}
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-video w-full overflow-hidden border-b border-slate-100">
+                    <Image
+                      src={heroImageUrl}
+                      alt={course.title}
+                      width={600}
+                      height={340}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
               </div>
 
-              <hr className="my-8" />
-
-              <div className="space-y-4">
-                {course.duration && (
-                  <div>🎥 {course.duration} on-demand videos</div>
-                )}
-                {course.hours != null && (
-                  <div>⏱️ {course.hours} hours of content</div>
-                )}
-                {course.students != null && (
-                  <div>👥 {course.students} students</div>
-                )}
-                <div>⭐ Certificate Included</div>
-              </div>
-
-              <div className="mt-10">
+              {/* Sidebar Body */}
+              <div className="p-6">
+                <div className="text-3xl font-bold text-slate-900 mb-6">
+                  ₹{course.price?.toLocaleString("en-IN") ?? "—"}
+                </div>
+                
                 <PlanSelector courseSlug={course.slug} />
+
+                <div className="mt-6 text-xs text-center text-slate-500 mb-6">
+                  30-Day Money-Back Guarantee
+                </div>
+
+                <div className="space-y-4 text-sm text-slate-700">
+                  <div className="font-bold text-slate-900 mb-2">This course includes:</div>
+                  
+                  {course.duration && (
+                    <div className="flex items-center gap-3">
+                      <span className="w-4 h-4 text-slate-900 flex items-center justify-center">🎥</span>
+                      <span>{course.duration} on-demand video</span>
+                    </div>
+                  )}
+                  {course.hours != null && (
+                    <div className="flex items-center gap-3">
+                      <span className="w-4 h-4 text-slate-900 flex items-center justify-center">⏱️</span>
+                      <span>{course.hours} hours of content</span>
+                    </div>
+                  )}
+                  {course.students != null && (
+                    <div className="flex items-center gap-3">
+                      <span className="w-4 h-4 text-slate-900 flex items-center justify-center">👥</span>
+                      <span>{course.students} students</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <span className="w-4 h-4 text-slate-900 flex items-center justify-center">⭐</span>
+                    <span>Certificate of completion</span>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
