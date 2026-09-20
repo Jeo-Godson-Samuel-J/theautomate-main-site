@@ -7,8 +7,39 @@ import {
 import { Course } from "../types/course";
 import { Plan } from "../types/plan";
 
+import { getCourseRating } from "./rating.service";
+
 export async function getCourses(): Promise<Course[]> {
-  return client.fetch(COURSES_QUERY);
+  const courses = await client.fetch(COURSES_QUERY);
+  
+  // Enrich courses with live database ratings
+  const enrichedCourses = await Promise.all(
+    courses.map(async (course: Course) => {
+      if (course.productUuid) {
+        const liveRating = await getCourseRating(course.productUuid);
+        if (liveRating && liveRating.totalReviews > 0) {
+          return {
+            ...course,
+            rating: parseFloat(liveRating.averageRating.toFixed(1)),
+            students: liveRating.totalReviews,
+          };
+        } else {
+          return {
+            ...course,
+            rating: undefined,
+            students: undefined,
+          };
+        }
+      }
+      return {
+        ...course,
+        rating: undefined,
+        students: undefined,
+      };
+    })
+  );
+  
+  return enrichedCourses;
 }
 
 export async function getCourseBySlug(slug: string): Promise<Course | null> {

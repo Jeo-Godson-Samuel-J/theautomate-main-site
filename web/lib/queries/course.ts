@@ -3,6 +3,7 @@ export const COURSES_QUERY = `
   _id,
   title,
   "slug": slug.current,
+  productUuid,
   tagline,
   hoverDescription,
   rating,

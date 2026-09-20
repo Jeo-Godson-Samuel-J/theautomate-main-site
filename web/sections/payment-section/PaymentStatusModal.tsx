@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle2, XCircle, Loader2, Home, RotateCcw } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, LogIn, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ModalProps {
@@ -10,7 +10,6 @@ interface ModalProps {
     message: string;
     orderId?: string;
     redirectUrl?: string;
-    /** True when the purchaser already had an account — redirects to login instead of courses */
     isExistingUser?: boolean;
     onClose: () => void;
 }
@@ -68,8 +67,8 @@ export default function PaymentStatusModal({ isOpen, status, message, orderId, r
                                         onClick={() => window.location.href = redirectUrl || '/courses'}
                                         className="w-full bg-[#1B262C] hover:bg-gray-800 h-14 rounded-2xl font-bold shadow-lg"
                                     >
-                                        <Home className="w-5 h-5 mr-3" />
-                                        {isExistingUser ? 'Log In to Your Account' : 'Go to Courses'}
+                                        <LogIn className="w-5 h-5 mr-3" />
+                                        {isExistingUser ? 'Go to Learning Portal' : 'Start Learning'}
                                     </Button>
                                     {orderId && (
                                         <Button

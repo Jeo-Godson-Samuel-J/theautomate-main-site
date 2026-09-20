@@ -33,6 +33,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check active session on mount
     supabaseBrowser.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
+        const lastSignInAt = new Date(session.user.last_sign_in_at || session.user.created_at).getTime();
+        const daysSinceSignIn = (Date.now() - lastSignInAt) / (1000 * 60 * 60 * 24);
+
+        if (daysSinceSignIn > 14) {
+          supabaseBrowser.auth.signOut();
+          return;
+        }
+
         setIsLoggedIn(true);
         setUser({
           id: session.user.id,
@@ -66,6 +74,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabaseBrowser.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
+        const lastSignInAt = new Date(session.user.last_sign_in_at || session.user.created_at).getTime();
+        const daysSinceSignIn = (Date.now() - lastSignInAt) / (1000 * 60 * 60 * 24);
+
+        if (daysSinceSignIn > 14) {
+          supabaseBrowser.auth.signOut();
+          return;
+        }
+
         setIsLoggedIn(true);
         setUser({
           id: session.user.id,

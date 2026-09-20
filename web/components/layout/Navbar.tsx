@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { gsap, useGSAP } from "@/lib/gsap";
-import { ShoppingCart, User, LogOut, MessageSquare } from 'lucide-react';
+import { ShoppingCart, User, LogOut, MessageSquare, BookOpen, ChevronRight, ChevronLeft, Play } from 'lucide-react';
 import { getCart } from "@/lib/services/cart";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabaseBrowser } from "@/lib/supabase.browser";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -34,6 +35,61 @@ export default function Navbar() {
   const { isLoggedIn, user, logout } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
+  const [showMyLearning, setShowMyLearning] = useState(false);
+  const [activeCourses, setActiveCourses] = useState<any[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
+
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      setIsLoadingCourses(true);
+      const fetchCourses = async () => {
+        try {
+          const userEmail = user.email?.trim().toLowerCase() || "";
+
+          // Fetch from phase2 schema enrollments
+          const { data: enrollmentsData } = await supabaseBrowser
+            .schema("phase2")
+            .from("enrollments")
+            .select("course_id, users!inner(auth_user_id)")
+            .eq("users.auth_user_id", user.id)
+            .eq("status", "active");
+
+          // Fetch from public course_members
+          const { data: courseMembersData } = await supabaseBrowser
+            .from("course_members")
+            .select("maincourse_id")
+            .eq("email", userEmail)
+            .eq("status", "active");
+
+          const enrollmentCourseIds = enrollmentsData?.map((e: any) => e.course_id) || [];
+          const memberCourseIds = courseMembersData?.map((m: any) => m.maincourse_id) || [];
+          
+          const allCourseIds = Array.from(new Set([...enrollmentCourseIds, ...memberCourseIds]));
+
+          if (allCourseIds.length > 0) {
+            const { data: maincoursesData } = await supabaseBrowser
+              .from("maincourses")
+              .select(`
+                id,
+                title,
+                description,
+                thumbnail_url
+              `)
+              .in("id", allCourseIds);
+
+            if (maincoursesData) {
+               setActiveCourses(maincoursesData);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch active courses:", error);
+        } finally {
+          setIsLoadingCourses(false);
+        }
+      };
+      fetchCourses();
+    }
+  }, [isLoggedIn, user]);
 
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
@@ -113,6 +169,7 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setIsProfileOpen(false);
+        setTimeout(() => setShowMyLearning(false), 300);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -237,49 +294,166 @@ export default function Navbar() {
                 </Link>
                 
                 {isLoggedIn ? (
-                  <div className="relative" ref={profileRef}>
-                    <button
-                      onClick={() => setIsProfileOpen(!isProfileOpen)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 border border-slate-200 text-[#0166A7] hover:bg-slate-200 transition-colors"
-                    >
-                      <User size={20} />
-                    </button>
+                    <div className="relative" ref={profileRef}>
+                      <button
+                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 border border-slate-200 text-[#0166A7] hover:bg-slate-200 transition-colors"
+                      >
+                        <User size={20} />
+                      </button>
 
-                    {isProfileOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white p-2 shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 flex flex-col pointer-events-auto">
-                        <div className="px-3 py-2 border-b border-slate-50 mb-1">
-                          <p className="text-sm font-semibold text-slate-900 truncate">{user?.name}</p>
-                          <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                      {isProfileOpen && (
+                        <div className={`absolute right-0 top-full mt-2 ${showMyLearning ? 'w-80' : 'w-48'} rounded-2xl bg-white p-2 shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 flex flex-col pointer-events-auto transition-all duration-300`}>
+                          {!showMyLearning ? (
+                            <>
+                              <div className="px-3 py-2 border-b border-slate-50 mb-1">
+                                <p className="text-sm font-semibold text-slate-900 truncate">{user?.name}</p>
+                                <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                              </div>
+                              <div
+                                className="flex flex-row items-center justify-between rounded-xl px-2 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#0166A7] transition-colors group"
+                              >
+                                <button
+                                  onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setIsProfileOpen(false);
+                                    const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+                                    // /courses is the "My Learning" page in the portal
+                                    const params = new URLSearchParams({ next: '/courses' });
+                                    if (user?.email) params.set('email', user.email);
+                                    window.location.href = `${baseUrl}/login?${params.toString()}`;
+                                  }}
+                                  className="flex flex-1 items-center gap-2 px-2 py-1.5"
+                                >
+                                  <BookOpen size={16} />
+                                  My Learning
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowMyLearning(true);
+                                  }}
+                                  className="p-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+                                  title="View Courses"
+                                >
+                                  <ChevronRight size={16} />
+                                </button>
+                              </div>
+                              <Link
+                                href="/contact"
+                                onClick={() => setIsProfileOpen(false)}
+                                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#0166A7] transition-colors"
+                              >
+                                <MessageSquare size={16} />
+                                Contact
+                              </Link>
+                              <button
+                                onClick={() => {
+                                  setIsProfileOpen(false);
+                                  setShowLogoutAlert(true);
+                                }}
+                                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left"
+                              >
+                                <LogOut size={16} />
+                                Logout
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-50 mb-1">
+                                <button 
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowMyLearning(false);
+                                  }}
+                                  className="p-1.5 -ml-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+                                >
+                                  <ChevronLeft size={16} />
+                                </button>
+                                <span className="text-sm font-semibold text-slate-900">My Learning</span>
+                              </div>
+                              <div className="max-h-[60vh] overflow-y-auto flex flex-col gap-2 p-1 custom-scrollbar" style={{ scrollbarWidth: 'thin' }}>
+                                {isLoadingCourses ? (
+                                  <div className="p-4 text-center text-sm text-slate-500">Loading courses...</div>
+                                ) : activeCourses.length === 0 ? (
+                                  <div className="p-4 text-center text-sm text-slate-500">No active courses found.</div>
+                                ) : (
+                                  activeCourses.map((course, idx) => (
+                                    <div key={idx} className="flex gap-3 items-center p-2 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100/50 transition-colors relative group">
+                                      {course.thumbnail_url ? (
+                                        <img src={course.thumbnail_url} alt={course.title} className="w-12 h-12 rounded-lg object-cover bg-slate-200 shrink-0" />
+                                      ) : (
+                                        <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center shrink-0">
+                                          <BookOpen size={20} className="text-slate-400" />
+                                        </div>
+                                      )}
+                                      <div className="flex-1 min-w-0 pr-8">
+                                        <p className="text-sm font-semibold text-slate-900 truncate">{course.title}</p>
+                                        <p className="text-xs text-slate-500 line-clamp-1" title={course.description}>{course.description}</p>
+                                      </div>
+                                      <button
+                                        onClick={async (e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+                                          const courseId = String(course.id);
+
+                                          // Query user_video_progress for the most-recently
+                                          // updated incomplete module in this course so we can
+                                          // deep-link directly to where the user left off.
+                                          // Falls back to the course root (portal auto-selects resume module).
+                                          let nextPath = `/courses/${courseId}`;
+                                          try {
+                                            const { data: progressRows } = await supabaseBrowser
+                                              .from('user_video_progress')
+                                              .select('video_id, completed, updated_at')
+                                              .eq('course_id', courseId)
+                                              .order('updated_at', { ascending: false })
+                                              .limit(20);
+
+                                            if (progressRows && progressRows.length > 0) {
+                                              // Prefer the most-recently touched incomplete module
+                                              const lastIncomplete = progressRows.find(
+                                                (r: any) => !r.completed
+                                              );
+                                              const moduleId = lastIncomplete?.video_id ?? progressRows[0]?.video_id;
+                                              if (moduleId) {
+                                                nextPath = `/courses/${courseId}?module=${moduleId}`;
+                                              }
+                                            }
+                                          } catch (err) {
+                                            console.error('Failed to fetch resume module', err);
+                                          }
+
+                                          const params = new URLSearchParams({ next: nextPath });
+                                          if (user?.email) params.set('email', user.email);
+                                          window.location.href = `${baseUrl}/login?${params.toString()}`;
+                                        }}
+                                        className="absolute right-3 flex items-center justify-center w-8 h-8 rounded-full bg-[#0166A7] text-white hover:bg-[#01558b] transition-colors opacity-90 hover:opacity-100 shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+                                        title="Resume Course"
+                                      >
+                                        <Play size={14} fill="currentColor" className="ml-0.5" />
+                                      </button>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </>
+                          )}
                         </div>
-                        <Link
-                          href="/contact"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#0166A7] transition-colors"
-                        >
-                          <MessageSquare size={16} />
-                          Contact
-                        </Link>
-                        <button
-                          onClick={() => {
-                            setIsProfileOpen(false);
-                            setShowLogoutAlert(true);
-                          }}
-                          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left"
-                        >
-                          <LogOut size={16} />
-                          Logout
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Button
-                    asChild
-                    className="rounded-full bg-[#0166A7] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)] transition-all duration-250 hover:scale-[1.03] hover:brightness-110"
-                  >
-                    <Link href="/contact">Contact</Link>
-                  </Button>
-                )}
+                      )}
+                    </div>
+                  ) : (
+                    <Button
+                      asChild
+                      className="rounded-full bg-[#0166A7] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)] transition-all duration-250 hover:scale-[1.03] hover:brightness-110"
+                    >
+                      <Link href="/contact">Contact</Link>
+                    </Button>
+                  )}
                 
                 <button
                   onClick={() => setIsOpen(!isOpen)}

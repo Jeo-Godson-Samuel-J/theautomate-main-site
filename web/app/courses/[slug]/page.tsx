@@ -2,7 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { PortableText } from "@portabletext/react";
 import { getCourseBySlug } from "@/lib/services/course.service";
-import { getCourseRating } from "@/lib/services/rating.service";
+import { getCourseRating, getCourseReviews } from "@/lib/services/rating.service";
 import { getCourseModules } from "@/lib/services/module.service";
 import { urlFor } from "@/lib/sanity.client";
 import { StarRating } from "@/components/ui/StarRating";
@@ -10,6 +10,7 @@ import ContactCTA from "@/sections/HomeCTA";
 import PlanSelector from "@/components/layout/PlanSelector";
 import SampleVideoPreview from "@/components/course/SampleVideoPreview";
 import CourseContentAccordion from "@/components/course/CourseContentAccordion";
+import CourseReviewsModal from "@/components/course/CourseReviewsModal";
 import { Check, ChevronRight } from "lucide-react";
 
 interface Props {
@@ -28,13 +29,11 @@ export default async function CoursePage({ params }: Props) {
 
   // Parallel fetch: Supabase live rating alongside any other async work.
   // getCourseRating returns null on DB error (page still renders safely).
-  const liveRating = course.productUuid
-    ? await getCourseRating(course.productUuid)
-    : { averageRating: 0, totalReviews: 0 };
-
-  const courseModules = course.productUuid 
-    ? await getCourseModules(course.productUuid)
-    : [];
+  const [liveRating, courseModules, detailedReviews] = await Promise.all([
+    course.productUuid ? getCourseRating(course.productUuid) : Promise.resolve({ averageRating: 0, totalReviews: 0 }),
+    course.productUuid ? getCourseModules(course.productUuid) : Promise.resolve([]),
+    course.productUuid ? getCourseReviews(course.productUuid) : Promise.resolve([])
+  ]);
 
   const displayModules = courseModules;
 
@@ -91,10 +90,11 @@ export default async function CoursePage({ params }: Props) {
                           showNumber={false}
                           size={16}
                         />
-                        <span className="text-slate-300 underline cursor-pointer hover:text-white">
-                          ({liveRating!.totalReviews}{" "}
-                          {liveRating!.totalReviews === 1 ? "rating" : "ratings"})
-                        </span>
+                        <CourseReviewsModal 
+                          averageRating={liveRating!.averageRating}
+                          totalReviews={liveRating!.totalReviews}
+                          reviews={detailedReviews}
+                        />
                       </>
                     ) : (
                       <span className="text-slate-400">No ratings yet</span>

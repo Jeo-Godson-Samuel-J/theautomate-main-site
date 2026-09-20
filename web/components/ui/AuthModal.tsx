@@ -40,6 +40,12 @@ export default function AuthModal() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>\-_\+=\/\[\]\\]/.test(password);
+  const isPasswordValid = hasMinLength && hasUppercase && hasNumber && hasSpecialChar;
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -148,6 +154,10 @@ export default function AuthModal() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isPasswordValid) {
+      setError("Please satisfy all password constraints.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -325,21 +335,27 @@ export default function AuthModal() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a password"
                   required
-                  minLength={6}
                   className="w-full rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3.5 text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all duration-150 focus:border-[#0166A7] focus:bg-white focus:shadow-[0_0_0_3px_rgba(1,102,167,0.12)]"
                 />
+                
+                <div className="flex flex-col gap-1.5 px-2 py-1 mt-1 mb-2">
+                  <span className={`text-[11px] font-medium transition-colors ${hasMinLength ? 'text-slate-800' : 'text-slate-400'}`}>• At least 8 characters</span>
+                  <span className={`text-[11px] font-medium transition-colors ${hasUppercase ? 'text-slate-800' : 'text-slate-400'}`}>• At least 1 uppercase letter</span>
+                  <span className={`text-[11px] font-medium transition-colors ${hasNumber ? 'text-slate-800' : 'text-slate-400'}`}>• At least 1 number</span>
+                  <span className={`text-[11px] font-medium transition-colors ${hasSpecialChar ? 'text-slate-800' : 'text-slate-400'}`}>• At least 1 special character</span>
+                </div>
+
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
                   required
-                  minLength={6}
                   className="w-full rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3.5 text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all duration-150 focus:border-[#0166A7] focus:bg-white focus:shadow-[0_0_0_3px_rgba(1,102,167,0.12)]"
                 />
                 <button
                   type="submit"
-                  disabled={loading || !password || !confirmPassword}
+                  disabled={loading || !password || !confirmPassword || !isPasswordValid}
                   className="w-full rounded-[14px] bg-[#0166A7] px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_14px_rgba(1,102,167,0.3)] transition-all duration-150 hover:bg-[#014f82] hover:shadow-[0_6px_20px_rgba(1,102,167,0.35)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
                   {loading ? "Creating account..." : "Sign Up"}

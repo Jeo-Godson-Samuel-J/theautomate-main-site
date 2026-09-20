@@ -14,8 +14,7 @@ const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET!;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const LEARNING_PORTAL_URL =
-  process.env.LEARNING_PORTAL_URL ?? "https://your-learning-portal.com";
-const DEFAULT_PASSWORD = "Welcome123!";
+  process.env.LEARNING_PORTAL_URL || "https://your-learning-portal.com";
 
 // ---------------------------------------------------------------------------
 // Supabase client – scoped to the "phase-2" schema for table operations.
@@ -247,10 +246,11 @@ export async function POST(req: Request) {
         let authCreateFailed = false;
 
         try {
+          const randomSecurePassword = crypto.randomBytes(16).toString("hex") + "Aa1!";
           const { data: authData, error: authError } =
             await supabase.auth.admin.createUser({
               email,
-              password: DEFAULT_PASSWORD,
+              password: randomSecurePassword,
               email_confirm: true,
               user_metadata: { full_name: name ?? "" },
             });
@@ -724,11 +724,22 @@ export async function POST(req: Request) {
     // ------------------------------------------------------------------
     // 7. Build redirect URL and respond
     // ------------------------------------------------------------------
-    // New users: /login?email=...&newUser=true triggers auto-login with the default password.
-    // Existing users: /login?message=... shows an informational toast only.
-    const redirectUrl = isNewUser
-      ? `${LEARNING_PORTAL_URL}/login?email=${encodeURIComponent(email)}&newUser=true`
-      : `${LEARNING_PORTAL_URL}/login?message=${encodeURIComponent("Account exists. Please log in with your existing password to access your new course.")}&email=${encodeURIComponent(email)}`;
+    // Redirect to the portal login page with the user's email pre-filled.
+    // - New users: ?newUser=true triggers auto-login with the default password
+    //   set during account creation, then routes them to /dashboard.
+    // - Existing users: ?message= shows a friendly prompt to log in with
+    //   their existing credentials. Both paths are handled by the portal's
+    //   login page without any magic-link / hash-fragment token dependency.
+    const loginParams = new URLSearchParams({ email });
+    if (isNewUser) {
+      loginParams.set("newUser", "true");
+    } else {
+      loginParams.set(
+        "message",
+        "Your new course has been added. Please log in to access it.",
+      );
+    }
+    const redirectUrl = `${LEARNING_PORTAL_URL}/login?${loginParams.toString()}`;
 
     return NextResponse.json(
       {

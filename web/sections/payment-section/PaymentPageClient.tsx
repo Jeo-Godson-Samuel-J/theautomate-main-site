@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import OrderSummary from "./OrderSummary";
 import { getCart, CartItem, clearCart } from "@/lib/services/cart";
 import { getPlanDisplayNameFromTitle } from "@/lib/plan-display";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   courseSlug: string;
@@ -49,6 +50,17 @@ export default function PaymentPageClient({
 
   // Cart items — populated on mount when coming from /cart with multiple items
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.email && !email) {
+      setEmail(user.email);
+    }
+    if (user?.name && !name) {
+      setName(user.name);
+    }
+  }, [user, email, name]);
 
   useEffect(() => {
     if (fromCart) {

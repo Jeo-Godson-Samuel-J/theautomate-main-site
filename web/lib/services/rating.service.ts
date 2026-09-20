@@ -36,15 +36,8 @@ export interface CourseRating {
 /**
  * Fetches the live learner rating aggregate for a course from Supabase.
  *
- * Queries: public.course_ratings WHERE product_id = productUuid
+ * Queries: public.course_ratings WHERE product_id = productUuid OR course_id = maincourse.id
  * Returns: { averageRating, totalReviews }
- *
- * - Returns { averageRating: 0, totalReviews: 0 } when there are no reviews.
- * - Returns null on a database error so the caller can render a safe fallback
- *   without crashing the page.
- *
- * @param productUuid  The UUID stored in courseDetails.productUuid in Sanity,
- *                     which matches public.course_ratings.product_id.
  */
 export async function getCourseRating(
   productUuid: string
@@ -56,19 +49,30 @@ export async function getCourseRating(
   try {
     const supabase = getClient();
 
+    // 1. Resolve ALL related maincourse IDs from productUuid
+    const { data: mcData } = await supabase
+      .from("maincourses")
+      .select("id")
+      .or(`product_id.eq.${productUuid},id.eq.${productUuid}`);
+
+    const courseIds = (mcData || []).map(mc => mc.id);
+    if (!courseIds.includes(productUuid)) {
+      courseIds.push(productUuid);
+    }
+
+    // 2. Fetch aggregate ratings
     const { data, error } = await supabase
       .from("course_ratings")
       .select("rating")
-      .eq("product_id", productUuid)
+      .or(`product_id.eq.${productUuid},course_id.in.(${courseIds.join(",")})`)
       .returns<{ rating: number }[]>();
 
     if (error) {
-      // Log server-side for debugging. Never propagate DB error details to the client.
       console.error(
         `[rating.service] Failed to fetch ratings for product ${productUuid}:`,
         error.message
       );
-      return null; // Caller renders a neutral "No reviews yet" state.
+      return null;
     }
 
     const rows = data ?? [];
@@ -83,11 +87,107 @@ export async function getCourseRating(
 
     return { averageRating, totalReviews };
   } catch (err) {
-    // Catch unexpected errors (network, env vars missing, etc.)
     console.error(
       `[rating.service] Unexpected error for product ${productUuid}:`,
       err
     );
     return null;
+  }
+}
+
+export interface DetailedReview {
+  rating: number;
+  review: string;
+  created_at: string;
+  profiles?: {
+    full_name: string;
+    avatar_url?: string;
+  };
+}
+
+/**
+ * Fetches detailed reviews for a course from Supabase.
+ * Uses a separate query to fetch user profiles to avoid relationship errors.
+ */
+export async function getCourseReviews(
+  productUuid: string
+): Promise<DetailedReview[]> {
+  if (!productUuid) {
+    return [];
+  }
+
+  try {
+    const supabase = getClient();
+
+    // 1. Resolve ALL related maincourse IDs from productUuid
+    const { data: mcData } = await supabase
+      .from("maincourses")
+      .select("id")
+      .or(`product_id.eq.${productUuid},id.eq.${productUuid}`);
+
+    const courseIds = (mcData || []).map(mc => mc.id);
+    if (!courseIds.includes(productUuid)) {
+      courseIds.push(productUuid);
+    }
+
+    // 2. Fetch ratings
+    const { data: reviewsData, error } = await supabase
+      .from("course_ratings")
+      .select("rating, review, created_at, user_id")
+      .or(`product_id.eq.${productUuid},course_id.in.(${courseIds.join(",")})`)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(
+        `[rating.service] Failed to fetch detailed reviews for product ${productUuid}:`,
+        error.message
+      );
+      return [];
+    }
+
+    if (!reviewsData || reviewsData.length === 0) {
+      return [];
+    }
+
+    // 3. Fetch associated usernames from phase2.users
+    const userIds = [...new Set(reviewsData.map((r) => r.user_id).filter(Boolean))];
+    
+    let profilesMap: Record<string, { full_name: string; avatar_url?: string }> = {};
+    
+    if (userIds.length > 0) {
+      const { data: usersData, error: usersError } = await supabase
+        .schema("phase2")
+        .from("users")
+        .select("auth_user_id, username")
+        .in("auth_user_id", userIds);
+        
+      if (!usersError && usersData) {
+        profilesMap = usersData.reduce((acc, u) => {
+          if (u.auth_user_id) {
+            acc[u.auth_user_id] = { full_name: u.username || "Anonymous User" };
+          }
+          return acc;
+        }, {} as Record<string, { full_name: string; avatar_url?: string }>);
+      } else if (usersError) {
+        console.error(
+          `[rating.service] Failed to fetch phase2 users for reviews:`,
+          usersError.message
+        );
+      }
+    }
+
+    // 4. Combine them
+    return reviewsData.map((r) => ({
+      rating: r.rating,
+      review: r.review,
+      created_at: r.created_at,
+      profiles: profilesMap[r.user_id] || { full_name: "Anonymous User" },
+    }));
+  } catch (err) {
+    console.error(
+      `[rating.service] Unexpected error fetching detailed reviews for product ${productUuid}:`,
+      err
+    );
+    return [];
   }
 }
