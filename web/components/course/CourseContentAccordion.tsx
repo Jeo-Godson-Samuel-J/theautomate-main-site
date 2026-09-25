@@ -3,20 +3,41 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, PlayCircle, MonitorPlay } from "lucide-react";
 import { CurriculumModule } from "@/lib/types/course";
-import { CourseModule } from "@/lib/services/module.service";
+import { CourseModule, CourseSection } from "@/lib/services/module.service";
 
 interface CourseContentAccordionProps {
   curriculum: CurriculumModule[];
   modules: CourseModule[];
+  dbSections?: CourseSection[];
 }
 
-export default function CourseContentAccordion({ curriculum, modules }: CourseContentAccordionProps) {
-  // Group modules based on curriculum points
+export default function CourseContentAccordion({ curriculum, modules, dbSections }: CourseContentAccordionProps) {
+  // Group modules based on DB sections or curriculum points
   const sections: { title: string; lectures: CourseModule[] }[] = [];
   
-  let moduleIndex = 0;
-  
-  if (curriculum && curriculum.length > 0) {
+  if (dbSections && dbSections.length > 0) {
+    dbSections.forEach((sec) => {
+      const sectionLectures = modules.filter(m => String(m.section_id) === String(sec.id));
+      if (sectionLectures.length > 0) {
+        sections.push({
+          title: sec.title,
+          lectures: sectionLectures,
+        });
+      }
+    });
+    
+    // Any remaining modules without a section (or invalid section)
+    const ungrouped = modules.filter(m => !m.section_id || !dbSections.find(s => String(s.id) === String(m.section_id)));
+    if (ungrouped.length > 0) {
+      sections.push({
+        title: "Additional Modules",
+        lectures: ungrouped,
+      });
+    }
+  } else {
+    let moduleIndex = 0;
+    
+    if (curriculum && curriculum.length > 0) {
     curriculum.forEach((section) => {
       const sectionLectures: CourseModule[] = [];
       const numPoints = section.points ? section.points.length : 0;
@@ -37,13 +58,14 @@ export default function CourseContentAccordion({ curriculum, modules }: CourseCo
     });
   }
   
-  // If there are remaining modules or no curriculum, put them in a final section
-  if (moduleIndex < modules.length) {
-    const remaining = modules.slice(moduleIndex);
-    sections.push({
-      title: curriculum && curriculum.length > 0 ? "Additional Modules" : "Course Modules",
-      lectures: remaining,
-    });
+    // If there are remaining modules or no curriculum, put them in a final section
+    if (moduleIndex < modules.length) {
+      const remaining = modules.slice(moduleIndex);
+      sections.push({
+        title: curriculum && curriculum.length > 0 ? "Additional Modules" : "Course Modules",
+        lectures: remaining,
+      });
+    }
   }
 
   const [expandedSections, setExpandedSections] = useState<number[]>([0]); // Expand first by default

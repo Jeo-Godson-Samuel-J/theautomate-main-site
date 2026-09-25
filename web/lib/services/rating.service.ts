@@ -55,7 +55,8 @@ export async function getCourseRating(
       .select("id")
       .or(`product_id.eq.${productUuid},id.eq.${productUuid}`);
 
-    const courseIds = (mcData || []).map(mc => mc.id);
+    const courses = mcData as { id: string }[] | null;
+    const courseIds = (courses || []).map(mc => mc.id);
     if (!courseIds.includes(productUuid)) {
       courseIds.push(productUuid);
     }
@@ -125,7 +126,8 @@ export async function getCourseReviews(
       .select("id")
       .or(`product_id.eq.${productUuid},id.eq.${productUuid}`);
 
-    const courseIds = (mcData || []).map(mc => mc.id);
+    const courses = mcData as { id: string }[] | null;
+    const courseIds = (courses || []).map(mc => mc.id);
     if (!courseIds.includes(productUuid)) {
       courseIds.push(productUuid);
     }
@@ -149,20 +151,22 @@ export async function getCourseReviews(
       return [];
     }
 
+    const reviews = reviewsData as { rating: number, review: string, created_at: string, user_id: string }[];
+
     // 3. Fetch associated usernames from phase2.users
-    const userIds = [...new Set(reviewsData.map((r) => r.user_id).filter(Boolean))];
+    const userIds = [...new Set(reviews.map((r) => r.user_id).filter(Boolean))];
     
     let profilesMap: Record<string, { full_name: string; avatar_url?: string }> = {};
     
     if (userIds.length > 0) {
-      const { data: usersData, error: usersError } = await supabase
+      const { data: usersData, error: usersError } = await (supabase as any)
         .schema("phase2")
         .from("users")
         .select("auth_user_id, username")
         .in("auth_user_id", userIds);
         
       if (!usersError && usersData) {
-        profilesMap = usersData.reduce((acc, u) => {
+        profilesMap = (usersData as any[]).reduce((acc: Record<string, { full_name: string; avatar_url?: string }>, u: any) => {
           if (u.auth_user_id) {
             acc[u.auth_user_id] = { full_name: u.username || "Anonymous User" };
           }
@@ -177,7 +181,7 @@ export async function getCourseReviews(
     }
 
     // 4. Combine them
-    return reviewsData.map((r) => ({
+    return reviews.map((r) => ({
       rating: r.rating,
       review: r.review,
       created_at: r.created_at,

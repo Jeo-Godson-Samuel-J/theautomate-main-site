@@ -14,6 +14,7 @@ interface PreviewVideo {
   duration?: string;
   isLocked?: boolean;
   cloudflareId?: string;
+  sectionTitle?: string;
 }
 
 interface SampleVideoPreviewProps {
@@ -184,19 +185,25 @@ export default function SampleVideoPreview({
                 <p className="text-sm text-slate-400 mt-1">First 5 modules are free to preview</p>
               </div>
 
-              <div className="border-t border-white/15">
-                {videos.map((video) => {
+              <div className="border-t border-white/15 relative">
+                {videos.map((video, idx) => {
                   const isSelected = video.key === selectedVideo.key;
+                  const showSectionHeader = video.sectionTitle && (idx === 0 || video.sectionTitle !== videos[idx - 1].sectionTitle);
 
                   return (
-                    <button
-                      key={video.key}
-                      type="button"
-                      onClick={() => handleVideoSelect(video)}
-                      className={`flex w-full items-start gap-4 border-b border-white/15 px-5 py-4 text-left transition-colors md:px-6 ${
-                        isSelected ? "bg-[#292b43]" : "hover:bg-white/5"
-                      }`}
-                    >
+                    <div key={`container-${video.key}`}>
+                      {showSectionHeader && (
+                        <div className="bg-[#1a1c29] px-5 py-3 md:px-6 border-b border-white/15 sticky top-0 z-10 shadow-sm">
+                          <h4 className="text-sm font-bold text-slate-300">{video.sectionTitle}</h4>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleVideoSelect(video)}
+                        className={`flex w-full items-start gap-4 border-b border-white/15 px-5 py-4 text-left transition-colors md:px-6 ${
+                          isSelected ? "bg-[#292b43]" : "hover:bg-white/5"
+                        }`}
+                      >
                       <div className="relative shrink-0">
                         <span
                           className="flex h-16 w-28 items-center justify-center overflow-hidden rounded bg-slate-800 bg-cover bg-center"
@@ -246,7 +253,8 @@ export default function SampleVideoPreview({
                           <Play className="h-5 w-5 shrink-0 fill-current text-white/80" />
                         </div>
                       )}
-                    </button>
+                      </button>
+                    </div>
                   );
                 })}
               </div>

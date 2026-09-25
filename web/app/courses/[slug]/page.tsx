@@ -29,13 +29,58 @@ export default async function CoursePage({ params }: Props) {
 
   // Parallel fetch: Supabase live rating alongside any other async work.
   // getCourseRating returns null on DB error (page still renders safely).
-  const [liveRating, courseModules, detailedReviews] = await Promise.all([
+  const [liveRating, courseData, detailedReviews] = await Promise.all([
     course.productUuid ? getCourseRating(course.productUuid) : Promise.resolve({ averageRating: 0, totalReviews: 0 }),
-    course.productUuid ? getCourseModules(course.productUuid) : Promise.resolve([]),
+    course.productUuid ? getCourseModules(course.productUuid) : Promise.resolve({ modules: [], sections: [] }),
     course.productUuid ? getCourseReviews(course.productUuid) : Promise.resolve([])
   ]);
 
-  const displayModules = courseModules;
+  const displayModules = courseData.modules;
+  const dbSections = courseData.sections;
+  const curriculum = course.curriculum || [];
+
+  const groupedSections: { title: string; lectures: typeof displayModules }[] = [];
+  
+  if (dbSections && dbSections.length > 0) {
+    dbSections.forEach((sec) => {
+      const sectionLectures = displayModules.filter((m: any) => String(m.section_id) === String(sec.id));
+      if (sectionLectures.length > 0) {
+        groupedSections.push({ title: sec.title, lectures: sectionLectures });
+      }
+    });
+    
+    const ungrouped = displayModules.filter((m: any) => !m.section_id || !dbSections.find((s: any) => String(s.id) === String(m.section_id)));
+    if (ungrouped.length > 0) {
+      groupedSections.push({ title: "Additional Modules", lectures: ungrouped });
+    }
+  } else {
+    let moduleIndex = 0;
+    if (curriculum && curriculum.length > 0) {
+      curriculum.forEach((section: any) => {
+        const sectionLectures: any[] = [];
+        const numPoints = section.points ? section.points.length : 0;
+        for (let i = 0; i < Math.max(1, numPoints); i++) {
+          if (moduleIndex < displayModules.length) {
+            sectionLectures.push(displayModules[moduleIndex]);
+            moduleIndex++;
+          }
+        }
+        if (sectionLectures.length > 0) {
+          groupedSections.push({ title: section.subheading, lectures: sectionLectures });
+        }
+      });
+    }
+  
+    if (moduleIndex < displayModules.length) {
+      const remaining = displayModules.slice(moduleIndex);
+      groupedSections.push({
+        title: curriculum && curriculum.length > 0 ? "Additional Modules" : "Course Modules",
+        lectures: remaining,
+      });
+    }
+  }
+
+  const orderedModules = groupedSections.flatMap(sec => sec.lectures.map(lec => ({ ...lec, sectionTitle: sec.title })));
 
   const heroImageUrl = course.heroImage
     ? urlFor(course.heroImage).width(1200).url()
@@ -47,7 +92,7 @@ export default async function CoursePage({ params }: Props) {
   //   totalReviews > 0     → show stars + count
   const hasReviews = liveRating !== null && liveRating.totalReviews > 0;
   const ratingError = liveRating === null;
-  const featuredSampleVideo = displayModules.length > 0 ? displayModules[0] : undefined;
+  const featuredSampleVideo = orderedModules.length > 0 ? orderedModules[0] : undefined;
 
   return (
     <main className="bg-white text-slate-900">
@@ -216,7 +261,7 @@ export default async function CoursePage({ params }: Props) {
             <section>
               <h2 className="text-2xl font-bold mb-6">Course content</h2>
               {displayModules && displayModules.length > 0 ? (
-                <CourseContentAccordion curriculum={course.curriculum || []} modules={displayModules} />
+                <CourseContentAccordion curriculum={course.curriculum || []} modules={displayModules} dbSections={dbSections} />
               ) : (
                 <div className="p-6 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 text-sm font-medium text-center">
                   No preview available
@@ -249,7 +294,7 @@ export default async function CoursePage({ params }: Props) {
                           : heroImageUrl),
                         isLocked: false,
                       }}
-                      videos={displayModules.map((mod, index) => ({
+                      videos={orderedModules.map((mod, index) => ({
                         key: mod.id,
                         title: mod.title,
                         cloudflareId: mod.video_cf_id || undefined,
@@ -257,6 +302,7 @@ export default async function CoursePage({ params }: Props) {
                         description: mod.description || undefined,
                         duration: mod.duration || undefined,
                         isLocked: index >= 5,
+                        sectionTitle: mod.sectionTitle,
                       }))}
                     />
                   </div>
