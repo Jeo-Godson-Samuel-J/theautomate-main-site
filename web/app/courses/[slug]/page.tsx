@@ -31,7 +31,7 @@ export default async function CoursePage({ params }: Props) {
   // getCourseRating returns null on DB error (page still renders safely).
   const [liveRating, courseData, detailedReviews] = await Promise.all([
     course.productUuid ? getCourseRating(course.productUuid) : Promise.resolve({ averageRating: 0, totalReviews: 0 }),
-    course.productUuid ? getCourseModules(course.productUuid) : Promise.resolve({ modules: [], sections: [] }),
+    getCourseModules(course.productUuid || "", course.title),
     course.productUuid ? getCourseReviews(course.productUuid) : Promise.resolve([])
   ]);
 
@@ -44,9 +44,7 @@ export default async function CoursePage({ params }: Props) {
   if (dbSections && dbSections.length > 0) {
     dbSections.forEach((sec) => {
       const sectionLectures = displayModules.filter((m: any) => String(m.section_id) === String(sec.id));
-      if (sectionLectures.length > 0) {
-        groupedSections.push({ title: sec.title, lectures: sectionLectures });
-      }
+      groupedSections.push({ title: sec.title, lectures: sectionLectures });
     });
     
     const ungrouped = displayModules.filter((m: any) => !m.section_id || !dbSections.find((s: any) => String(s.id) === String(m.section_id)));
@@ -81,6 +79,7 @@ export default async function CoursePage({ params }: Props) {
   }
 
   const orderedModules = groupedSections.flatMap(sec => sec.lectures.map(lec => ({ ...lec, sectionTitle: sec.title })));
+  const videoModules = orderedModules.filter(m => (m.module_type || (m as any).type || 'video').toLowerCase() !== 'quiz');
 
   const heroImageUrl = course.heroImage
     ? urlFor(course.heroImage).width(1200).url()
@@ -92,7 +91,7 @@ export default async function CoursePage({ params }: Props) {
   //   totalReviews > 0     → show stars + count
   const hasReviews = liveRating !== null && liveRating.totalReviews > 0;
   const ratingError = liveRating === null;
-  const featuredSampleVideo = orderedModules.length > 0 ? orderedModules[0] : undefined;
+  const featuredSampleVideo = videoModules.length > 0 ? videoModules[0] : undefined;
 
   return (
     <main className="bg-white text-slate-900">
@@ -289,16 +288,18 @@ export default async function CoursePage({ params }: Props) {
                         cloudflareId: (featuredSampleVideo as any).video_cf_id,
                         description: (featuredSampleVideo as any).description,
                         duration: (featuredSampleVideo as any).duration,
-                        poster: (featuredSampleVideo as any).thumbnail_url || ((featuredSampleVideo as any).poster
-                          ? urlFor((featuredSampleVideo as any).poster).width(600).url()
-                          : heroImageUrl),
+                        poster: (featuredSampleVideo as any).thumbnail_url || ((featuredSampleVideo as any).video_cf_id
+                          ? `https://videodelivery.net/${(featuredSampleVideo as any).video_cf_id}/thumbnails/thumbnail.jpg`
+                          : ((featuredSampleVideo as any).poster
+                            ? urlFor((featuredSampleVideo as any).poster).width(600).url()
+                            : heroImageUrl)),
                         isLocked: false,
                       }}
-                      videos={orderedModules.map((mod, index) => ({
+                      videos={videoModules.map((mod, index) => ({
                         key: mod.id,
                         title: mod.title,
                         cloudflareId: mod.video_cf_id || undefined,
-                        poster: mod.thumbnail_url || undefined,
+                        poster: mod.thumbnail_url || (mod.video_cf_id ? `https://videodelivery.net/${mod.video_cf_id}/thumbnails/thumbnail.jpg` : undefined),
                         description: mod.description || undefined,
                         duration: mod.duration || undefined,
                         isLocked: index >= 5,

@@ -21,6 +21,8 @@ export interface CourseModule {
   thumbnail_url?: string;
   video_cf_id?: string;
   section_id?: string | null;
+  module_type?: string;
+  type?: string;
 }
 
 export interface CourseSection {
@@ -30,45 +32,60 @@ export interface CourseSection {
 }
 
 export async function getCourseModules(
-  productUuid: string
+  productUuid: string,
+  courseTitle?: string
 ): Promise<{ modules: CourseModule[]; sections: CourseSection[] }> {
-  if (!productUuid) return { modules: [], sections: [] };
-
   try {
     const supabase = getClient();
-    
-    // Fetch all courses for this product, ordered by creation date
-    const { data: coursesData, error: courseError } = await supabase
-      .from("maincourses")
-      .select("id")
-      .eq("product_id", productUuid)
-      .order("created_at", { ascending: true });
-    
-    const courses = coursesData as { id: string }[] | null;
+    let courses: { id: string }[] | null = null;
+    let courseError: any = null;
+
+    if (productUuid) {
+      // Fetch all courses for this product, ordered by creation date
+      const { data: coursesData, error: err } = await supabase
+        .from("maincourses")
+        .select("id")
+        .eq("product_id", productUuid)
+        .order("created_at", { ascending: true });
+      courses = coursesData as { id: string }[] | null;
+      courseError = err;
+    }
+
+    // If productUuid was missing or returned no courses, fallback to matching maincourses by title
+    if ((!courses || courses.length === 0) && courseTitle) {
+      const cleanTitle = courseTitle.split(" ")[0] || courseTitle; // e.g. "Playwright" from "Playwright Course"
+      const { data: titleCourses } = await supabase
+        .from("maincourses")
+        .select("id")
+        .ilike("title", `%${cleanTitle}%`)
+        .order("created_at", { ascending: true });
+
+      if (titleCourses && titleCourses.length > 0) {
+        courses = titleCourses as { id: string }[];
+      }
+    }
 
     if (courseError || !courses || courses.length === 0) {
-      // Fallback: perhaps the productUuid is actually a maincourse_id from an older setup
-      const { data: fallbackModules, error: fallbackError } = await supabase
-        .from("coursemodules")
-        .select("id, title, duration, order_index, description, thumbnail_url, video_cf_id, section_id")
-        .eq("maincourse_id", productUuid)
-        .order("order_index", { ascending: true, nullsFirst: false });
-
-      if (!fallbackError && fallbackModules && fallbackModules.length > 0) {
-        // Also fetch fallback sections just in case
-        const { data: fallbackSections } = await supabase
-          .from("course_sections")
-          .select("id, title, order_index")
+      if (productUuid) {
+        // Fallback: perhaps the productUuid is actually a maincourse_id from an older setup
+        const { data: fallbackModules, error: fallbackError } = await supabase
+          .from("coursemodules")
+          .select("id, title, duration, order_index, description, thumbnail_url, video_cf_id, section_id, module_type")
           .eq("maincourse_id", productUuid)
-          .order("order_index", { ascending: true });
-        
-        return { modules: fallbackModules, sections: fallbackSections || [] };
+          .order("order_index", { ascending: true, nullsFirst: false });
+
+        if (!fallbackError && fallbackModules && fallbackModules.length > 0) {
+          // Also fetch fallback sections just in case
+          const { data: fallbackSections } = await supabase
+            .from("course_sections")
+            .select("id, title, order_index")
+            .eq("maincourse_id", productUuid)
+            .order("order_index", { ascending: true });
+          
+          return { modules: fallbackModules, sections: fallbackSections || [] };
+        }
       }
 
-      console.error(
-        `[module.service] Failed to find courses for product ${productUuid}:`,
-        courseError?.message
-      );
       return { modules: [], sections: [] };
     }
 
@@ -76,7 +93,7 @@ export async function getCourseModules(
     for (const course of courses) {
       const { data, error } = await supabase
         .from("coursemodules")
-        .select("id, title, duration, order_index, description, thumbnail_url, video_cf_id, section_id")
+        .select("id, title, duration, order_index, description, thumbnail_url, video_cf_id, section_id, module_type")
         .eq("maincourse_id", course.id)
         .order("order_index", { ascending: true, nullsFirst: false });
 
