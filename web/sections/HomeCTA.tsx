@@ -38,7 +38,7 @@ export default function HomeCTA() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-16 md:py-24 px-6 bg-white overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 bg-white overflow-hidden"
     >
       {/* ── Rounded midnight-blue container ── */}
       <div
@@ -47,7 +47,7 @@ export default function HomeCTA() {
           relative max-w-5xl mx-auto
           bg-[#0F2746]
           rounded-[40px]
-          px-8 py-16 md:px-16 md:py-20
+          px-4 py-12 sm:px-8 sm:py-16 md:px-16 md:py-20
           overflow-hidden
           text-center
           shadow-[0_24px_80px_rgba(15,39,70,0.35)]
@@ -68,7 +68,7 @@ export default function HomeCTA() {
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center gap-8">
           {/* Heading */}
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-2xl">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-2xl">
             Take the First Step –
             <br />
             Start Learning Today!

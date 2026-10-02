@@ -24,7 +24,7 @@ export default function HomeFAQ({ faqs }: HomeFAQProps) {
         {/* Left Side: Heading */}
         <div className="lg:w-1/3">
           <div className="sticky top-32">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.15] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.15] tracking-tight">
               Frequently Asked <br className="hidden lg:block" />
               Questions
             </h2>
@@ -51,7 +51,7 @@ export default function HomeFAQ({ faqs }: HomeFAQProps) {
                       : "bg-[#f8f9fa] text-slate-900 hover:bg-[#f1f3f5] border border-transparent"
                   }`}
               >
-                <div className="p-6 md:p-8 flex justify-between items-center gap-4">
+                <div className="p-4 sm:p-6 md:p-8 flex justify-between items-center gap-4">
                   <h3 className="text-[1.15rem] md:text-xl font-semibold pr-8 leading-snug">
                     {faq.question}
                   </h3>
@@ -72,7 +72,7 @@ export default function HomeFAQ({ faqs }: HomeFAQProps) {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                     >
-                      <div className="px-6 md:px-8 pb-6 md:pb-8 text-white/90 text-base md:text-lg leading-relaxed pt-0">
+                      <div className="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8 text-white/90 text-base md:text-lg leading-relaxed pt-0">
                         {faq.answer}
                       </div>
                     </motion.div>

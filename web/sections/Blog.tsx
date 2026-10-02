@@ -33,9 +33,9 @@ export default async function Blog() {
   );
 
   return (
-    <section className="py-16 md:py-20 px-6 bg-white text-black">
+    <section className="py-16 md:py-20 px-4 sm:px-6 bg-white text-black">
       <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
           Our Resources & <span className="text-brand-blue">Blogs</span>
         </h2>
         <p className="max-w-3xl mx-auto text-sm md:text-base text-gray-500 leading-7 mb-12">
@@ -82,8 +82,8 @@ export default async function Blog() {
                     </span>
                   </div>
 
-                  <div className="px-6 py-8 flex flex-col gap-5 flex-1">
-                    <h3 className="text-2xl md:text-2xl font-semibold tracking-tight text-slate-900 line-clamp-2">
+                  <div className="px-4 py-6 sm:px-6 sm:py-8 flex flex-col gap-4 sm:gap-5 flex-1">
+                    <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 line-clamp-2">
                       {blog.title}
                     </h3>
 

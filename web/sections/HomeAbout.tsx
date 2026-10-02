@@ -14,7 +14,7 @@ export default async function HomeAbout() {
     : null;
 
   return (
-    <section className="py-16 md:py-24 px-6 bg-white overflow-hidden">
+    <section className="py-16 md:py-24 px-4 sm:px-6 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center">
 
@@ -37,7 +37,7 @@ export default async function HomeAbout() {
 
             {/* Floating completion card — anchored to bottom-left of image */}
             <div
-              className="absolute -bottom-6 left-6 bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-6 py-5 min-w-[160px]"
+              className="absolute -bottom-4 left-4 sm:-bottom-6 sm:left-6 bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-4 sm:px-6 py-4 sm:py-5 min-w-[140px] sm:min-w-[160px]"
               aria-label={`${data.completionTitle}: ${data.completionPercentage}%`}
             >
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
@@ -53,7 +53,7 @@ export default async function HomeAbout() {
           <div className="order-2 pt-8 md:pt-0">
 
             {/* Heading */}
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight mb-6">
               {data.title}{" "}
               <span className="text-[#0166A7]">{data.highlightText}</span>
             </h2>
@@ -66,7 +66,7 @@ export default async function HomeAbout() {
             {/* Statistics */}
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-10">
               {/* Stat 1 */}
-              <div className="bg-slate-50 rounded-2xl px-6 py-6">
+              <div className="bg-slate-50 rounded-2xl px-4 py-4 sm:px-6 sm:py-6">
                 <p className="text-3xl lg:text-4xl font-extrabold text-slate-900 leading-none mb-2">
                   {data.statOneNumber}
                 </p>
@@ -76,7 +76,7 @@ export default async function HomeAbout() {
               </div>
 
               {/* Stat 2 */}
-              <div className="bg-slate-50 rounded-2xl px-6 py-6">
+              <div className="bg-slate-50 rounded-2xl px-4 py-4 sm:px-6 sm:py-6">
                 <p className="text-3xl lg:text-4xl font-extrabold text-slate-900 leading-none mb-2">
                   {data.statTwoNumber}
                 </p>

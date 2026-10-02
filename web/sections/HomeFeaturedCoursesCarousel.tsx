@@ -158,11 +158,11 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
 
   return (
     <section className="py-16 md:py-24 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Heading */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900">
             Our Featured <span className="text-[#0166A7]">Courses</span>
           </h2>
           <p className="mt-4 text-slate-500 text-base max-w-xl mx-auto leading-relaxed">

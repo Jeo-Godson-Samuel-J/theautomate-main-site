@@ -8,7 +8,7 @@ export default function Consultation() {
 
     return (
         <section className="py-8 pb-24 mb-24 sm:py-12 bg-white">
-            <div className="mx-auto px-6 md:px-12">
+            <div className="mx-auto px-4 sm:px-6 md:px-12 max-w-7xl">
                 <div className="relative overflow-hidden rounded-[40px] bg-linear-to-r from-[#0166A7] via-[#2B71B8] to-[#C6DFF2] min-h-[300px] flex items-center shadow-2xl">
 
                     {/* --- THE PATTERN GRID ---
@@ -31,7 +31,7 @@ export default function Consultation() {
                     </div>
 
                     {/* --- CONTENT CONTAINER --- */}
-                    <div className="relative z-20 w-full px-8 md:px-20 py-12 flex flex-col lg:flex-row justify-between items-center gap-10">
+                    <div className="relative z-20 w-full px-6 sm:px-8 md:px-20 py-12 flex flex-col lg:flex-row justify-between items-center gap-10">
 
                         {/* Left Side: Icon & Messaging */}
                         <div className="flex flex-col lg:flex-row items-center text-center lg:text-left gap-6 lg:gap-8">
@@ -45,7 +45,7 @@ export default function Consultation() {
                                 />
                             </div>
                             <div className="text-white">
-                                <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">
+                                <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold tracking-tight">
                                     Need A Consultation?
                                 </h2>
                                 <p className="text-blue-50 text-lg lg:text-xl mt-2 font-light">

@@ -18,9 +18,9 @@ interface CourseHeroProps {
 
 export default function CourseHero({ featuredCourse }: CourseHeroProps) {
   return (
-    <section className="py-10 px-6 md:py-16 bg-white">
+    <section className="py-10 px-4 sm:px-6 md:py-16 bg-white">
       <div className="mx-auto max-w-6xl text-center">
-        <h1 className="font-extrabold text-5xl md:text-7xl leading-[0.92] md:leading-[0.88] text-center mb-5">
+        <h1 className="font-extrabold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.92] md:leading-[0.88] text-center mb-5">
           <span className="block">
             Browse Our <span className="text-brand-blue">Courses</span>
           </span>

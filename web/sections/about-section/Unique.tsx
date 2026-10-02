@@ -36,11 +36,11 @@ const features = [
 
 export default function Unique() {
     return (
-        <section className="w-full py-16 md:py-32 px-6 bg-slate-50">
+        <section className="w-full py-16 md:py-32 px-4 sm:px-6 bg-slate-50">
             <div className="max-w-7xl mx-auto">
                 {/* Heading Container */}
                 <div className="text-center mb-16 md:mb-24">
-                    <h2 className="text-4xl md:text-5xl font-black text-[#0A3D62] mb-6 tracking-tight">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#0A3D62] mb-6 tracking-tight">
                         What Makes Us Unique?
                     </h2>
                     <div className="h-1.5 w-24 bg-[#1E90FF] mx-auto rounded-full" />
@@ -65,7 +65,7 @@ export default function Unique() {
                             />
                             <div className="absolute inset-0 bg-black/45 transition-colors duration-300 group-hover:bg-white/55" />
 
-                            <div className="relative z-10 p-10">
+                            <div className="relative z-10 p-6 sm:p-10">
                                 <div className="absolute right-6 top-6 text-5xl font-black tracking-tight text-white/25 transition-colors duration-300 group-hover:text-black/25">
                                     {String(index + 1).padStart(2, "0")}
                                 </div>

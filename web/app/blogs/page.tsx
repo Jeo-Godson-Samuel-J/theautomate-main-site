@@ -61,14 +61,11 @@ export default async function BlogsPage() {
     <main className="bg-white min-h-screen px-6 py-16 max-w-7xl mx-auto">
       {/* TITLE */}
       <div className="text-center mb-12">
-        <h1 className="text-8xl md:text-8xl font-bold tracking-tight">
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight">
           Our Resources & <span className="text-brand-blue">Blogs</span>
         </h1>
-        <p className="max-w-4xl mx-auto mt-4 text-lg md:text-xl leading-9 text-gray-600">
-          Discover valuable insights and resources to boost your learning
-          <span className="block">
-            and career growth on the BrightMind blog.
-          </span>
+        <p className="max-w-4xl mx-auto mt-4 text-base md:text-xl leading-relaxed text-gray-600">
+          Discover valuable insights and resources to boost your learning and career growth on the blog.
         </p>
       </div>
 

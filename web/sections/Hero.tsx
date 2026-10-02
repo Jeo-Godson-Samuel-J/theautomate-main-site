@@ -7,7 +7,7 @@ import FloatingStudents from "@/components/ui/FloatingStudents";
 
 export default function Hero() {
   return (
-    <section className="relative pt-24 md:pt- pb-16 md:pb-20 bg-white overflow-hidden">
+    <section className="relative pt-24 md:pt-32 pb-16 md:pb-20 bg-white overflow-hidden">
 
       {/*
         ── Content + floating images share the same relative container ──
@@ -15,7 +15,7 @@ export default function Hero() {
         this div — keeping images close to the heading text at every
         screen size, matching the inspiration reference.
       */}
-      <div className="relative max-w-6xl mx-auto px-6">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
 
         {/* Floating student avatars — positioned relative to this container */}
         <FloatingStudents variant="light" />
@@ -23,7 +23,7 @@ export default function Hero() {
         {/* ── Centered hero text ── */}
         <div className="relative z-10 flex flex-col items-center text-center">
           {/* Heading */}
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-[#0F172A] leading-[1.1]">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#0F172A] leading-[1.1]">
             Learn and Grow with
             <br />
             <span className="text-[#0166A7]">Online Courses</span>
@@ -36,11 +36,11 @@ export default function Hero() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto max-w-[280px] sm:max-w-none">
             <Button
               asChild
               className="
-                rounded-full bg-[#0166A7] px-8 py-6 text-base font-semibold text-white
+                rounded-full bg-[#0166A7] px-6 py-4.5 sm:px-8 sm:py-6 text-sm sm:text-base font-semibold text-white
                 shadow-[0_8px_20px_rgba(1,102,167,0.28)]
                 hover:bg-[#004d7c] hover:shadow-[0_10px_28px_rgba(1,102,167,0.38)]
                 hover:scale-[1.03] active:scale-[0.98]
@@ -55,7 +55,7 @@ export default function Hero() {
               asChild
               variant="outline"
               className="
-                rounded-full border-slate-300 px-8 py-6 text-base font-semibold text-slate-700
+                rounded-full border-slate-300 px-6 py-4.5 sm:px-8 sm:py-6 text-sm sm:text-base font-semibold text-slate-700
                 hover:bg-slate-50 hover:border-[#0166A7] hover:text-[#0166A7]
                 hover:scale-[1.03] active:scale-[0.98]
                 transition-all duration-200
@@ -72,7 +72,7 @@ export default function Hero() {
               Our students are now working at top MNCs
             </p>
 
-            <div className="relative flex whitespace-nowrap overflow-hidden bg-slate-50 p-6 rounded-[24px] border border-slate-100 shadow-sm">
+            <div className="relative flex whitespace-nowrap overflow-hidden bg-slate-50 p-4 sm:p-6 rounded-[24px] border border-slate-100 shadow-sm">
               {[0, 1].map((copy) => (
                 <div
                   key={copy}

@@ -14,10 +14,10 @@ export default async function FAQSection() {
 
   return (
     <section className="py-10 md:py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center mb-10 md:mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1B262C] mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1B262C] mb-4">
             Frequently Asked Questions
           </h2>
           <p className="text-gray-500 max-w-2xl mx-auto">
@@ -39,7 +39,7 @@ export default async function FAQSection() {
             >
               <AccordionTrigger
                 className="
-                    flex items-center justify-between gap-4 p-6
+                    flex items-center justify-between gap-4 p-4 sm:p-6
                     font-bold text-left text-[#1B262C]
                     group-data-[state=open]:text-white
                     hover:no-underline
@@ -69,7 +69,7 @@ export default async function FAQSection() {
                 </span>
               </AccordionTrigger>
 
-              <AccordionContent className="px-6 pb-6 pt-0 text-sm text-gray-600 group-data-[state=open]:text-white/90 leading-relaxed">
+              <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0 text-sm text-gray-600 group-data-[state=open]:text-white/90 leading-relaxed">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

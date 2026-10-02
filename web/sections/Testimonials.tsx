@@ -39,7 +39,7 @@ const TestimonialCard = React.memo(function TestimonialCard({
         flex-shrink-0
         w-[85vw] sm:w-[320px] md:w-[360px] lg:w-[420px]
         bg-white rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)]
-        px-8 py-8 flex flex-col gap-5
+        px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-5
         select-none
       "
     >
@@ -242,10 +242,10 @@ export default function Testimonials({ initialData }: TestimonialsProps) {
 
   return (
     <section className="py-16 md:py-24 bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* ── Heading ── */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900">
             What <span className="text-[#0166A7]">Learners</span> Say About{" "}
             <span className="text-[#0166A7]">The-Automate</span>
           </h2>

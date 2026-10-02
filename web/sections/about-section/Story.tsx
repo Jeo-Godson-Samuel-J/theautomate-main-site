@@ -45,7 +45,7 @@ export default function Story() {
       {/* Soft background glow decorator */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[60%] rounded-full bg-blue-50/20 blur-3xl -z-10 pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
           
           {/* Left Column: Sticky Sidebar on Desktop */}
@@ -53,7 +53,7 @@ export default function Story() {
             <span className="text-xs font-bold text-[#0166A7] tracking-widest uppercase mb-2 block">
               How We Evolved
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#0F172A] tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-[#0F172A] tracking-tight leading-tight">
               Our <span className="text-[#0166A7]">Journey</span>
             </h2>
             <p className="mt-4 text-slate-500 text-sm sm:text-base leading-relaxed max-w-sm">
@@ -82,7 +82,7 @@ export default function Story() {
                 </span>
 
                 {/* Milestone Title */}
-                <h3 className="text-2xl font-extrabold text-[#0F172A] mt-4 leading-snug">
+                <h3 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] mt-4 leading-snug">
                   {item.title}
                 </h3>
 

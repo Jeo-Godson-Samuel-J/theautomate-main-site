@@ -23,7 +23,7 @@ export default async function HomeHighlight() {
     const avatars = data.studentAvatars ?? [];
 
     return (
-        <section className="py-16 md:py-24 px-6 bg-white overflow-hidden">
+        <section className="py-16 md:py-24 px-4 sm:px-6 bg-white overflow-hidden">
             <div className="max-w-7xl mx-auto">
 
                 {/* ── Desktop layout: 3 columns ── */}
@@ -296,7 +296,7 @@ export default async function HomeHighlight() {
                     {/* Statistic Card */}
                     <HomeHighlightAnimations delay={0.1}>
                         <div
-                            className="px-6 py-6"
+                            className="px-4 py-6 sm:px-6"
                             style={{
                                 background: "#EAF5FF",
                                 borderRadius: "24px",
@@ -349,7 +349,7 @@ export default async function HomeHighlight() {
                     {/* Quote Card */}
                     <HomeHighlightAnimations delay={0.2}>
                         <div
-                            className="px-6 py-6"
+                            className="px-4 py-6 sm:px-6"
                             style={{
                                 background: "#0F172A",
                                 borderRadius: "24px",

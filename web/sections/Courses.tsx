@@ -7,9 +7,9 @@ export default async function Courses() {
   const plans: Plan[] = await getPlans().catch(() => []);
 
   return (
-    <section className="py-16 md:py-24 px-6 bg-slate-50">
+    <section className="py-16 md:py-24 px-4 sm:px-6 bg-slate-50">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-5xl font-extrabold text-center text-slate-900 mb-12">
+        <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-center text-slate-900 mb-12">
           Our Featured <span className="text-[#0166A7] italic">Plans</span>
         </h2>
 

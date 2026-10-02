@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-[#1B262C] text-white pt-32 pb-10 px-6 md:px-12 font-sans">
+    <footer className="relative w-full bg-[#1B262C] text-white pt-32 pb-10 px-4 sm:px-6 md:px-12 font-sans">
       <div className="mx-auto">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 pb-16 pt-20 lg:grid-cols-12 gap-12 md:pt-0">
@@ -89,9 +89,9 @@ export default function Footer() {
             </div>
           </div>
           {/* Links Grid */}
-          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-7 gap-12">
+          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-7 gap-8 sm:gap-12">
             <div className="lg:col-span-3">
-              <h4 className="font-bold mb-6 text-white uppercase text-lg tracking-widest whitespace-nowrap">
+              <h4 className="font-bold mb-6 text-white uppercase text-base sm:text-lg tracking-wider sm:tracking-widest">
                 Company
               </h4>
               <ul className="space-y-4 text-gray-400 text-sm">
@@ -113,7 +113,7 @@ export default function Footer() {
               </ul>
             </div>
             <div className="sm:col-span-4">
-              <h4 className="font-bold mb-6 text-white uppercase text-lg tracking-widest whitespace-nowrap">
+              <h4 className="font-bold mb-6 text-white uppercase text-base sm:text-lg tracking-wider sm:tracking-widest">
                 Legal Information
               </h4>
               <ul className="space-y-4 text-gray-400 text-sm">

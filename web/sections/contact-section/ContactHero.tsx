@@ -61,11 +61,11 @@ export default function ContactPage() {
 
   return (
     <div className="bg-white pt-24 md:pt-32 pb-20 overflow-hidden font-sans">
-      <div className="max-w-[1200px] mx-auto px-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 tracking-tight">
             We're Here To <span className="text-[#0166A7]">Help!</span>
           </h1>
           <p className="text-slate-500 text-base md:text-lg">
@@ -77,7 +77,7 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 md:gap-8 items-start">
           
           {/* Left: Form */}
-          <div className="bg-[#f9fafb] rounded-3xl p-8 md:p-10">
+          <div className="bg-[#f9fafb] rounded-3xl p-6 sm:p-8 md:p-10">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Send us a Message</h2>
             <p className="text-slate-500 text-sm leading-relaxed mb-8 max-w-lg">
               Connect instantly and clearly with your audience anytime, anywhere, effortlessly. Would you like alternative versions or a different tone?

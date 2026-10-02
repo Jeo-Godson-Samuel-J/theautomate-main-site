@@ -7,15 +7,15 @@ export default async function CoursesPage() {
 
   return (
     <main>
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="flex justify-between items-center mb-12">
-          <h1 className="text-6xl font-bold">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 md:pt-32 pb-20">
+        <div className="flex justify-between items-center mb-8 md:mb-12">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight">
             Most Popular
             <span className="text-[#0166A7]"> Courses</span>
           </h1>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
           {courses.map((course, index) => (
             <CourseCard
               key={course._id}

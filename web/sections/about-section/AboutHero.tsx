@@ -24,7 +24,7 @@ export default function AboutHero() {
   };
 
   return (
-    <section className="relative pt-24 pb-10 px-6 md:pt-28 md:pb-12 bg-gradient-to-b from-blue-50/70 to-white overflow-hidden">
+    <section className="relative pt-24 pb-10 px-4 sm:px-6 md:pt-28 md:pb-12 bg-gradient-to-b from-blue-50/70 to-white overflow-hidden">
       <div className="absolute inset-0 pointer-events-none -z-10 text-blue-200">
         <StarDustSVG className="absolute top-10 left-5 w-8 h-8 md:w-12 md:h-12 opacity-20" />
         <StarDustSVG className="absolute top-1/4 right-5 w-10 h-10 md:w-16 md:h-16 opacity-10 rotate-45" />
@@ -45,7 +45,7 @@ export default function AboutHero() {
             className="lg:col-span-7 flex flex-col items-start"
           >
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#0F172A] tracking-tight leading-[1.1] mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#0F172A] tracking-tight leading-[1.1] mb-6">
               Redefining tech training for a
               <br />
               <span className="text-[#0166A7] relative inline-block mt-2">
