@@ -86,6 +86,73 @@ export async function POST(req: Request) {
     }
 
     // ------------------------------------------------------------------
+    // 2a. Idempotency — if this Razorpay order has already been processed,
+    //     return the original success response without re-running side effects.
+    //     This makes repeated webhook deliveries and browser retries safe.
+    // ------------------------------------------------------------------
+    const { data: existingOrder } = await supabase
+      .from("orders")
+      .select("id, status, additional_comments")
+      .eq("razorpay_order_id", razorpay_order_id)
+      .not("status", "eq", "pending")
+      .limit(1)
+      .maybeSingle();
+
+    if (existingOrder) {
+      console.log(
+        "[verify-payment] Duplicate callback for already-processed order:",
+        razorpay_order_id,
+      );
+      // Determine redirect URL for portal upgrade returns
+      let redirectUrl: string | undefined;
+      try {
+        const meta = existingOrder.additional_comments
+          ? JSON.parse(existingOrder.additional_comments)
+          : null;
+        if (meta?.upgrade_type === "portal_pro_upgrade") {
+          const portalUrl = LEARNING_PORTAL_URL.replace(/\/$/, "");
+          redirectUrl = `${portalUrl}/upgrade/success?payment_id=${encodeURIComponent(razorpay_payment_id)}&source=landing`;
+        }
+      } catch { /* ignore parse errors */ }
+
+      return NextResponse.json({
+        success: true,
+        redirectUrl: redirectUrl ?? `${LEARNING_PORTAL_URL}/login?message=${encodeURIComponent("Your payment has already been processed.")}`,
+        orderId: existingOrder.id,
+        message: "Payment already recorded.",
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // 2b. Portal upgrade fast-path — if a pending order row exists with
+    //     upgrade metadata, retrieve the authoritative context from there
+    //     instead of relying on client-submitted course_id / bundle_id.
+    // ------------------------------------------------------------------
+    const { data: pendingUpgradeOrder } = await supabase
+      .from("orders")
+      .select("id, user_id, additional_comments")
+      .eq("razorpay_order_id", razorpay_order_id)
+      .eq("status", "pending")
+      .limit(1)
+      .maybeSingle();
+
+    let portalUpgradeMeta: {
+      upgrade_type: string;
+      course_ids: string;
+      enrollment_ids: string;
+      pro_bundle_id: string;
+    } | null = null;
+
+    if (pendingUpgradeOrder?.additional_comments) {
+      try {
+        const parsed = JSON.parse((pendingUpgradeOrder as any).additional_comments);
+        if (parsed?.upgrade_type === "portal_pro_upgrade") {
+          portalUpgradeMeta = parsed;
+        }
+      } catch { /* not an upgrade order, proceed normally */ }
+    }
+
+    // ------------------------------------------------------------------
     // 3. Fetch payment details from Razorpay to get customer info
     // ------------------------------------------------------------------
     let paymentDetails: any;
@@ -176,6 +243,7 @@ export async function POST(req: Request) {
     let userId: string;
     let authUserId: string | null = null;
     let isNewUser: boolean;
+    let generatedTempPassword: string | null = null;
 
     if (lookupError) {
       console.error("[verify-payment] User lookup error:", lookupError);
@@ -246,7 +314,7 @@ export async function POST(req: Request) {
         let authCreateFailed = false;
 
         try {
-          const randomSecurePassword = crypto.randomBytes(16).toString("hex") + "Aa1!";
+          const randomSecurePassword = crypto.randomBytes(4).toString("hex") + "Aa1!";
           const { data: authData, error: authError } =
             await supabase.auth.admin.createUser({
               email,
@@ -254,6 +322,10 @@ export async function POST(req: Request) {
               email_confirm: true,
               user_metadata: { full_name: name ?? "" },
             });
+            
+          if (!authError) {
+             generatedTempPassword = randomSecurePassword;
+          }
 
           if (authError) {
             authErrorMessage = authError.message || JSON.stringify(authError);
@@ -364,7 +436,7 @@ export async function POST(req: Request) {
         userId = upsertedUser.id;
       }
     }
-
+    
     // ------------------------------------------------------------------
     // 4.5. Resolve UUIDs for Course and Bundle
     // ------------------------------------------------------------------
@@ -406,9 +478,10 @@ export async function POST(req: Request) {
     }
 
     let finalCourseId = null;
+    const isValidUuid = (id: any) => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
     // 1. Try resolving using the exact product_uuid mapped from Sanity
-    if (product_uuid) {
+    if (isValidUuid(product_uuid)) {
       const { data: mcData } = await supabasePublic
         .from("maincourses")
         .select("id, title")
@@ -422,7 +495,7 @@ export async function POST(req: Request) {
     }
 
     // 2. If no product_uuid provided, check if course_id itself is a UUID
-    if (!finalCourseId && course_id && course_id.length === 36) {
+    if (!finalCourseId && isValidUuid(course_id)) {
       const { data: cCheck } = await supabasePublic
         .from("maincourses")
         .select("id")
@@ -434,11 +507,12 @@ export async function POST(req: Request) {
     // 3. If still unresolved, try looking up by name or wildcard matching
     if (!finalCourseId) {
       const searchTerm = course_id || course_name || "Course";
+      const searchKeyword = searchTerm.split(" ")[0]; // Use first word for better matching
       // Use limit(1) to avoid "multiple rows" error from maybeSingle
       const { data: courseData } = await supabasePublic
         .from("maincourses")
         .select("id")
-        .ilike("title", `%${searchTerm}%`)
+        .ilike("title", `%${searchKeyword}%`)
         .limit(1)
         .maybeSingle();
 
@@ -457,8 +531,8 @@ export async function POST(req: Request) {
     // ------------------------------------------------------------------
     // 4.5. Ensure product_uuid is actually a product ID, not a course ID
     // ------------------------------------------------------------------
-    let finalProductUuid = product_uuid;
-    if (finalProductUuid && finalProductUuid.length === 36) {
+    let finalProductUuid = isValidUuid(product_uuid) ? product_uuid : null;
+    if (finalProductUuid) {
       // Check if it's actually a course ID mistakenly passed as product_uuid
       const { data: isCourse } = await supabasePublic
         .from("maincourses")
@@ -536,12 +610,122 @@ export async function POST(req: Request) {
     // ------------------------------------------------------------------
     // 6.5. Create enrollment record(s) in phase-2.enrollments
     //
-    // Cart mode  (cart_items present): one enrollment per cart item.
-    // Single mode (no cart_items):     one enrollment for the primary course.
+    // Portal upgrade fast-path: if this is a portal_pro_upgrade order,
+    // use the server-stored course/enrollment IDs (never client body).
+    // Normal cart/single-course flow continues unchanged below.
     // ------------------------------------------------------------------
     const accessStartDate = new Date();
     const accessEndDate = new Date();
     accessEndDate.setFullYear(accessEndDate.getFullYear() + 1);
+
+    if (portalUpgradeMeta) {
+      // ── Portal upgrade path ────────────────────────────────────────────
+      // course_ids and enrollment_ids come from the DB-stored order row,
+      // NOT from the client callback body.
+      const courseArr = portalUpgradeMeta.course_ids
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const enrollArr = portalUpgradeMeta.enrollment_ids
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const proBundleIdUpgrade = portalUpgradeMeta.pro_bundle_id;
+
+      for (let i = 0; i < courseArr.length; i++) {
+        const courseId   = courseArr[i];
+        const enrollId   = enrollArr[i] ?? null;
+
+        if (enrollId) {
+          // Update the existing Starter enrollment row in-place
+          const { error: upErr } = await supabase
+            .from("enrollments")
+            .update({
+              bundle_id:       proBundleIdUpgrade,
+              status:          "active",
+              order_id:        order.id,
+              access_end_date: accessEndDate.toISOString(),
+            })
+            .eq("id", enrollId)
+            .eq("user_id", userId)   // ownership guard
+            .eq("course_id", courseId);
+
+          if (upErr) {
+            console.error(
+              `[verify-payment][portal-upgrade] UPDATE failed for enrollment ${enrollId}:`,
+              upErr.message,
+            );
+            // Fallback: upsert
+            const { error: upsErr } = await supabase
+              .from("enrollments")
+              .upsert(
+                {
+                  user_id:          userId,
+                  course_id:        courseId,
+                  bundle_id:        proBundleIdUpgrade,
+                  status:           "active",
+                  order_id:         order.id,
+                  access_start_date: accessStartDate.toISOString(),
+                  access_end_date:   accessEndDate.toISOString(),
+                },
+                { onConflict: "user_id,course_id" },
+              );
+            if (upsErr) {
+              console.error(
+                `[verify-payment][portal-upgrade] UPSERT fallback failed for course ${courseId}:`,
+                upsErr.message,
+              );
+            }
+          }
+        } else {
+          // No enrollment id — upsert on (user_id, course_id)
+          const { error: upsErr } = await supabase
+            .from("enrollments")
+            .upsert(
+              {
+                user_id:          userId,
+                course_id:        courseId,
+                bundle_id:        proBundleIdUpgrade,
+                status:           "active",
+                order_id:         order.id,
+                access_start_date: accessStartDate.toISOString(),
+                access_end_date:   accessEndDate.toISOString(),
+              },
+              { onConflict: "user_id,course_id" },
+            );
+          if (upsErr) {
+            console.error(
+              `[verify-payment][portal-upgrade] UPSERT failed for course ${courseId}:`,
+              upsErr.message,
+            );
+          }
+        }
+      }
+
+      // Mark the pending order as paid
+      await supabase
+        .from("orders")
+        .update({ status: "paid" })
+        .eq("id", order.id);
+
+      // ── Return portal-specific redirect ─────────────────────────────
+      const portalBase = LEARNING_PORTAL_URL.replace(/\/$/, "");
+      const portalRedirect = `${portalBase}/upgrade/success?payment_id=${encodeURIComponent(razorpay_payment_id)}&source=landing`;
+
+      return NextResponse.json(
+        {
+          success:      true,
+          redirectUrl:  portalRedirect,
+          isNewUser:    false,
+          existingUser: true,
+          orderId:      order.id,
+          message:      "Pro upgrade activated. Redirecting to the learning portal.",
+        },
+        { status: 200 },
+      );
+    }
+
+    // ── Normal (non-portal) enrollment path continues below ───────────────
 
     interface CartItemPayload {
       course_slug: string;
@@ -574,10 +758,11 @@ export async function POST(req: Request) {
         itemCourseId = finalCourseId;
       } else {
         // Cart mode — resolve by slug / title for each item
+        const courseKeyword = cartItem.course_title.split(" ")[0]; // Use first word for better matching
         const { data: mcRow } = await supabasePublic
           .from("maincourses")
           .select("id")
-          .ilike("title", `%${cartItem.course_title}%`)
+          .ilike("title", `%${courseKeyword}%`)
           .limit(1)
           .maybeSingle();
         itemCourseId = mcRow?.id ?? finalCourseId; // fall back to primary if not found
@@ -692,6 +877,21 @@ export async function POST(req: Request) {
               <p style="margin: 5px 0; color: #4b5563; font-size: 14px;"><strong>Amount Paid:</strong> ₹${amountPaise / 100}</p>
               <p style="margin: 5px 0; color: #4b5563; font-size: 14px;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
             </div>
+            
+            ${generatedTempPassword ? `
+            <div style="background-color: #FFF3CD; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #FFEEBA;">
+              <h3 style="margin-top: 0; color: #856404;">Your Login Details</h3>
+              <p style="margin: 5px 0; color: #856404; font-size: 14px;">
+                You can log in using your email address and the temporary password below:
+              </p>
+              <p style="margin: 10px 0; font-size: 18px; font-weight: bold; letter-spacing: 1px; color: #856404; text-align: center; background: white; padding: 10px; border-radius: 4px;">
+                ${generatedTempPassword}
+              </p>
+              <p style="margin: 5px 0; color: #856404; font-size: 14px;">
+                <strong>Note:</strong> We recommend changing this password from your profile page after you log in.
+              </p>
+            </div>
+            ` : ""}
 
             <p style="color: #374151; font-size: 16px; line-height: 1.6;">
               Click the button below to access your learning portal.

@@ -30,10 +30,10 @@ function GoogleIcon() {
   );
 }
 
-type AuthStep = "email" | "login" | "signup";
+type AuthStep = "email" | "login" | "signup" | "set-password";
 
 export default function AuthModal() {
-  const { isOpen, closeAuth, executePendingAction } = useAuth();
+  const { isOpen, closeAuth, executePendingAction, needsPassword, onPasswordSet } = useAuth();
   
   const [step, setStep] = useState<AuthStep>("email");
   const [email, setEmail] = useState("");
@@ -56,7 +56,11 @@ export default function AuthModal() {
   /* Reset state and focus input when modal opens/closes */
   useEffect(() => {
     if (isOpen) {
-      setStep("email");
+      if (needsPassword) {
+        setStep("set-password");
+      } else {
+        setStep("email");
+      }
       setEmail("");
       setPassword("");
       setConfirmPassword("");
@@ -190,6 +194,31 @@ export default function AuthModal() {
     }
   };
 
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isPasswordValid) {
+      setError("Please satisfy all password constraints.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabaseBrowser.auth.updateUser({ password });
+      if (error) throw error;
+      
+      onPasswordSet();
+    } catch (err: any) {
+      setError(err.message || "Failed to set password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -223,7 +252,7 @@ export default function AuthModal() {
           </button>
 
           {/* Back button if not on email step */}
-          {step !== "email" && (
+          {step !== "email" && step !== "set-password" && (
             <button
               onClick={() => {
                 setStep("email");
@@ -250,11 +279,13 @@ export default function AuthModal() {
                 />
               </div>
               <h2 className="text-[22px] font-bold text-slate-900 leading-tight">
-                {step === "email" ? "Sign in to Auto-Mate" : step === "login" ? "Welcome back" : "Create an account"}
+                {step === "email" ? "Sign in to Auto-Mate" : step === "login" ? "Welcome back" : step === "set-password" ? "Secure your account" : "Create an account"}
               </h2>
               <p className="mt-1.5 text-sm text-slate-500">
                 {step === "email" 
                   ? "Create an account or sign in to continue"
+                  : step === "set-password"
+                  ? "Please set a password for your account"
                   : email}
               </p>
             </div>
@@ -359,6 +390,43 @@ export default function AuthModal() {
                   className="w-full rounded-[14px] bg-[#0166A7] px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_14px_rgba(1,102,167,0.3)] transition-all duration-150 hover:bg-[#014f82] hover:shadow-[0_6px_20px_rgba(1,102,167,0.35)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
                   {loading ? "Creating account..." : "Sign Up"}
+                </button>
+              </form>
+            )}
+
+            {step === "set-password" && (
+              <form onSubmit={handleSetPassword} className="flex flex-col gap-3">
+                <input
+                  ref={passInputRef}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a password"
+                  required
+                  className="w-full rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3.5 text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all duration-150 focus:border-[#0166A7] focus:bg-white focus:shadow-[0_0_0_3px_rgba(1,102,167,0.12)]"
+                />
+                
+                <div className="flex flex-col gap-1.5 px-2 py-1 mt-1 mb-2">
+                  <span className={`text-[11px] font-medium transition-colors ${hasMinLength ? 'text-slate-800' : 'text-slate-400'}`}>• At least 8 characters</span>
+                  <span className={`text-[11px] font-medium transition-colors ${hasUppercase ? 'text-slate-800' : 'text-slate-400'}`}>• At least 1 uppercase letter</span>
+                  <span className={`text-[11px] font-medium transition-colors ${hasNumber ? 'text-slate-800' : 'text-slate-400'}`}>• At least 1 number</span>
+                  <span className={`text-[11px] font-medium transition-colors ${hasSpecialChar ? 'text-slate-800' : 'text-slate-400'}`}>• At least 1 special character</span>
+                </div>
+
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  required
+                  className="w-full rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3.5 text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all duration-150 focus:border-[#0166A7] focus:bg-white focus:shadow-[0_0_0_3px_rgba(1,102,167,0.12)]"
+                />
+                <button
+                  type="submit"
+                  disabled={loading || !password || !confirmPassword || !isPasswordValid}
+                  className="w-full rounded-[14px] bg-[#0166A7] px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_14px_rgba(1,102,167,0.3)] transition-all duration-150 hover:bg-[#014f82] hover:shadow-[0_6px_20px_rgba(1,102,167,0.35)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                >
+                  {loading ? "Saving..." : "Save Password"}
                 </button>
               </form>
             )}

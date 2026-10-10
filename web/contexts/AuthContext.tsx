@@ -18,6 +18,8 @@ interface AuthContextValue {
   isLoggedIn: boolean;
   user: { name: string; email: string; id: string } | null;
   executePendingAction: () => void;
+  needsPassword: boolean;
+  onPasswordSet: () => void;
   logout: () => void;
 }
 
@@ -27,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [needsPassword, setNeedsPassword] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string; id: string } | null>(null);
 
   useEffect(() => {
@@ -41,31 +44,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        setIsLoggedIn(true);
+
         setUser({
           id: session.user.id,
           email: session.user.email || "",
           name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "",
         });
+        localStorage.setItem("automate-current-user-id", session.user.id);
+        window.dispatchEvent(new Event("cart-updated"));
         
-        // If we have a pending action in sessionStorage from an OAuth redirect, execute it!
-        const savedAction = sessionStorage.getItem("pendingAuthAction");
-        if (savedAction) {
-          try {
-            const action = JSON.parse(savedAction) as PendingAction;
-            if (action) {
-              sessionStorage.removeItem("pendingAuthAction");
-              // Execute it
-              setTimeout(() => {
-                if (action.type === "addToCart" && typeof action.payload === "object") {
-                  addToCart(action.payload as CartItem);
-                } else if (action.type === "buyNow" && typeof action.payload === "string") {
-                  window.location.href = action.payload;
-                }
-              }, 500);
+        const hasEmail = session.user.identities?.some(id => id.provider === 'email');
+        if (!hasEmail) {
+          setNeedsPassword(true);
+          setIsLoggedIn(false);
+          setIsOpen(true);
+        } else {
+          setIsLoggedIn(true);
+          setNeedsPassword(false);
+          // If we have a pending action in sessionStorage from an OAuth redirect, execute it!
+          const savedAction = sessionStorage.getItem("pendingAuthAction");
+          if (savedAction) {
+            try {
+              const action = JSON.parse(savedAction) as PendingAction;
+              if (action) {
+                sessionStorage.removeItem("pendingAuthAction");
+                // Execute it
+                setTimeout(() => {
+                  if (action.type === "addToCart" && typeof action.payload === "object") {
+                    addToCart(action.payload as CartItem);
+                  } else if (action.type === "buyNow" && typeof action.payload === "string") {
+                    window.location.href = action.payload;
+                  }
+                }, 500);
+              }
+            } catch (e) {
+              console.error("Failed to parse pendingAuthAction", e);
             }
-          } catch (e) {
-            console.error("Failed to parse pendingAuthAction", e);
           }
         }
       }
@@ -82,15 +96,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        setIsLoggedIn(true);
+
         setUser({
           id: session.user.id,
           email: session.user.email || "",
           name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "",
         });
+        localStorage.setItem("automate-current-user-id", session.user.id);
+        window.dispatchEvent(new Event("cart-updated"));
+        
+        const hasEmail = session.user.identities?.some(id => id.provider === 'email');
+        if (!hasEmail) {
+          setNeedsPassword(true);
+          setIsLoggedIn(false);
+          setIsOpen(true);
+        } else {
+          setIsLoggedIn(true);
+          setNeedsPassword(false);
+        }
       } else {
         setIsLoggedIn(false);
         setUser(null);
+        setNeedsPassword(false);
+        localStorage.removeItem("automate-current-user-id");
+        window.dispatchEvent(new Event("cart-updated"));
       }
     });
 
@@ -123,6 +152,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setPendingAction(null);
   }, [pendingAction]);
 
+  const onPasswordSet = useCallback(() => {
+    setNeedsPassword(false);
+    setIsLoggedIn(true);
+    const savedActionStr = sessionStorage.getItem("pendingAuthAction");
+    if (savedActionStr || pendingAction) {
+      if (!pendingAction && savedActionStr) {
+        try {
+          const action = JSON.parse(savedActionStr) as PendingAction;
+          setPendingAction(action);
+          setTimeout(() => {
+            setIsOpen(false);
+            sessionStorage.removeItem("pendingAuthAction");
+            if (action?.type === "addToCart" && typeof action.payload === "object") {
+              addToCart(action.payload);
+            } else if (action?.type === "buyNow" && typeof action.payload === "string") {
+              window.location.href = action.payload;
+            }
+            setPendingAction(null);
+          }, 0);
+          return;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      executePendingAction();
+    } else {
+      setIsOpen(false);
+    }
+  }, [pendingAction, executePendingAction]);
+
   const logout = useCallback(async () => {
     await supabaseBrowser.auth.signOut();
   }, []);
@@ -137,6 +196,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoggedIn,
         user,
         executePendingAction,
+        needsPassword,
+        onPasswordSet,
         logout,
       }}
     >

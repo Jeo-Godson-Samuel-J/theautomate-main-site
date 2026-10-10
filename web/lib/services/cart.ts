@@ -25,7 +25,13 @@ export interface CartItem {
   thumbnailUrl?: string | null;
 }
 
-const CART_KEY = "automate-learning-cart";
+export const BASE_CART_KEY = "automate-learning-cart";
+
+export function getCartKey(): string {
+  if (typeof window === "undefined") return BASE_CART_KEY;
+  const userId = localStorage.getItem("automate-current-user-id");
+  return userId ? `${BASE_CART_KEY}-${userId}` : BASE_CART_KEY;
+}
 
 // ---------------------------------------------------------------------------
 // Normalise items loaded from localStorage.
@@ -52,7 +58,7 @@ export function getCart(): CartItem[] {
   if (typeof window === "undefined") return [];
 
   try {
-    const stored = localStorage.getItem(CART_KEY);
+    const stored = localStorage.getItem(getCartKey());
     if (!stored) return [];
     const parsed = JSON.parse(stored);
     return Array.isArray(parsed) ? normalise(parsed) : [];
@@ -63,7 +69,7 @@ export function getCart(): CartItem[] {
 
 export function saveCart(items: CartItem[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  localStorage.setItem(getCartKey(), JSON.stringify(items));
   window.dispatchEvent(new Event("cart-updated"));
 }
 

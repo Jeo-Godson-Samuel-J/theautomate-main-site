@@ -82,78 +82,96 @@ export async function POST(req: NextRequest) {
     if (!enrollments || enrollments.length === 0)
       return NextResponse.json({ eligible: false, price: fullPrice });
 
-    // Find the enrollment to upgrade from
-    let enrollment = providedProductUuid ? enrollments[0] : null;
+    // Instead of just one enrollment, we gather all eligible enrollments
+    const targetLevel = getTierLevel(targetBundleTitle);
+    
+    // We intentionally don't filter by providedProductUuid if we want to show all courses
+    // that are eligible for upgrade, as requested by the user.
+    const eligibleEnrollments = enrollments.filter((e) => {
+      const bName = (e.bundles as any)?.bundle_name || "Starter";
+      return getTierLevel(bName) < targetLevel;
+    });
 
-    if (!enrollment) {
-      // Sort enrollments by tier (highest first) and find one we can upgrade from
-      const targetLevel = getTierLevel(targetBundleTitle);
-
-      const sortedEnrollments = [...enrollments].sort((a, b) => {
-        const aName = (a.bundles as any)?.bundle_name || "Starter";
-        const bName = (b.bundles as any)?.bundle_name || "Starter";
-        return getTierLevel(bName) - getTierLevel(aName);
-      });
-
-      enrollment = sortedEnrollments.find((e) => {
-        const bName = (e.bundles as any)?.bundle_name || "Starter";
-        return getTierLevel(bName) < targetLevel;
-      });
-    }
-
-    if (!enrollment)
+    if (eligibleEnrollments.length === 0) {
       return NextResponse.json({
         eligible: false,
         price: fullPrice,
         message: "No eligible enrollment found to upgrade from.",
       });
+    }
 
-    const resolvedCourseId = enrollment.course_id;
-    const resolvedProductUuid = enrollment.product_id || enrollment.course_id;
-    const resolvedBatchType = enrollment.batch_type || "recorded";
+    // Prepare arrays to fetch data in parallel
+    const eligibleCoursesData = [];
+    let earliestAccessDate = new Date();
+    let maxDiffHours = 0;
+    
+    // Fallback variables for the primary course
+    let primaryResolvedCourseId = "";
+    let primaryResolvedProductUuid = "";
+    let primaryResolvedCourseTitle = "";
+    let primaryResolvedBatchType = "recorded";
+    let primaryUpgradePrice = fullPrice;
+    
+    for (const enrollment of eligibleEnrollments) {
+      const resolvedCourseId = enrollment.course_id;
+      const resolvedProductUuid = enrollment.product_id || enrollment.course_id;
+      const resolvedBatchType = enrollment.batch_type || "recorded";
 
-    // Fetch product title directly
-    const { data: productData } = await supabasePublic
-      .from("products")
-      .select("title")
-      .eq("id", resolvedProductUuid)
-      .maybeSingle();
-
-    let resolvedCourseTitle = productData?.title;
-
-    // Fallback to course title if product not found
-    if (!resolvedCourseTitle) {
-      const { data: courseData } = await supabasePublic
-        .from("maincourses")
+      // Fetch product title directly
+      const { data: productData } = await supabasePublic
+        .from("products")
         .select("title")
-        .eq("id", resolvedCourseId)
+        .eq("id", resolvedProductUuid)
         .maybeSingle();
-      resolvedCourseTitle = courseData?.title || "Your Course";
+
+      let resolvedCourseTitle = productData?.title;
+
+      if (!resolvedCourseTitle) {
+        const { data: courseData } = await supabasePublic
+          .from("maincourses")
+          .select("title")
+          .eq("id", resolvedCourseId)
+          .maybeSingle();
+        resolvedCourseTitle = courseData?.title || "Your Course";
+      }
+
+      const accessStartDate = new Date(enrollment.access_start_date || enrollment.created_at);
+      const diffHours = (new Date().getTime() - accessStartDate.getTime()) / (1000 * 60 * 60);
+      if (diffHours > maxDiffHours) maxDiffHours = diffHours;
+      if (accessStartDate < earliestAccessDate) earliestAccessDate = accessStartDate;
+
+      // Only allow if within 120 hours
+      if (diffHours <= 120) {
+        const { data: orders } = await supabase
+          .from("orders")
+          .select("amount, phone_number, created_at")
+          .eq("user_id", phase2User.id)
+          .eq("course_id", resolvedCourseId)
+          .in("status", ["paid", "captured", "successful", "authorized"]);
+
+        let totalPaid = 0;
+        let resolvedPhone = "";
+        if (orders && orders.length > 0) {
+          totalPaid = orders.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+          const orderWithPhone = orders.find((o) => o.phone_number && o.phone_number.trim() !== "");
+          if (orderWithPhone) resolvedPhone = orderWithPhone.phone_number;
+        }
+
+        const upgradePrice = Math.max(0, targetBundlePrice - totalPaid);
+        
+        eligibleCoursesData.push({
+          courseId: resolvedProductUuid, // ID used by frontend selection
+          courseTitle: resolvedCourseTitle,
+          upgradePrice,
+          enrollmentId: enrollment.id,
+          resolvedPhone,
+          resolvedBatchType,
+          resolvedCourseId, // Original phase2 DB course ID
+        });
+      }
     }
 
-    // 4. Verify Hierarchy (Only Upgrades)
-    const currentBundleName =
-      (enrollment.bundles as any)?.bundle_name || "Starter";
-    const currentLevel = getTierLevel(currentBundleName);
-    const targetLevel = getTierLevel(targetBundleTitle);
-
-    if (targetLevel <= currentLevel) {
-      return NextResponse.json({
-        eligible: false,
-        price: fullPrice,
-        message: "Cannot downgrade or buy same tier.",
-      });
-    }
-
-    // 5. Check Time Window (120 hours)
-    const accessStartDate = new Date(
-      enrollment.access_start_date || enrollment.created_at,
-    );
-    const now = new Date();
-    const diffHours =
-      (now.getTime() - accessStartDate.getTime()) / (1000 * 60 * 60);
-
-    if (diffHours > 120) {
+    if (eligibleCoursesData.length === 0) {
       return NextResponse.json({
         eligible: false,
         price: fullPrice,
@@ -161,39 +179,24 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 6. Calculate Difference based on orders
-    const { data: orders } = await supabase
-      .from("orders")
-      .select("amount, phone_number, created_at")
-      .eq("user_id", phase2User.id)
-      .eq("course_id", resolvedCourseId)
-      .in("status", ["paid", "captured", "successful", "authorized"])
-      .order("created_at", { ascending: false });
+    // Determine the primary course for default return values
+    // Prefer the one that matches providedProductUuid, else the first one
+    const primaryCourse = eligibleCoursesData.find(c => c.courseId === providedProductUuid) || eligibleCoursesData[0];
 
-    let totalPaid = 0;
-    let resolvedPhone = "";
-    if (orders && orders.length > 0) {
-      totalPaid = orders.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
-      // Try to find the most recent non-empty phone number from past orders
-      const orderWithPhone = orders.find(
-        (o) => o.phone_number && o.phone_number.trim() !== "",
-      );
-      if (orderWithPhone) {
-        resolvedPhone = orderWithPhone.phone_number;
-      }
-    }
+    // Skip legacy verification logic that operated on a single `enrollment`
+    // (We did the same checks in the loop above)
 
-    const upgradePrice = Math.max(0, targetBundlePrice - totalPaid);
 
     return NextResponse.json({
       eligible: true,
-      price: upgradePrice,
-      timeRemainingHours: Math.max(0, 120 - diffHours),
-      resolvedProductUuid,
-      resolvedCourseTitle,
-      resolvedBatchType,
-      resolvedPhone,
+      price: primaryCourse.upgradePrice,
+      timeRemainingHours: Math.max(0, 120 - maxDiffHours),
+      resolvedProductUuid: primaryCourse.courseId,
+      resolvedCourseTitle: primaryCourse.courseTitle,
+      resolvedBatchType: primaryCourse.resolvedBatchType,
+      resolvedPhone: primaryCourse.resolvedPhone || "",
+      eligibleCourses: eligibleCoursesData,
     });
   } catch (error: any) {
     console.error("Error in check-upgrade:", error);

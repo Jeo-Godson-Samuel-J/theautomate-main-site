@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
     const [{ data: inProfiles }, { data: inUsers }, { data: inLanding }] = await Promise.all([
       supabaseAdmin.from("profiles").select("id").eq("email", email).maybeSingle(),
-      supabaseAdmin.from("users").select("id").eq("email", email).maybeSingle(),
+      supabaseAdmin.schema("phase2").from("users").select("id").eq("email", email).maybeSingle(),
       supabaseAdmin.schema("phase2").from("landing_users").select("id").eq("email", email).maybeSingle()
     ]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { CartItem, getCart, removeFromCart } from "@/lib/services/cart";
+import { CartItem, getCart, removeFromCart, getCartKey } from "@/lib/services/cart";
 import { useState, useEffect } from "react";
 import { Trash2, ShoppingCart, CreditCard } from "lucide-react";
 import Image from "next/image";
@@ -21,7 +21,7 @@ export default function CartPage() {
     window.addEventListener("cart-updated", load);
     // Cross-tab changes
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "automate-learning-cart") load();
+      if (e.key === getCartKey()) load();
     };
     window.addEventListener("storage", onStorage);
 
