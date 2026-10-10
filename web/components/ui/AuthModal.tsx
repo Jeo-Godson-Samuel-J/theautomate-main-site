@@ -208,7 +208,10 @@ export default function AuthModal() {
     setError(null);
 
     try {
-      const { error } = await supabaseBrowser.auth.updateUser({ password });
+      const { error } = await supabaseBrowser.auth.updateUser({ 
+        password,
+        data: { has_set_password: true }
+      });
       if (error) throw error;
       
       onPasswordSet();

@@ -53,8 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("automate-current-user-id", session.user.id);
         window.dispatchEvent(new Event("cart-updated"));
         
-        const hasEmail = session.user.identities?.some(id => id.provider === 'email');
-        if (!hasEmail) {
+        const hasEmailProvider = session.user.app_metadata?.providers?.includes('email');
+        const hasSetPassword = session.user.user_metadata?.has_set_password === true;
+        
+        if (!hasEmailProvider && !hasSetPassword) {
           setNeedsPassword(true);
           setIsLoggedIn(false);
           setIsOpen(true);
@@ -105,8 +107,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("automate-current-user-id", session.user.id);
         window.dispatchEvent(new Event("cart-updated"));
         
-        const hasEmail = session.user.identities?.some(id => id.provider === 'email');
-        if (!hasEmail) {
+        const hasEmailProvider = session.user.app_metadata?.providers?.includes('email');
+        const hasSetPassword = session.user.user_metadata?.has_set_password === true;
+        
+        if (!hasEmailProvider && !hasSetPassword) {
           setNeedsPassword(true);
           setIsLoggedIn(false);
           setIsOpen(true);
@@ -139,7 +143,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const closeAuth = useCallback(() => {
     setIsOpen(false);
     sessionStorage.removeItem("pendingAuthAction");
-  }, []);
+    if (needsPassword) {
+      supabaseBrowser.auth.signOut();
+      setNeedsPassword(false);
+      setUser(null);
+    }
+  }, [needsPassword]);
 
   const executePendingAction = useCallback(() => {
     setIsOpen(false);
