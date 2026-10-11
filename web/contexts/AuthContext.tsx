@@ -37,6 +37,90 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [enrolledPlanKeys, setEnrolledPlanKeys] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    // Reusable fetch for user profile to sync username from phase2.users
+    const fetchUserProfile = async (userId: string, initialName?: string) => {
+      try {
+        const { data: p2User } = await supabaseBrowser
+          .schema("phase2")
+          .from("users")
+          .select("username")
+          .eq("auth_user_id", userId)
+          .maybeSingle();
+
+        if (p2User?.username?.trim()) {
+          setUser((prev) => (prev ? { ...prev, name: p2User.username.trim() } : prev));
+          return;
+        }
+
+        const { data: profile } = await supabaseBrowser
+          .from("profiles")
+          .select("full_name")
+          .eq("id", userId)
+          .maybeSingle();
+
+        if (profile?.full_name?.trim()) {
+          setUser((prev) => (prev ? { ...prev, name: profile.full_name.trim() } : prev));
+          return;
+        }
+
+        if (initialName?.trim()) {
+          setUser((prev) => (prev ? { ...prev, name: initialName.trim() } : prev));
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile name:", err);
+      }
+    };
+
+    // Reusable fetch for user enrollments to update UI buttons
+    const fetchEnrollments = async (userId: string) => {
+      const { data } = await supabaseBrowser
+        .schema("phase2")
+        .from("enrollments")
+        .select("course_id, product_id, bundle_id, users!inner(auth_user_id)")
+        .eq("users.auth_user_id", userId)
+        .eq("status", "active");
+
+      if (data) {
+        const courseIds = new Set<string>();
+        const planKeys = new Set<string>();
+        
+        const missingProductCourseIds = data.filter((e: any) => e.course_id && !e.product_id).map((e: any) => e.course_id);
+        let resolvedProducts: Record<string, string> = {};
+        
+        if (missingProductCourseIds.length > 0) {
+          const { data: mcData } = await supabaseBrowser
+            .from("maincourses")
+            .select("id, product_id")
+            .in("id", missingProductCourseIds);
+            
+          if (mcData) {
+            mcData.forEach((mc: any) => {
+              if (mc.product_id) {
+                resolvedProducts[mc.id] = mc.product_id;
+              }
+            });
+          }
+        }
+
+        data.forEach((e: any) => {
+          if (e.course_id) courseIds.add(String(e.course_id));
+          
+          const finalProductId = e.product_id || (e.course_id ? resolvedProducts[e.course_id] : null);
+          if (finalProductId) {
+            courseIds.add(String(finalProductId));
+          }
+          
+          if (e.bundle_id) {
+            if (e.course_id) planKeys.add(`${e.course_id}::${e.bundle_id}`);
+            if (finalProductId) planKeys.add(`${finalProductId}::${e.bundle_id}`);
+          }
+        });
+
+        setEnrolledCourseIds(courseIds);
+        setEnrolledPlanKeys(planKeys);
+      }
+    };
+
     // Check active session on mount
     supabaseBrowser.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -48,15 +132,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-
+        const fallbackName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.user_metadata?.username || session.user.email?.split("@")[0] || "";
         setUser({
           id: session.user.id,
           email: session.user.email || "",
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.user_metadata?.username || session.user.email?.split("@")[0] || "",
+          name: fallbackName,
         });
         localStorage.setItem("automate-current-user-id", session.user.id);
         window.dispatchEvent(new Event("cart-updated"));
         
+        // Sync profile name from phase2.users
+        fetchUserProfile(session.user.id, fallbackName);
+
         const hasEmailProvider = session.user.app_metadata?.providers?.includes('email');
         const hasSetPassword = session.user.user_metadata?.has_set_password === true;
         
@@ -71,56 +158,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setIsLoggedIn(true);
           setNeedsPassword(false);
-          
-          // Fetch user enrollments to update UI buttons
-          const fetchEnrollments = async (userId: string) => {
-            const { data } = await supabaseBrowser
-              .schema("phase2")
-              .from("enrollments")
-              .select("course_id, product_id, bundle_id, users!inner(auth_user_id)")
-              .eq("users.auth_user_id", userId)
-              .eq("status", "active");
-
-            if (data) {
-              const courseIds = new Set<string>();
-              const planKeys = new Set<string>();
-              
-              const missingProductCourseIds = data.filter((e: any) => e.course_id && !e.product_id).map((e: any) => e.course_id);
-              let resolvedProducts: Record<string, string> = {};
-              
-              if (missingProductCourseIds.length > 0) {
-                const { data: mcData } = await supabaseBrowser
-                  .from("maincourses")
-                  .select("id, product_id")
-                  .in("id", missingProductCourseIds);
-                  
-                if (mcData) {
-                  mcData.forEach((mc: any) => {
-                    if (mc.product_id) {
-                      resolvedProducts[mc.id] = mc.product_id;
-                    }
-                  });
-                }
-              }
-
-              data.forEach((e: any) => {
-                if (e.course_id) courseIds.add(String(e.course_id));
-                
-                const finalProductId = e.product_id || (e.course_id ? resolvedProducts[e.course_id] : null);
-                if (finalProductId) {
-                  courseIds.add(String(finalProductId));
-                }
-                
-                if (e.bundle_id) {
-                  if (e.course_id) planKeys.add(`${e.course_id}::${e.bundle_id}`);
-                  if (finalProductId) planKeys.add(`${finalProductId}::${e.bundle_id}`);
-                }
-              });
-
-              setEnrolledCourseIds(courseIds);
-              setEnrolledPlanKeys(planKeys);
-            }
-          };
           fetchEnrollments(session.user.id);
 
           // If we have a pending action in sessionStorage from an OAuth redirect, execute it!
@@ -158,15 +195,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-
+        const fallbackName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.user_metadata?.username || session.user.email?.split("@")[0] || "";
         setUser({
           id: session.user.id,
           email: session.user.email || "",
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.user_metadata?.username || session.user.email?.split("@")[0] || "",
+          name: fallbackName,
         });
         localStorage.setItem("automate-current-user-id", session.user.id);
         window.dispatchEvent(new Event("cart-updated"));
         
+        // Sync profile name from phase2.users
+        fetchUserProfile(session.user.id, fallbackName);
+
         const hasEmailProvider = session.user.app_metadata?.providers?.includes('email');
         const hasSetPassword = session.user.user_metadata?.has_set_password === true;
         
@@ -181,56 +221,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setIsLoggedIn(true);
           setNeedsPassword(false);
-
-          // Fetch user enrollments to update UI buttons
-          const fetchEnrollments = async (userId: string) => {
-            const { data } = await supabaseBrowser
-              .schema("phase2")
-              .from("enrollments")
-              .select("course_id, product_id, bundle_id, users!inner(auth_user_id)")
-              .eq("users.auth_user_id", userId)
-              .eq("status", "active");
-
-            if (data) {
-              const courseIds = new Set<string>();
-              const planKeys = new Set<string>();
-              
-              const missingProductCourseIds = data.filter((e: any) => e.course_id && !e.product_id).map((e: any) => e.course_id);
-              let resolvedProducts: Record<string, string> = {};
-              
-              if (missingProductCourseIds.length > 0) {
-                const { data: mcData } = await supabaseBrowser
-                  .from("maincourses")
-                  .select("id, product_id")
-                  .in("id", missingProductCourseIds);
-                  
-                if (mcData) {
-                  mcData.forEach((mc: any) => {
-                    if (mc.product_id) {
-                      resolvedProducts[mc.id] = mc.product_id;
-                    }
-                  });
-                }
-              }
-
-              data.forEach((e: any) => {
-                if (e.course_id) courseIds.add(String(e.course_id));
-                
-                const finalProductId = e.product_id || (e.course_id ? resolvedProducts[e.course_id] : null);
-                if (finalProductId) {
-                  courseIds.add(String(finalProductId));
-                }
-                
-                if (e.bundle_id) {
-                  if (e.course_id) planKeys.add(`${e.course_id}::${e.bundle_id}`);
-                  if (finalProductId) planKeys.add(`${finalProductId}::${e.bundle_id}`);
-                }
-              });
-
-              setEnrolledCourseIds(courseIds);
-              setEnrolledPlanKeys(planKeys);
-            }
-          };
           fetchEnrollments(session.user.id);
         }
       } else {
@@ -244,7 +234,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Keep profile name fresh when window regains focus or tab is revisited
+    const handleSyncProfile = () => {
+      supabaseBrowser.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user?.id) {
+          fetchUserProfile(session.user.id);
+        }
+      });
+    };
+
+    window.addEventListener("focus", handleSyncProfile);
+    document.addEventListener("visibilitychange", handleSyncProfile);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("focus", handleSyncProfile);
+      document.removeEventListener("visibilitychange", handleSyncProfile);
+    };
   }, []);
 
   const openAuth = useCallback((action?: PendingAction) => {
