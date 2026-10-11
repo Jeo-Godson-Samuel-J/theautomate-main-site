@@ -160,6 +160,7 @@ export default function OrderSummary({
                 cart_items: cartItems!.map((item) => ({
                   course_slug: item.courseSlug,
                   course_title: item.courseTitle,
+                  product_id: item.courseId,
                   plan_id: item.selectedPlanId,
                   plan_title: item.selectedPlanTitle,
                   plan_price: item.selectedPlanPrice,
@@ -215,9 +216,7 @@ export default function OrderSummary({
             }
 
             // ── 4. Clear the cart on success ────────────────────────────
-            if (isCartMode) {
-              clearCart();
-            }
+            clearCart();
 
             const isExistingUser = Boolean(verifyData.existingUser);
             const successMsg = isExistingUser

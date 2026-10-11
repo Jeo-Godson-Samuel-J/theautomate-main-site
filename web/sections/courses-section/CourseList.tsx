@@ -13,6 +13,8 @@ const COURSES_QUERY = `
   instructorName,
   instructorImage,
   price,
+  productUuid,
+  productId,
   "slug": slug.current
 }
 `;
@@ -63,6 +65,7 @@ export default async function CourseList() {
       : undefined,
     students: course.students || "0+",
     hours: course.hours || "0+",
+    productUuid: course.productUuid || course.productId,
   }));
 
   return <CourseGrid courses={normalizedCourses} />;

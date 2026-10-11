@@ -326,7 +326,11 @@ export default async function CoursePage({ params }: Props) {
                   ₹{course.price?.toLocaleString("en-IN") ?? "—"}
                 </div>
                 
-                <PlanSelector courseSlug={course.slug} />
+                <PlanSelector
+                  courseSlug={course.slug}
+                  courseTitle={course.title}
+                  productUuid={course.productUuid}
+                />
 
                 <div className="mt-6 text-xs text-center text-slate-500 mb-6">
                   30-Day Money-Back Guarantee

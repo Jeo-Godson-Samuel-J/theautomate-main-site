@@ -48,6 +48,8 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
 
 export interface CoursePlans {
   _id: string;
+  productUuid?: string;
+  productId?: string;
   title: string;
   slug: string;
   /** Full Plan documents dereferenced from bundles[]. May be null/empty if none assigned. */

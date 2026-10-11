@@ -394,6 +394,23 @@ export default function AuthModal() {
                 >
                   {loading ? "Creating account..." : "Sign Up"}
                 </button>
+                <div className="mt-2 text-center">
+                  <p className="text-sm text-slate-500">
+                    Already have an account?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep("email");
+                        setError(null);
+                        setPassword("");
+                        setConfirmPassword("");
+                      }}
+                      className="font-semibold text-[#0166A7] hover:underline"
+                    >
+                      Sign In
+                    </button>
+                  </p>
+                </div>
               </form>
             )}
 

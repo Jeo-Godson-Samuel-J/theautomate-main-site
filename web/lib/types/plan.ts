@@ -5,6 +5,7 @@ export interface PlanFeature {
 
 export interface Plan {
     _id: string;
+    bundleUuid?: string;
     title: string;
     badge: string;
     price: number;

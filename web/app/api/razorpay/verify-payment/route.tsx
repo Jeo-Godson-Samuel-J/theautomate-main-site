@@ -438,6 +438,14 @@ export async function POST(req: Request) {
     }
     
     // ------------------------------------------------------------------
+    // If this is a portal upgrade, the definitive user is the one who 
+    // initiated the checkout, regardless of what email they used on Razorpay.
+    // ------------------------------------------------------------------
+    if (pendingUpgradeOrder?.user_id) {
+      userId = pendingUpgradeOrder.user_id;
+    }
+    
+    // ------------------------------------------------------------------
     // 4.5. Resolve UUIDs for Course and Bundle
     // ------------------------------------------------------------------
     let finalBundleId = bundle_id;
@@ -548,20 +556,30 @@ export async function POST(req: Request) {
     // ------------------------------------------------------------------
     // 5. Create order in phase-2.orders
     // ------------------------------------------------------------------
+    // 5. Create or update order in phase-2.orders
+    // ------------------------------------------------------------------
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .insert({
-        user_id: userId,
-        course_id: finalCourseId,
-        bundle_id: finalBundleId,
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-        amount: amountPaise / 100, // Store in base currency (INR)
-        status: "paid",
-        phone_number: customer_phone,
-        additional_comments: customer_comments,
-      })
+      .upsert(
+        {
+          ...(pendingUpgradeOrder ? { id: pendingUpgradeOrder.id } : {}),
+          user_id: userId,
+          course_id: finalCourseId,
+          bundle_id: finalBundleId,
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+          amount: amountPaise / 100, // Store in base currency (INR)
+          status: "paid",
+          phone_number: customer_phone,
+          additional_comments: pendingUpgradeOrder?.additional_comments
+            ? (customer_comments
+                ? JSON.stringify({ ...portalUpgradeMeta, user_comment: customer_comments })
+                : pendingUpgradeOrder.additional_comments)
+            : customer_comments,
+        },
+        { onConflict: "razorpay_order_id" }
+      )
       .select("id")
       .single();
 
@@ -702,11 +720,7 @@ export async function POST(req: Request) {
         }
       }
 
-      // Mark the pending order as paid
-      await supabase
-        .from("orders")
-        .update({ status: "paid" })
-        .eq("id", order.id);
+      // (The order was already marked as paid during the upsert)
 
       // ── Return portal-specific redirect ─────────────────────────────
       const portalBase = LEARNING_PORTAL_URL.replace(/\/$/, "");
@@ -730,6 +744,7 @@ export async function POST(req: Request) {
     interface CartItemPayload {
       course_slug: string;
       course_title: string;
+      product_id?: string;
       plan_id: string;
       plan_title: string;
       plan_price: number;
@@ -743,42 +758,101 @@ export async function POST(req: Request) {
             {
               course_slug: course_id,
               course_title: course_name,
+              product_id: finalProductUuid,
               plan_id: bundle_id,
               plan_title: bundle_id,
               plan_price: amountPaise / 100,
             },
           ];
 
+    const enrollmentErrors: Array<{ course: string; error: string }> = [];
+
     for (const cartItem of itemsToEnroll) {
-      // Resolve course ID for this item
+      // 1. Resolve course ID for this item (must be a valid UUID in public.maincourses)
       let itemCourseId: string | null = null;
 
-      if (finalProductUuid && itemsToEnroll.length === 1) {
+      if (itemsToEnroll.length === 1 && finalCourseId) {
         // Single-course mode — reuse already-resolved IDs
         itemCourseId = finalCourseId;
       } else {
-        // Cart mode — resolve by slug / title for each item
-        const courseKeyword = cartItem.course_title.split(" ")[0]; // Use first word for better matching
-        const { data: mcRow } = await supabasePublic
-          .from("maincourses")
-          .select("id")
-          .ilike("title", `%${courseKeyword}%`)
-          .limit(1)
-          .maybeSingle();
-        itemCourseId = mcRow?.id ?? finalCourseId; // fall back to primary if not found
+        // Cart mode — resolve by product_id if valid UUID, or title search
+        if (isValidUuid(cartItem.product_id)) {
+          const { data: mcByProd } = await supabasePublic
+            .from("maincourses")
+            .select("id")
+            .eq("product_id", cartItem.product_id)
+            .limit(1)
+            .maybeSingle();
+          if (mcByProd?.id) itemCourseId = mcByProd.id;
+        }
+
+        if (!itemCourseId && cartItem.course_title) {
+          const courseKeyword = cartItem.course_title.split(" ")[0]; // Use first word for better matching
+          const { data: mcRow } = await supabasePublic
+            .from("maincourses")
+            .select("id")
+            .ilike("title", `%${courseKeyword}%`)
+            .limit(1)
+            .maybeSingle();
+          itemCourseId = mcRow?.id ?? null;
+        }
+
+        if (!itemCourseId) {
+          itemCourseId = finalCourseId; // fall back to primary if not found
+        }
       }
 
-      // Resolve bundle ID for this item
-      let itemBundleId = finalBundleId;
-      if (cartItem.plan_title && cartItem.plan_title !== bundle_id) {
-        const planKeyword = cartItem.plan_title.split(" ")[0];
-        const { data: planRow } = await supabase
+      // 2. Resolve bundle ID for this item: MUST be a valid UUID in phase2.bundles!
+      let itemBundleId: string | null = null;
+
+      // Check if plan_id is already a valid UUID and exists in bundles
+      if (isValidUuid(cartItem.plan_id)) {
+        const { data: bCheck } = await supabase
           .from("bundles")
           .select("id")
-          .ilike("bundle_name", `%${planKeyword}%`)
-          .limit(1)
+          .eq("id", cartItem.plan_id)
           .maybeSingle();
-        if (planRow) itemBundleId = planRow.id;
+        if (bCheck?.id) itemBundleId = bCheck.id;
+      }
+
+      // If not a valid UUID or not found in DB, resolve by plan title/keyword
+      if (!itemBundleId) {
+        const planText = cartItem.plan_title || cartItem.plan_id || "";
+        const bundleKeyword = planText.toLowerCase().startsWith("live sessions")
+          ? "premium"
+          : planText.split(" ")[0];
+
+        if (bundleKeyword) {
+          const { data: bundleData } = await supabase
+            .from("bundles")
+            .select("id")
+            .ilike("bundle_name", `%${bundleKeyword}%`)
+            .limit(1)
+            .maybeSingle();
+          if (bundleData?.id) itemBundleId = bundleData.id;
+        }
+      }
+
+      // Fall back to finalBundleId (already resolved earlier)
+      if (!itemBundleId) {
+        itemBundleId = finalBundleId;
+      }
+
+      // 3. Resolve product_id (must be a valid UUID or null to avoid 22P02 Postgres errors)
+      let itemProductId: string | null = null;
+      if (isValidUuid(cartItem.product_id)) {
+        itemProductId = cartItem.product_id;
+      } else if (isValidUuid(finalProductUuid)) {
+        itemProductId = finalProductUuid;
+      } else if (itemCourseId) {
+        const { data: courseRow } = await supabasePublic
+          .from("maincourses")
+          .select("product_id")
+          .eq("id", itemCourseId)
+          .maybeSingle();
+        if (courseRow?.product_id && isValidUuid(courseRow.product_id)) {
+          itemProductId = courseRow.product_id;
+        }
       }
 
       const { data: existingEnrollment } = await supabase
@@ -805,7 +879,7 @@ export async function POST(req: Request) {
           user_id: userId,
           order_id: order.id,
           course_id: itemCourseId,
-          product_id: finalProductUuid,
+          product_id: itemProductId,
           bundle_id: itemBundleId,
           status: "active",
           batch_type: batch_type || "recorded",
@@ -820,6 +894,10 @@ export async function POST(req: Request) {
           `[verify-payment] Enrollment error for course "${cartItem.course_title}":`,
           enrollmentError,
         );
+        enrollmentErrors.push({
+          course: cartItem.course_title,
+          error: enrollmentError.message || JSON.stringify(enrollmentError),
+        });
         // Log but don't hard-fail — other courses in the cart should still enroll
       }
     }
@@ -948,6 +1026,7 @@ export async function POST(req: Request) {
         isNewUser,
         existingUser: !isNewUser,
         orderId: order.id,
+        enrollmentErrors: enrollmentErrors.length > 0 ? enrollmentErrors : undefined,
         message: isNewUser
           ? "Account created successfully. Check your email for login instructions."
           : "Payment recorded. Your new course has been added to your existing account.",

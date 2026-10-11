@@ -51,14 +51,14 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── Check for upgrade_session cookie ─────────────────────────────────────
+  // ── Check for upgrade_session cookie or token ────────────────────────────
   // The cookie is set by POST /api/upgrade/validate-handoff after the
-  // one-time handoff token is verified.  Its value is an opaque session id
-  // that create-upgrade-order will re-validate fully server-side.
+  // one-time handoff token is verified.
   const sessionCookie = req.cookies.get(UPGRADE_SESSION_COOKIE);
+  const token = searchParams.get("token");
 
-  if (sessionCookie?.value) {
-    // Cookie present — let the request through.
+  if (sessionCookie?.value || token) {
+    // Cookie present OR initial handoff token present — let the request through.
     // The page server component and API routes will do the full validation.
     return NextResponse.next();
   }

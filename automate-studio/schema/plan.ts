@@ -7,6 +7,12 @@ export default defineType({
 
     fields: [
         defineField({
+            name: "bundleUuid",
+            title: "Supabase Bundle UUID",
+            type: "string",
+            description: "The UUID of the bundle in Supabase (e.g., for Pro, Starter, etc.)",
+        }),
+        defineField({
             name: "title",
             title: "Plan Title",
             type: "string",

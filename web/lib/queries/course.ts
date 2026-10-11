@@ -4,6 +4,7 @@ export const COURSES_QUERY = `
   title,
   "slug": slug.current,
   productUuid,
+  productId,
   tagline,
   hoverDescription,
   rating,
@@ -27,6 +28,7 @@ export const COURSE_BY_SLUG_QUERY = `
   title,
   "slug": slug.current,
   productUuid,
+  productId,
   tagline,
   rating,
   students,
@@ -66,6 +68,7 @@ export const COURSE_BY_SLUG_QUERY = `
   batchDetails,
   bundles[]->{
     _id,
+    bundleUuid,
     title,
     badge,
     price,
@@ -89,10 +92,13 @@ export const COURSE_BY_SLUG_QUERY = `
 export const COURSE_PLANS_QUERY = `
 *[_type=="courseDetails" && slug.current==$slug][0]{
   _id,
+  productUuid,
+  productId,
   title,
   "slug": slug.current,
   bundles[]->{
     _id,
+    bundleUuid,
     title,
     badge,
     price,

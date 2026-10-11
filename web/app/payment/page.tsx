@@ -55,7 +55,7 @@ interface Props {
 // ── Sanity queries (normal purchase only) ────────────────────────────────────
 
 const COURSE_TITLE_QUERY = `
-  *[_type=="courseDetails" && slug.current==$slug][0]{ title, productUuid }
+  *[_type=="courseDetails" && slug.current==$slug][0]{ _id, title, productUuid }
 `;
 
 const PLAN_QUERY = `
@@ -219,7 +219,7 @@ export default async function PaymentPage({ searchParams }: Props) {
   const [courseData, planData] = await Promise.all([
     !fromCart && courseSlug
       ? client
-          .fetch<{ title: string; productUuid: string } | null>(
+          .fetch<{ _id: string; title: string; productUuid: string } | null>(
             COURSE_TITLE_QUERY,
             { slug: courseSlug },
           )
@@ -255,7 +255,7 @@ export default async function PaymentPage({ searchParams }: Props) {
         <PaymentPageClient
           courseSlug={courseSlug}
           courseTitle={courseTitle}
-          productUuid={courseData?.productUuid || ""}
+          productUuid={courseData?.productUuid || courseData?._id || ""}
           bundleId={resolvedBundle?._id ?? bundleId}
           bundleTitle={resolvedTitle}
           bundlePrice={resolvedPrice}

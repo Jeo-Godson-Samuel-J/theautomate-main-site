@@ -204,6 +204,8 @@ export async function POST(req: NextRequest) {
     razorpay_order_id: rzpOrder.id,
     amount:            totalInr,
     status:            "pending",
+    course_id:         deduped[0], // satisfies NOT NULL constraint
+    bundle_id:         proBundleId, // satisfies NOT NULL constraint
     // Store upgrade context so verify-payment can retrieve it server-side
     // without trusting the browser callback body.
     additional_comments: JSON.stringify({

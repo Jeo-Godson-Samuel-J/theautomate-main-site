@@ -38,6 +38,7 @@ export default async function CoursesPage() {
               outcomes={course.outcomes}
               keyConcepts={course.keyConcepts}
               index={index}
+              productUuid={course.productUuid || course.productId}
             />
           ))}
         </div>

@@ -18,6 +18,7 @@ export interface CourseCardData {
   _id: string;
   title: string;
   slug: string;
+  productUuid?: string | null;
   /** Pre-resolved URL from urlFor(image) — set by the server component */
   image: string;
   tagline: string;
@@ -203,6 +204,7 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
                   keyConcepts={c.keyConcepts}
                   hours={c.hours}
                   index={index}
+                  productUuid={c.productUuid}
                 />
               </div>
             ))}

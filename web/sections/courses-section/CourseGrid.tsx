@@ -17,6 +17,7 @@ interface CourseItem {
   price?: number;
   instructorName?: string;
   slug: string;
+  productUuid?: string | null;
   level?: string;
   _updatedAt?: string;
   outcomes?: string[];
@@ -68,6 +69,7 @@ export default function CourseGrid({ courses }: CourseGridProps) {
               outcomes={course.outcomes}
               keyConcepts={course.keyConcepts}
               index={index}
+              productUuid={course.productUuid}
             />
           ))}
         </div>

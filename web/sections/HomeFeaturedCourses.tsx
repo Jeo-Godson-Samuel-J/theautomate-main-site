@@ -17,6 +17,7 @@ export default async function HomeFeaturedCourses() {
     title: c.title,
     // COURSES_QUERY aliases slug to a flat string — no .current needed
     slug: c.slug,
+    productUuid: c.productUuid || c.productId,
     image: c.heroImage ? urlFor(c.heroImage).width(800).height(500).fit("crop").url() : "/placeholder.png",
     tagline: c.tagline ?? "",
     hoverDescription: c.hoverDescription,

@@ -32,7 +32,7 @@ export default function Navbar() {
   const [isVisible, setIsVisible] = useState(true);
   const [cartCount, setCartCount] = useState(0);
   
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isLoggedIn, user, logout, openAuth } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
   const [showMyLearning, setShowMyLearning] = useState(false);
@@ -447,12 +447,21 @@ export default function Navbar() {
                       )}
                     </div>
                   ) : (
-                    <Button
-                      asChild
-                      className="rounded-full bg-[#0166A7] px-3.5 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)] transition-all duration-250 hover:scale-[1.03] hover:brightness-110"
-                    >
-                      <Link href="/contact">Contact</Link>
-                    </Button>
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <Button
+                        onClick={() => openAuth()}
+                        variant="outline"
+                        className="hidden sm:flex rounded-full border-slate-200 text-slate-700 bg-white px-3.5 py-2 sm:px-5 sm:py-3 text-xs sm:text-sm font-semibold transition-all duration-250 hover:border-[#0166A7] hover:text-[#0166A7] hover:bg-slate-50"
+                      >
+                        Sign Up / Sign In
+                      </Button>
+                      <Button
+                        asChild
+                        className="rounded-full bg-[#0166A7] px-3.5 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)] transition-all duration-250 hover:scale-[1.03] hover:brightness-110"
+                      >
+                        <Link href="/contact">Contact</Link>
+                      </Button>
+                    </div>
                   )}
                 
                 <button
@@ -515,6 +524,12 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <Button 
+                  onClick={() => { setIsOpen(false); openAuth(); }}
+                  className="w-full rounded-full bg-slate-100 text-slate-800 hover:bg-slate-200 py-6 text-lg font-semibold shadow-none border border-slate-200"
+                >
+                  Sign Up / Sign In
+                </Button>
                 <Button asChild className="w-full rounded-full bg-[#0166A7] py-6 text-lg font-semibold text-white shadow-[0_10px_24px_rgba(1,102,167,0.25)]">
                   <Link href="/contact" onClick={() => setIsOpen(false)}>
                     Contact

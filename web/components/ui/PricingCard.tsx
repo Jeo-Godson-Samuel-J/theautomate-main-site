@@ -58,7 +58,7 @@ export function PricingCard({
   recommended = false,
 }: PricingCardProps) {
   const router = useRouter();
-  const { isLoggedIn, openAuth } = useAuth();
+  const { isLoggedIn, openAuth, enrolledCourseIds, enrolledPlanKeys } = useAuth();
 
   const imageUrl = bundle.coverImage
     ? urlFor(bundle.coverImage).width(800).url()
@@ -83,13 +83,21 @@ export function PricingCard({
     ? `/courses/${courseSlug}/plans/${badgeSlug}`
     : `/plan/${titleSlug}`;
 
+  let finalBundleUuid = bundle.bundleUuid;
+  if (!finalBundleUuid) {
+    if (badgeSlug === 'starter') finalBundleUuid = '350edd44-752b-454a-8bf3-0ffb1915fd78';
+    else if (badgeSlug === 'pro') finalBundleUuid = '196003df-766a-44a8-8c5c-ab0f6568431b';
+    else if (badgeSlug === 'premium') finalBundleUuid = '38518a2c-79c7-4776-8198-ab4a3889d24f';
+    else finalBundleUuid = bundle._id;
+  }
+
   const paymentParams = new URLSearchParams();
   // Course identifiers
   if (courseSlug) paymentParams.set("course", courseSlug);
   if (courseId) paymentParams.set("courseId", courseId);
   if (courseTitle) paymentParams.set("courseTitle", courseTitle);
   // Plan details
-  paymentParams.set("bundleId", bundle._id);
+  paymentParams.set("bundleId", finalBundleUuid);
   paymentParams.set("bundleTitle", displayName);
   paymentParams.set("amount", bundle.price.toString());
   if (bundle.duration) paymentParams.set("duration", bundle.duration);
@@ -103,6 +111,20 @@ export function PricingCard({
   // Cart state — keyed on (resolvedCourseId, bundle._id)
   // ---------------------------------------------------------------------------
   const resolvedCourseId = courseId ?? bundle._id;
+  const isEnrolledInCourse = enrolledCourseIds?.has(resolvedCourseId) ?? false;
+  
+  // Check if they have ANY specific plan for this course (i.e. phase2 enrollment)
+  const hasSpecificPlan = Array.from(enrolledPlanKeys || []).some(key => key.startsWith(`${resolvedCourseId}::`));
+
+  // Determine if this exact plan is owned.
+  // If they have a specific plan, we check exact match.
+  // If they DON'T have a specific plan but ARE enrolled (legacy), we assume they own the "starter" plan.
+  const isEnrolledInThisPlan = hasSpecificPlan
+    ? (enrolledPlanKeys?.has(`${resolvedCourseId}::${finalBundleUuid}`) ?? false)
+    : (isEnrolledInCourse && badgeSlug === "starter");
+
+  const isUpgrade = isEnrolledInCourse && !isEnrolledInThisPlan;
+  
   const [addedToCart, setAddedToCart] = useState(false);
   const [isOtherPlanInCart, setIsOtherPlanInCart] = useState(false);
 
@@ -112,7 +134,7 @@ export function PricingCard({
       const thisPlanInCart = cart.some(
         (item) =>
           item.courseId === resolvedCourseId &&
-          item.selectedPlanId === bundle._id,
+          item.selectedPlanId === finalBundleUuid,
       );
       const anyPlanInCart = cart.some(
         (item) => item.courseId === resolvedCourseId,
@@ -128,13 +150,13 @@ export function PricingCard({
       window.removeEventListener("cart-updated", checkCart);
       window.removeEventListener("storage", checkCart);
     };
-  }, [resolvedCourseId, bundle._id]);
+  }, [resolvedCourseId, finalBundleUuid]);
 
   const getCartItemPayload = () => ({
     courseId: resolvedCourseId,
     courseTitle: courseTitle ?? courseSlug ?? displayName,
     courseSlug: courseSlug ?? titleSlug,
-    selectedPlanId: bundle._id,
+    selectedPlanId: finalBundleUuid,
     selectedPlanTitle: displayName,
     selectedPlanPrice: bundle.price,
     thumbnailUrl: bundle.coverImage
@@ -153,7 +175,7 @@ export function PricingCard({
 
     if (addedToCart) {
       // Remove doesn't need auth guard
-      removeFromCart(resolvedCourseId, bundle._id);
+      removeFromCart(resolvedCourseId, finalBundleUuid);
       return;
     }
 
@@ -264,6 +286,27 @@ export function PricingCard({
                 View Plan
               </Button>
             </Link>
+          ) : isEnrolledInThisPlan ? (
+            /* Enrolled in this exact plan: Go to Course */
+            <Button
+              className="w-full rounded-full bg-[#16a34a] text-white font-bold py-6 hover:bg-[#15803d] transition-all border-0"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+                window.location.href = `${baseUrl}/login?next=/courses/${resolvedCourseId}`;
+              }}
+            >
+              Go to Course
+            </Button>
+          ) : isUpgrade ? (
+            /* Enrolled in a different plan: Upgrade */
+            <Button
+              className="w-full rounded-full bg-[#0166A7] text-white font-bold py-6 hover:bg-[#014f82] transition-all border-0"
+              onClick={handleBuyNow}
+            >
+              Upgrade
+            </Button>
           ) : (
             /* Starter / Pro: Add to Cart + Buy Now */
             <div className="flex gap-3">

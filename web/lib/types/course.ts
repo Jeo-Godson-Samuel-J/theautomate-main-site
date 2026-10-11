@@ -49,6 +49,7 @@ export interface Course {
    * Used to fetch live learner ratings from public.course_ratings.
    */
   productUuid?: string | null;
+  productId?: string | null;
 
   heroImage: any; // Sanity image object — use urlFor() to resolve
 
