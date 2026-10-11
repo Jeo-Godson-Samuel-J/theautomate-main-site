@@ -32,7 +32,7 @@ export default function Navbar() {
   const [isVisible, setIsVisible] = useState(true);
   const [cartCount, setCartCount] = useState(0);
   
-  const { isLoggedIn, user, logout, openAuth } = useAuth();
+  const { isLoggedIn, user, logout, openAuth, enrolledCourseIds } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
   const [showMyLearning, setShowMyLearning] = useState(false);
@@ -47,6 +47,7 @@ export default function Navbar() {
           const userEmail = user.email?.trim().toLowerCase() || "";
 
           // Fetch from phase2 schema enrollments
+          let enrollmentCourseIds: string[] = [];
           const { data: enrollmentsData } = await supabaseBrowser
             .schema("phase2")
             .from("enrollments")
@@ -54,16 +55,34 @@ export default function Navbar() {
             .eq("users.auth_user_id", user.id)
             .eq("status", "active");
 
-          // Fetch from public course_members
-          const { data: courseMembersData } = await supabaseBrowser
-            .from("course_members")
-            .select("maincourse_id")
-            .eq("email", userEmail)
-            .eq("status", "active");
+          if (enrollmentsData && enrollmentsData.length > 0) {
+            enrollmentCourseIds = enrollmentsData.map((e: any) => e.course_id).filter(Boolean);
+          } else {
+            // Direct user_id fallback
+            const { data: directEnrollments } = await supabaseBrowser
+              .schema("phase2")
+              .from("enrollments")
+              .select("course_id")
+              .eq("user_id", user.id)
+              .eq("status", "active");
+            if (directEnrollments && directEnrollments.length > 0) {
+              enrollmentCourseIds = directEnrollments.map((e: any) => e.course_id).filter(Boolean);
+            }
+          }
 
-          const enrollmentCourseIds = enrollmentsData?.map((e: any) => e.course_id) || [];
-          const memberCourseIds = courseMembersData?.map((m: any) => m.maincourse_id) || [];
-          
+          // Fetch from public course_members
+          let memberCourseIds: string[] = [];
+          if (userEmail) {
+            const { data: courseMembersData } = await supabaseBrowser
+              .from("course_members")
+              .select("maincourse_id")
+              .eq("email", userEmail)
+              .eq("status", "active");
+            if (courseMembersData) {
+              memberCourseIds = courseMembersData.map((m: any) => m.maincourse_id).filter(Boolean);
+            }
+          }
+
           const allCourseIds = Array.from(new Set([...enrollmentCourseIds, ...memberCourseIds]));
 
           if (allCourseIds.length > 0) {
@@ -78,18 +97,82 @@ export default function Navbar() {
               .in("id", allCourseIds);
 
             if (maincoursesData) {
-               setActiveCourses(maincoursesData);
+              setActiveCourses(maincoursesData);
+            } else {
+              setActiveCourses([]);
             }
+          } else {
+            setActiveCourses([]);
           }
         } catch (error) {
           console.error("Failed to fetch active courses:", error);
+          setActiveCourses([]);
         } finally {
           setIsLoadingCourses(false);
         }
       };
       fetchCourses();
+    } else {
+      setActiveCourses([]);
+      setIsLoadingCourses(false);
     }
   }, [isLoggedIn, user]);
+
+  const hasEnrolledCourses =
+    activeCourses.length > 0 || (enrolledCourseIds && enrolledCourseIds.size > 0);
+
+  const handleMyLearningClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    let hasCourses = activeCourses.length > 0 || (enrolledCourseIds && enrolledCourseIds.size > 0);
+
+    // If courses are still loading and we have no cached enrollment data, verify before redirecting
+    if (!hasCourses && isLoadingCourses && user) {
+      try {
+        const userEmail = user.email?.trim().toLowerCase() || "";
+        const [{ count: p2Count }, { count: directCount }, { count: cmCount }] = await Promise.all([
+          supabaseBrowser
+            .schema("phase2")
+            .from("enrollments")
+            .select("id, users!inner(auth_user_id)", { count: "exact", head: true })
+            .eq("users.auth_user_id", user.id)
+            .eq("status", "active"),
+          supabaseBrowser
+            .schema("phase2")
+            .from("enrollments")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("status", "active"),
+          supabaseBrowser
+            .from("course_members")
+            .select("id", { count: "exact", head: true })
+            .eq("email", userEmail)
+            .eq("status", "active"),
+        ]);
+
+        if ((p2Count || 0) > 0 || (directCount || 0) > 0 || (cmCount || 0) > 0) {
+          hasCourses = true;
+        }
+      } catch (err) {
+        console.error("Failed to verify active enrollments:", err);
+      }
+    }
+
+    if (!hasCourses) {
+      // User is not enrolled in any course -> do NOT redirect to learning portal!
+      // Open the My Learning dropdown panel to show the "No Active Courses" message and Explore Courses link.
+      setShowMyLearning(true);
+      return;
+    }
+
+    // User is enrolled in at least one course -> redirect to the learning portal
+    setIsProfileOpen(false);
+    const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || "http://localhost:3001";
+    const params = new URLSearchParams({ next: "/courses" });
+    if (user?.email) params.set("email", user.email);
+    window.location.href = `${baseUrl}/login?${params.toString()}`;
+  };
 
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
@@ -311,32 +394,26 @@ export default function Navbar() {
                                 <p className="text-xs text-slate-500 truncate">{user?.email}</p>
                               </div>
                               <div
-                                className="flex flex-row items-center justify-between rounded-xl px-2 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#0166A7] transition-colors group"
+                                className="flex flex-row items-center justify-between rounded-xl px-2 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#0166A7] transition-colors group cursor-pointer"
+                                onClick={handleMyLearningClick}
                               >
                                 <button
-                                  onClick={async (e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setIsProfileOpen(false);
-                                    const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
-                                    // /courses is the "My Learning" page in the portal
-                                    const params = new URLSearchParams({ next: '/courses' });
-                                    if (user?.email) params.set('email', user.email);
-                                    window.location.href = `${baseUrl}/login?${params.toString()}`;
-                                  }}
-                                  className="flex flex-1 items-center gap-2 px-2 py-1.5"
+                                  type="button"
+                                  onClick={handleMyLearningClick}
+                                  className="flex flex-1 items-center gap-2 px-2 py-1.5 cursor-pointer text-left"
                                 >
                                   <BookOpen size={16} />
-                                  My Learning
+                                  <span>My Learning</span>
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     setShowMyLearning(true);
                                   }}
-                                  className="p-1.5 rounded-lg hover:bg-slate-200 transition-colors"
-                                  title="View Courses"
+                                  className="p-1.5 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer text-slate-400 group-hover:text-slate-600"
+                                  title={hasEnrolledCourses ? "View Enrolled Courses" : "No Enrolled Courses"}
                                 >
                                   <ChevronRight size={16} />
                                 </button>
@@ -379,7 +456,25 @@ export default function Navbar() {
                                 {isLoadingCourses ? (
                                   <div className="p-4 text-center text-sm text-slate-500">Loading courses...</div>
                                 ) : activeCourses.length === 0 ? (
-                                  <div className="p-4 text-center text-sm text-slate-500">No active courses found.</div>
+                                  <div className="py-6 px-4 text-center flex flex-col items-center">
+                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                                      <BookOpen size={22} />
+                                    </div>
+                                    <p className="text-sm font-bold text-slate-900 mb-1">No Active Courses</p>
+                                    <p className="text-xs text-slate-500 mb-4 max-w-[210px] leading-relaxed">
+                                      You are not enrolled in any courses yet. Access to the learning portal requires an active enrollment.
+                                    </p>
+                                    <Link
+                                      href="/courses"
+                                      onClick={() => {
+                                        setIsProfileOpen(false);
+                                        setShowMyLearning(false);
+                                      }}
+                                      className="w-full py-2.5 px-4 rounded-xl bg-[#0166A7] hover:bg-[#01558b] text-white text-xs font-bold text-center transition-all shadow-sm block"
+                                    >
+                                      Explore Courses
+                                    </Link>
+                                  </div>
                                 ) : (
                                   activeCourses.map((course, idx) => (
                                     <div key={idx} className="flex gap-3 items-center p-2 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100/50 transition-colors relative group">
@@ -510,6 +605,31 @@ export default function Navbar() {
                     <span className="text-xs text-slate-500">{user?.email}</span>
                   </div>
                 </div>
+                {hasEnrolledCourses ? (
+                  <Button
+                    onClick={() => {
+                      setIsOpen(false);
+                      const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+                      const params = new URLSearchParams({ next: '/courses' });
+                      if (user?.email) params.set('email', user.email);
+                      window.location.href = `${baseUrl}/login?${params.toString()}`;
+                    }}
+                    className="w-full rounded-full bg-[#0166A7] text-white hover:bg-[#01558b] py-6 text-lg font-semibold shadow-none flex items-center justify-center gap-2"
+                  >
+                    <BookOpen size={20} />
+                    My Learning
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    className="w-full rounded-full bg-[#0166A7] text-white hover:bg-[#01558b] py-6 text-lg font-semibold shadow-none flex items-center justify-center gap-2"
+                  >
+                    <Link href="/courses" onClick={() => setIsOpen(false)}>
+                      <BookOpen size={20} />
+                      Explore Courses
+                    </Link>
+                  </Button>
+                )}
                 <Button asChild className="w-full rounded-full bg-slate-100 text-slate-800 hover:bg-slate-200 py-6 text-lg font-semibold shadow-none">
                   <Link href="/contact" onClick={() => setIsOpen(false)}>
                     Contact Support

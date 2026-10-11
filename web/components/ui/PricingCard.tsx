@@ -58,7 +58,7 @@ export function PricingCard({
   recommended = false,
 }: PricingCardProps) {
   const router = useRouter();
-  const { isLoggedIn, openAuth, enrolledCourseIds, enrolledPlanKeys } = useAuth();
+  const { isLoggedIn, openAuth, enrolledCourseIds, enrolledPlanKeys, enrolledCourseMap } = useAuth();
 
   const imageUrl = bundle.coverImage
     ? urlFor(bundle.coverImage).width(800).url()
@@ -107,23 +107,92 @@ export function PricingCard({
 
   const isPremium = badgeSlug === "premium";
 
+  const STARTER_BUNDLE_UUID = "350edd44-752b-454a-8bf3-0ffb1915fd78".toLowerCase();
+  const PRO_BUNDLE_UUID = "196003df-766a-44a8-8c5c-ab0f6568431b".toLowerCase();
+  const PREMIUM_BUNDLE_UUID = "38518a2c-79c7-4776-8198-ab4a3889d24f".toLowerCase();
+
+  const getPlanTierLevel = (identifier?: string | null): number => {
+    if (!identifier) return 0;
+    const lower = identifier.toLowerCase().trim();
+    if (
+      lower === PRO_BUNDLE_UUID ||
+      lower === "pro" ||
+      lower.startsWith("pro ") ||
+      lower.endsWith(" pro") ||
+      lower.includes("pro plan") ||
+      lower === "pro-plan"
+    ) {
+      return 2;
+    }
+    if (
+      lower === PREMIUM_BUNDLE_UUID ||
+      lower === "premium" ||
+      lower.startsWith("premium ") ||
+      lower.endsWith(" premium") ||
+      lower.includes("premium plan") ||
+      lower.includes("live sessions")
+    ) {
+      return 3;
+    }
+    if (
+      lower === STARTER_BUNDLE_UUID ||
+      lower === "starter" ||
+      lower.startsWith("starter ") ||
+      lower.endsWith(" starter") ||
+      lower.includes("starter plan") ||
+      lower === "starter-plan"
+    ) {
+      return 1;
+    }
+    return 0;
+  };
+
   // ---------------------------------------------------------------------------
-  // Cart state — keyed on (resolvedCourseId, bundle._id)
+  // Cart & Enrollment state — keyed on (resolvedCourseId, bundle._id)
   // ---------------------------------------------------------------------------
-  const resolvedCourseId = courseId ?? bundle._id;
-  const isEnrolledInCourse = enrolledCourseIds?.has(resolvedCourseId) ?? false;
-  
+  const candidateCourseIds = [courseId, courseSlug, bundle._id].filter(Boolean) as string[];
+  const isEnrolledInCourse = candidateCourseIds.some((id) => enrolledCourseIds?.has(id));
+  const resolvedCourseId = candidateCourseIds.find((id) => enrolledCourseIds?.has(id)) || courseId || bundle._id;
+
   // Check if they have ANY specific plan for this course (i.e. phase2 enrollment)
-  const hasSpecificPlan = Array.from(enrolledPlanKeys || []).some(key => key.startsWith(`${resolvedCourseId}::`));
+  const userPlanKeysForCourse = Array.from(enrolledPlanKeys || [])
+    .filter((key) => candidateCourseIds.some((id) => key.startsWith(`${id}::`)))
+    .map((key) => {
+      const matchId = candidateCourseIds.find((id) => key.startsWith(`${id}::`));
+      return matchId ? key.slice(`${matchId}::`.length) : "";
+    })
+    .filter(Boolean);
+
+  const hasSpecificPlan = userPlanKeysForCourse.length > 0;
+
+  // Determine highest tier the user owns for this course:
+  // 1 = Starter, 2 = Pro, 3 = Premium
+  let userEnrolledTier = 0;
+  if (hasSpecificPlan) {
+    userEnrolledTier = userPlanKeysForCourse.reduce((max, key) => {
+      const tier = getPlanTierLevel(key);
+      return tier > max ? tier : max;
+    }, 0);
+  }
+  // If enrolled in course (legacy) without specific plan key, default to Starter (tier 1)
+  if (userEnrolledTier === 0 && isEnrolledInCourse) {
+    userEnrolledTier = 1;
+  }
+
+  // Tier of this card
+  const thisCardTier = getPlanTierLevel(badgeSlug) || getPlanTierLevel(finalBundleUuid) || 1;
 
   // Determine if this exact plan is owned.
-  // If they have a specific plan, we check exact match.
-  // If they DON'T have a specific plan but ARE enrolled (legacy), we assume they own the "starter" plan.
   const isEnrolledInThisPlan = hasSpecificPlan
-    ? (enrolledPlanKeys?.has(`${resolvedCourseId}::${finalBundleUuid}`) ?? false)
-    : (isEnrolledInCourse && badgeSlug === "starter");
+    ? candidateCourseIds.some((id) => enrolledPlanKeys?.has(`${id}::${finalBundleUuid}`)) ||
+      userPlanKeysForCourse.some((k) => getPlanTierLevel(k) === thisCardTier)
+    : (isEnrolledInCourse && thisCardTier === 1);
 
-  const isUpgrade = isEnrolledInCourse && !isEnrolledInThisPlan;
+  // If user owns a higher tier, this lower tier is disabled
+  const isLowerTierDisabled = isEnrolledInCourse && !isEnrolledInThisPlan && thisCardTier < userEnrolledTier;
+
+  // Upgrade is only available when user owns a lower tier and this card is a higher tier
+  const isUpgrade = isEnrolledInCourse && !isEnrolledInThisPlan && thisCardTier > userEnrolledTier;
   
   const [addedToCart, setAddedToCart] = useState(false);
   const [isOtherPlanInCart, setIsOtherPlanInCart] = useState(false);
@@ -203,6 +272,7 @@ export function PricingCard({
   // Whole-card click → navigate to view plan page
   // ---------------------------------------------------------------------------
   const handleCardClick = () => {
+    if (isLowerTierDisabled) return;
     router.push(viewPlanHref);
   };
 
@@ -212,11 +282,14 @@ export function PricingCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] overflow-hidden flex flex-col border transition-all duration-300 group relative cursor-pointer
-        ${recommended ? "border-[#0166A7] ring-2 ring-[#0166A7]/30" : "border-slate-100"}`}
+      className={`rounded-[24px] overflow-hidden flex flex-col border transition-all duration-300 relative
+        ${isLowerTierDisabled
+          ? "bg-slate-50/70 border-slate-200 opacity-60 cursor-not-allowed shadow-none"
+          : `bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] cursor-pointer group ${recommended ? "border-[#0166A7] ring-2 ring-[#0166A7]/30" : "border-slate-100"}`
+        }`}
     >
       {/* Recommended banner */}
-      {recommended && (
+      {recommended && !isLowerTierDisabled && (
         <div className="absolute top-0 left-0 right-0 z-10 bg-[#0166A7] text-white text-xs font-bold uppercase tracking-widest text-center py-1.5">
           ⭐ Recommended for this course
         </div>
@@ -224,13 +297,13 @@ export function PricingCard({
 
       {/* Cover image + badge chip */}
       <div
-        className={`h-48 md:h-56 relative overflow-hidden ${recommended ? "mt-8" : ""}`}
+        className={`h-48 md:h-56 relative overflow-hidden ${recommended && !isLowerTierDisabled ? "mt-8" : ""}`}
       >
         <Image
           src={imageUrl}
           alt={displayName}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className={`object-cover transition-transform duration-500 ${!isLowerTierDisabled ? "group-hover:scale-105" : ""}`}
         />
         <div className="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-slate-700 shadow-sm border border-slate-100">
           {displayName}
@@ -276,7 +349,34 @@ export function PricingCard({
         {/* Action buttons — stop propagation so card-click doesn't also fire  */}
         {/* ------------------------------------------------------------------ */}
         <div className="mt-auto" onClick={stopProp}>
-          {isPremium ? (
+          {isEnrolledInThisPlan ? (
+            /* Enrolled in this exact plan: Go to Course */
+            <Button
+              className="w-full rounded-full bg-[#16a34a] text-white font-bold py-6 hover:bg-[#15803d] transition-all border-0 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+                const targetMaincourseId =
+                  candidateCourseIds.map((id) => enrolledCourseMap?.[id]).find(Boolean) ||
+                  enrolledCourseMap?.[resolvedCourseId] ||
+                  (resolvedCourseId && enrolledCourseIds?.has(resolvedCourseId) ? resolvedCourseId : null);
+                const nextUrl = targetMaincourseId ? `/courses/${targetMaincourseId}` : '/courses';
+                window.location.href = `${baseUrl}/login?next=${encodeURIComponent(nextUrl)}`;
+              }}
+            >
+              Go to Course
+            </Button>
+          ) : isLowerTierDisabled ? (
+            /* Higher plan owned: This lower plan is disabled */
+            <Button
+              disabled
+              className="w-full rounded-full bg-slate-100 text-slate-400 font-bold py-6 border border-slate-200 cursor-not-allowed hover:bg-slate-100 pointer-events-none flex items-center justify-center gap-2"
+              title="You already own a higher plan for this course"
+            >
+              <CircleSlash className="w-4 h-4" /> Disabled
+            </Button>
+          ) : isPremium ? (
             /* Premium: View Plan only */
             <Link href={viewPlanHref} onClick={stopProp}>
               <Button
@@ -286,21 +386,8 @@ export function PricingCard({
                 View Plan
               </Button>
             </Link>
-          ) : isEnrolledInThisPlan ? (
-            /* Enrolled in this exact plan: Go to Course */
-            <Button
-              className="w-full rounded-full bg-[#16a34a] text-white font-bold py-6 hover:bg-[#15803d] transition-all border-0"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
-                window.location.href = `${baseUrl}/login?next=/courses/${resolvedCourseId}`;
-              }}
-            >
-              Go to Course
-            </Button>
           ) : isUpgrade ? (
-            /* Enrolled in a different plan: Upgrade */
+            /* Enrolled in a lower plan: Upgrade */
             <Button
               className="w-full rounded-full bg-[#0166A7] text-white font-bold py-6 hover:bg-[#014f82] transition-all border-0"
               onClick={handleBuyNow}

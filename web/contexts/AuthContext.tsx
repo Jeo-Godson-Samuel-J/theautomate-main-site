@@ -23,6 +23,7 @@ interface AuthContextValue {
   logout: () => void;
   enrolledCourseIds: Set<string>;
   enrolledPlanKeys: Set<string>;
+  enrolledCourseMap: Record<string, string>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<{ name: string; email: string; id: string } | null>(null);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
   const [enrolledPlanKeys, setEnrolledPlanKeys] = useState<Set<string>>(new Set());
+  const [enrolledCourseMap, setEnrolledCourseMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     // Reusable fetch for user profile to sync username from phase2.users
@@ -83,41 +85,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         const courseIds = new Set<string>();
         const planKeys = new Set<string>();
+        const courseMap: Record<string, string> = {};
         
-        const missingProductCourseIds = data.filter((e: any) => e.course_id && !e.product_id).map((e: any) => e.course_id);
+        const allCourseAndProductIds = Array.from(
+          new Set(data.flatMap((e: any) => [e.course_id, e.product_id].filter(Boolean)))
+        );
         let resolvedProducts: Record<string, string> = {};
+        let resolvedMaincourses: Record<string, string> = {};
         
-        if (missingProductCourseIds.length > 0) {
-          const { data: mcData } = await supabaseBrowser
-            .from("maincourses")
-            .select("id, product_id")
-            .in("id", missingProductCourseIds);
-            
-          if (mcData) {
-            mcData.forEach((mc: any) => {
-              if (mc.product_id) {
-                resolvedProducts[mc.id] = mc.product_id;
-              }
-            });
+        if (allCourseAndProductIds.length > 0) {
+          try {
+            const { data: mcData } = await supabaseBrowser
+              .from("maincourses")
+              .select("id, product_id")
+              .or(
+                `id.in.(${allCourseAndProductIds.join(",")}),product_id.in.(${allCourseAndProductIds.join(",")})`
+              );
+              
+            if (mcData) {
+              mcData.forEach((mc: any) => {
+                if (mc.id) {
+                  resolvedMaincourses[mc.id] = mc.id;
+                  if (mc.product_id) {
+                    resolvedProducts[mc.id] = mc.product_id;
+                    resolvedMaincourses[mc.product_id] = mc.id;
+                  }
+                }
+              });
+            }
+          } catch (mcErr) {
+            console.error("Failed to resolve maincourses mapping:", mcErr);
           }
         }
 
+        const PRO_UUID = "196003df-766a-44a8-8c5c-ab0f6568431b".toLowerCase();
+        const STARTER_UUID = "350edd44-752b-454a-8bf3-0ffb1915fd78".toLowerCase();
+        const PREMIUM_UUID = "38518a2c-79c7-4776-8198-ab4a3889d24f".toLowerCase();
+
+        const classifyTier = (bId?: string | null): string => {
+          if (!bId) return "starter";
+          const lower = String(bId).toLowerCase().trim();
+          if (lower === PRO_UUID || lower === "pro" || lower.includes("pro plan") || lower === "pro-plan") return "pro";
+          if (lower === PREMIUM_UUID || lower === "premium" || lower.includes("premium plan") || lower.includes("live sessions")) return "premium";
+          if (lower === STARTER_UUID || lower === "starter" || lower.includes("starter plan") || lower === "starter-plan") return "starter";
+          return "starter";
+        };
+
         data.forEach((e: any) => {
-          if (e.course_id) courseIds.add(String(e.course_id));
-          
+          const maincourseId = e.course_id ? String(e.course_id) : (e.product_id ? resolvedMaincourses[e.product_id] : null);
           const finalProductId = e.product_id || (e.course_id ? resolvedProducts[e.course_id] : null);
+
+          if (maincourseId) {
+            courseIds.add(maincourseId);
+            courseMap[maincourseId] = maincourseId;
+          }
           if (finalProductId) {
             courseIds.add(String(finalProductId));
+            if (maincourseId) {
+              courseMap[String(finalProductId)] = maincourseId;
+            }
           }
           
-          if (e.bundle_id) {
-            if (e.course_id) planKeys.add(`${e.course_id}::${e.bundle_id}`);
-            if (finalProductId) planKeys.add(`${finalProductId}::${e.bundle_id}`);
+          const tierSlug = classifyTier(e.bundle_id);
+
+          if (maincourseId) {
+            if (e.bundle_id) planKeys.add(`${maincourseId}::${e.bundle_id}`);
+            planKeys.add(`${maincourseId}::${tierSlug}`);
+          }
+          if (finalProductId) {
+            if (e.bundle_id) planKeys.add(`${finalProductId}::${e.bundle_id}`);
+            planKeys.add(`${finalProductId}::${tierSlug}`);
           }
         });
 
         setEnrolledCourseIds(courseIds);
         setEnrolledPlanKeys(planKeys);
+        setEnrolledCourseMap(courseMap);
       }
     };
 
@@ -228,6 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setEnrolledCourseIds(new Set());
         setEnrolledPlanKeys(new Set());
+        setEnrolledCourseMap({});
         setNeedsPassword(false);
         localStorage.removeItem("automate-current-user-id");
         window.dispatchEvent(new Event("cart-updated"));
@@ -333,6 +377,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         enrolledCourseIds,
         enrolledPlanKeys,
+        enrolledCourseMap,
       }}
     >
       {children}

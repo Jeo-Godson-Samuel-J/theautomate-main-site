@@ -95,7 +95,7 @@ export default async function PlanDetailPage({ params }: Props) {
             ) : (
               <ViewPlanOrderSummary
                 plan={plan}
-                courseId={courseData._id}
+                courseId={courseData.productUuid || courseData._id}
                 courseSlug={courseSlug}
                 courseTitle={courseData.title}
               />

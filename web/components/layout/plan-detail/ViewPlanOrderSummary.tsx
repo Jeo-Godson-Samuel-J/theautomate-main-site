@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CreditCard, Clock } from "lucide-react";
+import { CreditCard, Clock, CircleSlash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Plan } from "@/lib/types/plan";
 import { getPlanDisplayName } from "@/lib/plan-display";
 import { getCart, CartItem } from "@/lib/services/cart";
+import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 
 interface ViewPlanOrderSummaryProps {
@@ -31,6 +32,91 @@ export function ViewPlanOrderSummary({
   const router = useRouter();
   const displayName = getPlanDisplayName(plan);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { enrolledCourseIds, enrolledPlanKeys, enrolledCourseMap } = useAuth();
+
+  const STARTER_BUNDLE_UUID = "350edd44-752b-454a-8bf3-0ffb1915fd78".toLowerCase();
+  const PRO_BUNDLE_UUID = "196003df-766a-44a8-8c5c-ab0f6568431b".toLowerCase();
+  const PREMIUM_BUNDLE_UUID = "38518a2c-79c7-4776-8198-ab4a3889d24f".toLowerCase();
+
+  const getPlanTierLevel = (identifier?: string | null): number => {
+    if (!identifier) return 0;
+    const lower = identifier.toLowerCase().trim();
+    if (
+      lower === PRO_BUNDLE_UUID ||
+      lower === "pro" ||
+      lower.startsWith("pro ") ||
+      lower.endsWith(" pro") ||
+      lower.includes("pro plan") ||
+      lower === "pro-plan"
+    ) {
+      return 2;
+    }
+    if (
+      lower === PREMIUM_BUNDLE_UUID ||
+      lower === "premium" ||
+      lower.startsWith("premium ") ||
+      lower.endsWith(" premium") ||
+      lower.includes("premium plan") ||
+      lower.includes("live sessions")
+    ) {
+      return 3;
+    }
+    if (
+      lower === STARTER_BUNDLE_UUID ||
+      lower === "starter" ||
+      lower.startsWith("starter ") ||
+      lower.endsWith(" starter") ||
+      lower.includes("starter plan") ||
+      lower === "starter-plan"
+    ) {
+      return 1;
+    }
+    return 0;
+  };
+
+  const badgeSlug = (plan.badge || "").toLowerCase();
+  let finalBundleUuid = plan.bundleUuid;
+  if (!finalBundleUuid) {
+    if (badgeSlug === "starter") finalBundleUuid = STARTER_BUNDLE_UUID;
+    else if (badgeSlug === "pro") finalBundleUuid = PRO_BUNDLE_UUID;
+    else if (badgeSlug === "premium") finalBundleUuid = PREMIUM_BUNDLE_UUID;
+    else finalBundleUuid = plan._id;
+  }
+
+  const candidateCourseIds = [courseId, courseSlug].filter(Boolean);
+  const isEnrolledInCourse = candidateCourseIds.some((id) => enrolledCourseIds?.has(id));
+  const resolvedCourseId = candidateCourseIds.find((id) => enrolledCourseIds?.has(id)) || courseId;
+
+  const userPlanKeysForCourse = Array.from(enrolledPlanKeys || [])
+    .filter((key) => candidateCourseIds.some((id) => key.startsWith(`${id}::`)))
+    .map((key) => {
+      const matchId = candidateCourseIds.find((id) => key.startsWith(`${id}::`));
+      return matchId ? key.slice(`${matchId}::`.length) : "";
+    })
+    .filter(Boolean);
+
+  const hasSpecificPlan = userPlanKeysForCourse.length > 0;
+
+  let userEnrolledTier = 0;
+  if (hasSpecificPlan) {
+    userEnrolledTier = userPlanKeysForCourse.reduce((max, key) => {
+      const tier = getPlanTierLevel(key);
+      return tier > max ? tier : max;
+    }, 0);
+  }
+  if (userEnrolledTier === 0 && isEnrolledInCourse) {
+    userEnrolledTier = 1;
+  }
+
+  const thisPlanTier = getPlanTierLevel(badgeSlug) || getPlanTierLevel(finalBundleUuid) || 1;
+
+  const isEnrolledInThisPlan = hasSpecificPlan
+    ? candidateCourseIds.some((id) => enrolledPlanKeys?.has(`${id}::${finalBundleUuid}`)) ||
+      userPlanKeysForCourse.some((k) => getPlanTierLevel(k) === thisPlanTier)
+    : (isEnrolledInCourse && thisPlanTier === 1);
+
+  const isLowerTierDisabled = isEnrolledInCourse && !isEnrolledInThisPlan && thisPlanTier < userEnrolledTier;
+  const isUpgrade = isEnrolledInCourse && !isEnrolledInThisPlan && thisPlanTier > userEnrolledTier;
 
   React.useEffect(() => {
     const loadCart = () => setCartItems(getCart());
@@ -108,12 +194,44 @@ export function ViewPlanOrderSummary({
         </div>
 
         {/* CTA */}
-        {anotherPlanInCart ? (
+        {isEnrolledInThisPlan ? (
+          <Button
+            className="w-full bg-[#16a34a] hover:bg-[#15803d] h-14 rounded-full text-sm font-bold text-white transition-all duration-300 shadow-xl cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+              const targetMaincourseId =
+                candidateCourseIds.map((id) => enrolledCourseMap?.[id]).find(Boolean) ||
+                enrolledCourseMap?.[resolvedCourseId] ||
+                (resolvedCourseId && enrolledCourseIds?.has(resolvedCourseId) ? resolvedCourseId : null);
+              const nextUrl = targetMaincourseId ? `/courses/${targetMaincourseId}` : '/courses';
+              window.location.href = `${baseUrl}/login?next=${encodeURIComponent(nextUrl)}`;
+            }}
+          >
+            Go to Course
+          </Button>
+        ) : isLowerTierDisabled ? (
+          <Button
+            disabled
+            className="w-full bg-slate-100 text-slate-400 h-14 rounded-full text-sm font-bold border border-slate-200 cursor-not-allowed flex items-center justify-center gap-2 pointer-events-none"
+            title="You already own a higher plan for this course"
+          >
+            <CircleSlash className="w-4 h-4" /> Disabled
+          </Button>
+        ) : anotherPlanInCart ? (
           <Button
             asChild
             className="w-full bg-[#1B262C] hover:bg-gray-600 h-14 rounded-full text-sm font-bold transition-all duration-300 shadow-xl active:scale-95"
           >
             <Link href="/cart">Review Cart</Link>
+          </Button>
+        ) : isUpgrade ? (
+          <Button
+            onClick={handleProceed}
+            className="w-full bg-[#0166A7] hover:bg-[#014f82] h-14 rounded-full text-sm font-bold text-white transition-all duration-300 shadow-xl active:scale-95"
+          >
+            <CreditCard className="w-5 h-5 mr-2" />
+            Upgrade
           </Button>
         ) : (
           <Button
