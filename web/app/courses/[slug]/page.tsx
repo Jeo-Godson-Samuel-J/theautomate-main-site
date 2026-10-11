@@ -11,7 +11,7 @@ import PlanSelector from "@/components/layout/PlanSelector";
 import SampleVideoPreview from "@/components/course/SampleVideoPreview";
 import CourseContentAccordion from "@/components/course/CourseContentAccordion";
 import CourseReviewsModal from "@/components/course/CourseReviewsModal";
-import { Check, ChevronRight } from "lucide-react";
+import { Check, ChevronRight, Sparkles } from "lucide-react";
 
 interface Props {
   params: Promise<{
@@ -194,26 +194,65 @@ export default async function CoursePage({ params }: Props) {
               </div>
             )}
 
-            {/* Course Content / Key Concepts */}
+            {/* Course Highlights */}
+            {course.highlights && course.highlights.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-bold mb-6 text-slate-900">Course Highlights</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {course.highlights.map((highlight, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-[#0166A7]/40 hover:bg-blue-50/20 transition-all duration-200 group"
+                    >
+                      {highlight.icon ? (
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-sm p-1.5 group-hover:border-[#0166A7]/30 transition-colors">
+                          <Image
+                            src={urlFor(highlight.icon).width(44).height(44).url()}
+                            alt={highlight.title}
+                            width={32}
+                            height={32}
+                            className="object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[#0166A7]">
+                          <Sparkles className="w-5 h-5 text-[#0166A7]" />
+                        </div>
+                      )}
+                      <span className="font-semibold text-slate-800 text-sm leading-snug">
+                        {highlight.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Key Concepts */}
             {course.keyConcepts && course.keyConcepts.length > 0 && (
               <section>
-                <h2 className="text-2xl font-bold mb-6">Course content</h2>
+                <h2 className="text-2xl font-bold mb-6 text-slate-900">Key Concepts</h2>
                 <div className="space-y-4">
                   {course.keyConcepts.map((concept, index) => (
-                    <div key={index} className="flex items-start gap-4 p-4 rounded-lg bg-slate-50 border border-slate-100">
+                    <div
+                      key={index}
+                      className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors"
+                    >
                       {concept.icon && (
-                        <Image
-                          src={urlFor(concept.icon).width(48).url()}
-                          alt={concept.title}
-                          width={48}
-                          height={48}
-                          className="rounded-lg shrink-0"
-                        />
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200/80 shadow-sm p-1.5">
+                          <Image
+                            src={urlFor(concept.icon).width(48).height(48).url()}
+                            alt={concept.title}
+                            width={36}
+                            height={36}
+                            className="object-contain"
+                          />
+                        </div>
                       )}
                       <div>
                         <h3 className="font-semibold text-slate-900">{concept.title}</h3>
                         {concept.description && (
-                          <p className="text-slate-600 text-sm mt-1">{concept.description}</p>
+                          <p className="text-slate-600 text-sm mt-1 leading-relaxed">{concept.description}</p>
                         )}
                       </div>
                     </div>
@@ -322,8 +361,13 @@ export default async function CoursePage({ params }: Props) {
 
               {/* Sidebar Body */}
               <div className="p-6">
-                <div className="text-3xl font-bold text-slate-900 mb-6">
-                  ₹{course.price?.toLocaleString("en-IN") ?? "—"}
+                <div className="mb-6">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">
+                    Starting from
+                  </span>
+                  <div className="text-3xl font-bold text-slate-900">
+                    ₹{(course.starterPrice ?? course.price)?.toLocaleString("en-IN") ?? "—"}
+                  </div>
                 </div>
                 
                 <PlanSelector

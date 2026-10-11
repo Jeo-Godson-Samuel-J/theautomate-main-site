@@ -12,7 +12,9 @@ const COURSES_QUERY = `
   tagline,
   instructorName,
   instructorImage,
-  price,
+  "starterPrice": coalesce(bundles[@->badge=="Starter" || @->title=="Starter"][0]->price, *[_type=="plan" && (lower(badge)=="starter" || lower(title)=="starter") && active==true] | order(displayOrder asc)[0].price),
+  "price": coalesce(bundles[@->badge=="Starter" || @->title=="Starter"][0]->price, *[_type=="plan" && (lower(badge)=="starter" || lower(title)=="starter") && active==true] | order(displayOrder asc)[0].price, price),
+  "hoverDetails": coalesce(hoverDetails, hoverDescription),
   productUuid,
   productId,
   "slug": slug.current
@@ -66,6 +68,7 @@ export default async function CourseList() {
     students: course.students || "0+",
     hours: course.hours || "0+",
     productUuid: course.productUuid || course.productId,
+    hoverDetails: course.hoverDetails,
   }));
 
   return <CourseGrid courses={normalizedCourses} />;

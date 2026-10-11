@@ -42,31 +42,18 @@ export default defineType({
     }),
 
     defineField({
-      name: 'bundles',
-      title: 'Bundles',
-      type: 'array',
-      of: [
-        {
-          type: 'reference',
-          to: [{type: 'plan'}],
-        },
-      ],
-      description: 'Select the plan bundles that include this course.',
-    }),
-
-    defineField({
       name: 'tagline',
       title: 'Tagline',
       type: 'string',
     }),
 
     defineField({
-      name: 'hoverDescription',
-      title: 'Hover/Popup Brief Details',
+      name: 'hoverDetails',
+      title: 'Hover/Popup Details (Pointers)',
       description:
-        'A brief description that appears in the popup when hovering over the course card.',
-      type: 'text',
-      rows: 3,
+        'Key pointers that appear in the popup card when hovering over the course.',
+      type: 'array',
+      of: [{type: 'string'}],
     }),
 
     defineField({
@@ -76,23 +63,11 @@ export default defineType({
     }),
 
     defineField({
-      name: 'rating',
-      title: 'Rating',
-      type: 'number',
-      validation: (Rule) => Rule.min(1).max(5),
-    }),
-
-    defineField({
       name: 'instructorName',
       title: 'Instructor Name',
       type: 'string',
     }),
 
-    defineField({
-      name: 'instructorImage',
-      title: 'Instructor Image',
-      type: 'image',
-    }),
     defineField({
       name: 'displayOrder',
       title: 'Display Order',
@@ -127,75 +102,12 @@ export default defineType({
       of: [{type: 'block'}],
     }),
 
-    /* ---------------- SAMPLE VIDEOS ---------------- */
-
-    defineField({
-      name: 'sampleVideos',
-      title: 'Sample Videos',
-      description: 'Upload up to 5 short preview videos for this course.',
-      type: 'array',
-      validation: (Rule) => Rule.max(5),
-      of: [
-        {
-          type: 'object',
-          fields: [
-            {
-              name: 'title',
-              title: 'Video Title',
-              type: 'string',
-              validation: (Rule) => Rule.required(),
-            },
-            {
-              name: 'description',
-              title: 'Description',
-              type: 'text',
-              rows: 2,
-            },
-            {
-              name: 'video',
-              title: 'Video File',
-              type: 'file',
-              options: {accept: 'video/*'},
-              validation: (Rule) => Rule.required(),
-            },
-            {
-              name: 'poster',
-              title: 'Poster Image',
-              type: 'image',
-              options: {hotspot: true},
-            },
-          ],
-          preview: {
-            select: {
-              title: 'title',
-              media: 'poster',
-            },
-          },
-        },
-      ],
-    }),
-
-    /* ---------------- ENROLL CARD ---------------- */
-
-    defineField({
-      name: 'price',
-      title: 'Price',
-      type: 'number',
-    }),
+    /* ---------------- ENROLL / DURATION ---------------- */
 
     defineField({
       name: 'duration',
       title: 'Duration (e.g. 6 Weeks)',
       type: 'string',
-    }),
-
-    defineField({
-      name: 'level',
-      title: 'Level',
-      type: 'string',
-      options: {
-        list: ['Beginner', 'Intermediate', 'Advanced'],
-      },
     }),
 
     /* ---------------- WHO FOR ---------------- */
@@ -275,12 +187,6 @@ export default defineType({
       name: 'projects',
       title: 'Projects Count',
       type: 'number',
-    }),
-    defineField({
-      name: 'batchDetails',
-      title: 'Batch Details',
-      type: 'array',
-      of: [{type: 'string'}],
     }),
   ],
 })

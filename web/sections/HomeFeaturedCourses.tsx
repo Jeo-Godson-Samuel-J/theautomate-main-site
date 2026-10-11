@@ -21,10 +21,12 @@ export default async function HomeFeaturedCourses() {
     image: c.heroImage ? urlFor(c.heroImage).width(800).height(500).fit("crop").url() : "/placeholder.png",
     tagline: c.tagline ?? "",
     hoverDescription: c.hoverDescription,
+    hoverDetails: c.hoverDetails,
     rating: c.rating ?? 0,
     students: typeof c.students === "number" ? c.students : 0,
     duration: c.duration ?? "",
     price: c.price ?? 0,
+    starterPrice: c.starterPrice,
     instructorName: c.instructorName ?? "",
     instructorImage: c.instructorImage
       ? urlFor(c.instructorImage).width(80).height(80).fit("crop").url()

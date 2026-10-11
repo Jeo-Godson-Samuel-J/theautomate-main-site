@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getPlanByBadge } from "@/lib/services/plan.services";
 import { getCoursePlans } from "@/lib/services/course.service";
+import { makeAdminClient } from "@/lib/supabase/server";
 import { PlanDetailCard } from "@/components/layout/plan-detail/PlanDetailCard";
 import { ViewPlanOrderSummary } from "@/components/layout/plan-detail/ViewPlanOrderSummary";
 import { PremiumContactForm } from "@/components/layout/plan-detail/PremiumContactForm";
@@ -29,6 +30,31 @@ export default async function PlanDetailPage({ params }: Props) {
   ]);
 
   if (!courseData || !plan) return notFound();
+
+  // Verify that the product exists in public.products
+  const rawProductId =
+    courseData.productUuid || (courseData as any).productId;
+  let productExistsInPortal = false;
+  if (rawProductId && typeof rawProductId === "string" && rawProductId.trim().length > 0) {
+    try {
+      const supabase = makeAdminClient();
+      const { data: productRow } = await supabase
+        .from("products")
+        .select("id, is_active")
+        .eq("id", String(rawProductId).trim())
+        .maybeSingle();
+
+      if (productRow && productRow.is_active !== false) {
+        productExistsInPortal = true;
+      }
+    } catch (e) {
+      console.error("[PlanDetailPage] Failed to verify product in Supabase:", e);
+    }
+  }
+
+  if (!productExistsInPortal) {
+    redirect(`/courses/${courseSlug}/plans`);
+  }
 
   const isPremium = plan.badge.toLowerCase() === "premium";
   const displayName = getPlanDisplayName(plan);

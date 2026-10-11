@@ -1,60 +1,107 @@
 import { NextResponse } from "next/server";
 import { client } from "@/lib/sanity.client";
+import { makeAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
+  const directProductId = searchParams.get("productId") || searchParams.get("productUuid");
 
-  if (!slug) {
+  if (!slug && !directProductId) {
     return NextResponse.json(
-      { error: "Course slug is required" },
+      { error: "Course slug or productId is required" },
       { status: 400 }
     );
   }
 
   try {
-    // Check directly in Sanity if the course document has a linked product id (productUuid or productId)
-    const course = await client.fetch(
-      `*[_type == "courseDetails" && slug.current == $slug][0]{
-        _id,
-        title,
-        productUuid,
-        productId,
-        useExistingProduct
-      }`,
-      { slug },
-      { cache: "no-store" }
-    );
+    let targetUuid: string | null = directProductId ? String(directProductId).trim() : null;
+    let courseTitle = "";
 
-    if (!course) {
+    // 1. If slug is provided, check course in Sanity
+    if (slug) {
+      const course = await client.fetch(
+        `*[_type == "courseDetails" && slug.current == $slug][0]{
+          _id,
+          title,
+          productUuid,
+          productId,
+          useExistingProduct
+        }`,
+        { slug },
+        { cache: "no-store" }
+      );
+
+      if (!course) {
+        return NextResponse.json({
+          exists: false,
+          courseFound: false,
+          title: "",
+          slug,
+          message: "This is an Upcoming Product",
+        });
+      }
+
+      courseTitle = course.title || "";
+      const rawProductId = course.productUuid || course.productId;
+      if (rawProductId && typeof rawProductId === "string" && rawProductId.trim().length > 0) {
+        targetUuid = rawProductId.trim();
+      } else {
+        targetUuid = null;
+      }
+    }
+
+    // If no product ID is configured or found, product does not exist in public.products
+    if (!targetUuid) {
       return NextResponse.json({
         exists: false,
-        courseFound: false,
-        title: "",
-        message: "Course not found in Sanity",
+        courseFound: true,
+        productId: null,
+        title: courseTitle,
+        slug,
+        isPortalProduct: false,
+        message: "This is an Upcoming Product",
       });
     }
 
-    const rawProductId = course.productUuid || course.productId;
-    const hasProductId = Boolean(
-      rawProductId && typeof rawProductId === "string" && rawProductId.trim().length > 0
-    );
+    // 2. Verify whether the product exists in automate-learning-portal (Supabase public.products)
+    let productExistsInPortal = false;
+
+    try {
+      const supabase = makeAdminClient();
+      const { data: productRow, error: dbErr } = await supabase
+        .from("products")
+        .select("id, is_active")
+        .eq("id", targetUuid)
+        .maybeSingle();
+
+      if (!dbErr && productRow && productRow.is_active !== false) {
+        productExistsInPortal = true;
+      }
+    } catch (dbError) {
+      console.error("[api/courses/check-product] Supabase verification error:", dbError);
+    }
 
     return NextResponse.json({
-      exists: hasProductId,
+      exists: productExistsInPortal,
       courseFound: true,
-      productId: hasProductId ? String(rawProductId).trim() : null,
-      title: course.title || "",
+      productId: targetUuid,
+      title: courseTitle,
       slug,
+      isPortalProduct: productExistsInPortal,
+      message: productExistsInPortal
+        ? "Active product found in Learning Portal"
+        : "This is an Upcoming Product",
     });
   } catch (error: any) {
-    console.error("[api/courses/check-product] Error querying Sanity:", error);
+    console.error("[api/courses/check-product] Error querying Sanity/Supabase:", error);
     return NextResponse.json(
       {
-        error: "Failed to check course in Sanity",
+        error: "Failed to check course product",
         details: error?.message || "Unknown error",
+        message: "This is an Upcoming Product",
       },
       { status: 500 }
     );

@@ -42,12 +42,8 @@ export default function PlanSelector({ courseSlug, courseTitle, productUuid }: P
         setShowModal(true);
       }
     } catch (err) {
-      console.error("[PlanSelector] Error checking Sanity product ID:", err);
-      if (productUuid) {
-        router.push(`/courses/${courseSlug}/plans`);
-      } else {
-        setShowModal(true);
-      }
+      console.error("[PlanSelector] Error checking product:", err);
+      setShowModal(true);
     } finally {
       setIsChecking(false);
     }
@@ -69,7 +65,7 @@ export default function PlanSelector({ courseSlug, courseTitle, productUuid }: P
         ) : (
           <>
             <ShoppingCart size={20} />
-            <span>View Plans</span>
+            <span>View Plan</span>
           </>
         )}
       </Button>

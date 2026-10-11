@@ -841,7 +841,7 @@ export async function POST(req: Request) {
       // 3. Resolve product_id (must be a valid UUID or null to avoid 22P02 Postgres errors)
       let itemProductId: string | null = null;
       if (isValidUuid(cartItem.product_id)) {
-        itemProductId = cartItem.product_id;
+        itemProductId = cartItem.product_id ?? null;
       } else if (isValidUuid(finalProductUuid)) {
         itemProductId = finalProductUuid;
       } else if (itemCourseId) {

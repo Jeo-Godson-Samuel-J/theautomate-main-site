@@ -4,6 +4,7 @@ import { Clock, Sparkles, ArrowRight } from "lucide-react";
 import { getCoursePlans } from "@/lib/services/course.service";
 import { getPlans } from "@/lib/services/plan.services";
 import { PricingCard } from "@/components/ui/PricingCard";
+import { makeAdminClient } from "@/lib/supabase/server";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -30,8 +31,26 @@ export default async function CoursePlansPage({ params }: Props) {
       rawProductId.trim().length > 0
   );
 
-  // If the product id does not exist in Sanity, show the upcoming product state
-  if (!hasProductId) {
+  let productExistsInPortal = false;
+  if (hasProductId) {
+    try {
+      const supabase = makeAdminClient();
+      const { data: productRow } = await supabase
+        .from("products")
+        .select("id, is_active")
+        .eq("id", String(rawProductId).trim())
+        .maybeSingle();
+
+      if (productRow && productRow.is_active !== false) {
+        productExistsInPortal = true;
+      }
+    } catch (e) {
+      console.error("[CoursePlansPage] Failed to verify product in Supabase:", e);
+    }
+  }
+
+  // If the product id does not exist in Sanity or learning portal, show the upcoming product state
+  if (!productExistsInPortal) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-16 sm:py-24">
         <div className="max-w-xl w-full bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-xl text-center relative overflow-hidden">
@@ -50,17 +69,16 @@ export default async function CoursePlansPage({ params }: Props) {
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
-            {courseData.title}
+            This is an Upcoming Product
           </h1>
 
+          <p className="mt-2 text-xl font-semibold text-[#0166A7]">
+            {courseData.title}
+          </p>
+
           <div className="mt-4 space-y-2 text-slate-600">
-            <p className="text-lg font-semibold text-slate-800">
-              This course does not exist yet — it&apos;s an upcoming product.
-            </p>
             <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-              Our instructors and curriculum team are actively building the modules
-              and projects for this course. Plan selections and enrollment will open
-              once the course launches!
+              This product has not yet been launched in the learning portal. Plan selections and enrollment will open once the product is released!
             </p>
           </div>
 

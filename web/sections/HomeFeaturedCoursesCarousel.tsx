@@ -23,10 +23,12 @@ export interface CourseCardData {
   image: string;
   tagline: string;
   hoverDescription?: string;
+  hoverDetails?: string[];
   rating: number;
   students: number;
   duration: string;
   price: number;
+  starterPrice?: number;
   instructorName: string;
   instructorImage: string;
   level?: string;
@@ -198,6 +200,7 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
                   rating={c.rating}
                   students={c.students}
                   price={c.price}
+                  starterPrice={c.starterPrice}
                   level={c.level}
                   updatedAt={c._updatedAt}
                   outcomes={c.outcomes}
@@ -205,6 +208,7 @@ export default function HomeFeaturedCoursesCarousel({ courses }: Props) {
                   hours={c.hours}
                   index={index}
                   productUuid={c.productUuid}
+                  hoverDetails={c.hoverDetails}
                 />
               </div>
             ))}

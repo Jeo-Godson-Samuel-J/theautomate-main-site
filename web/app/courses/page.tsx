@@ -33,12 +33,14 @@ export default async function CoursesPage() {
               hours={course.hours}
               students={course.students}
               price={course.price}
+              starterPrice={course.starterPrice}
               level={course.level}
               updatedAt={course._updatedAt}
               outcomes={course.outcomes}
               keyConcepts={course.keyConcepts}
               index={index}
               productUuid={course.productUuid || course.productId}
+              hoverDetails={course.hoverDetails}
             />
           ))}
         </div>

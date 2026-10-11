@@ -41,6 +41,7 @@ export interface Course {
   tagline: string;
 
   hoverDescription?: string;
+  hoverDetails?: string[];
 
   _updatedAt?: string;
 
@@ -60,6 +61,8 @@ export interface Course {
   hours: number;
 
   duration: string;
+
+  starterPrice?: number;
 
   price: number;
 

@@ -37,6 +37,7 @@ export default function AuthModal() {
   
   const [step, setStep] = useState<AuthStep>("email");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
@@ -51,6 +52,7 @@ export default function AuthModal() {
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const passInputRef = useRef<HTMLInputElement>(null);
 
   /* Reset state and focus input when modal opens/closes */
@@ -62,6 +64,7 @@ export default function AuthModal() {
         setStep("email");
       }
       setEmail("");
+      setName("");
       setPassword("");
       setConfirmPassword("");
       setError(null);
@@ -69,9 +72,11 @@ export default function AuthModal() {
     }
   }, [isOpen]);
 
-  /* Focus password input when step changes */
+  /* Focus appropriate input when step changes */
   useEffect(() => {
-    if (step === "login" || step === "signup") {
+    if (step === "signup") {
+      setTimeout(() => nameInputRef.current?.focus(), 50);
+    } else if (step === "login" || step === "set-password") {
       setTimeout(() => passInputRef.current?.focus(), 50);
     }
   }, [step]);
@@ -158,6 +163,11 @@ export default function AuthModal() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setError("Please enter your name.");
+      return;
+    }
     if (!isPasswordValid) {
       setError("Please satisfy all password constraints.");
       return;
@@ -173,16 +183,27 @@ export default function AuthModal() {
       const { data, error } = await supabaseBrowser.auth.signUp({
         email: email.trim(),
         password,
+        options: {
+          data: {
+            full_name: trimmedName,
+            name: trimmedName,
+            username: trimmedName,
+          },
+        },
       });
 
       if (error) throw error;
       
-      // Sync landing user if signup successful
+      // Sync landing user and learning portal profile if signup successful
       if (data.user) {
         await fetch("/api/auth/sync-landing-user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: data.user.email, authUserId: data.user.id }),
+          body: JSON.stringify({
+            email: data.user.email,
+            authUserId: data.user.id,
+            name: trimmedName,
+          }),
         });
       }
 
@@ -254,12 +275,13 @@ export default function AuthModal() {
             <X size={17} />
           </button>
 
-          {/* Back button if not on email step */}
+            {/* Back button if not on email step */}
           {step !== "email" && step !== "set-password" && (
             <button
               onClick={() => {
                 setStep("email");
                 setError(null);
+                setName("");
                 setPassword("");
                 setConfirmPassword("");
               }}
@@ -363,6 +385,16 @@ export default function AuthModal() {
             {step === "signup" && (
               <form onSubmit={handleSignup} className="flex flex-col gap-3">
                 <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
+                  required
+                  className="w-full rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3.5 text-[14px] text-slate-900 placeholder-slate-400 outline-none transition-all duration-150 focus:border-[#0166A7] focus:bg-white focus:shadow-[0_0_0_3px_rgba(1,102,167,0.12)]"
+                />
+
+                <input
                   ref={passInputRef}
                   type="password"
                   value={password}
@@ -389,7 +421,7 @@ export default function AuthModal() {
                 />
                 <button
                   type="submit"
-                  disabled={loading || !password || !confirmPassword || !isPasswordValid}
+                  disabled={loading || !name.trim() || !password || !confirmPassword || !isPasswordValid}
                   className="w-full rounded-[14px] bg-[#0166A7] px-5 py-3.5 text-[14px] font-bold text-white shadow-[0_4px_14px_rgba(1,102,167,0.3)] transition-all duration-150 hover:bg-[#014f82] hover:shadow-[0_6px_20px_rgba(1,102,167,0.35)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
                   {loading ? "Creating account..." : "Sign Up"}
@@ -402,6 +434,7 @@ export default function AuthModal() {
                       onClick={() => {
                         setStep("email");
                         setError(null);
+                        setName("");
                         setPassword("");
                         setConfirmPassword("");
                       }}

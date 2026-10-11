@@ -14,12 +14,14 @@ interface CourseCardProps {
   productUuid?: string | null;
   tagline?: string;
   hoverDescription?: string;
+  hoverDetails?: string[];
   instructorName?: string;
   /** Fully-resolved image URL — already processed by urlFor() at the call site */
   heroImageUrl: string;
   rating?: number;
   students?: number;
   price?: number;
+  starterPrice?: number;
   duration?: string;
   hours?: number;
   index?: number;
@@ -38,6 +40,7 @@ export default function CourseCard({
   rating,
   students,
   price,
+  starterPrice,
   level,
   updatedAt,
   outcomes,
@@ -45,6 +48,7 @@ export default function CourseCard({
   keyConcepts,
   index,
   hoverDescription,
+  hoverDetails,
   productUuid,
 }: CourseCardProps) {
   const router = useRouter();
@@ -72,13 +76,8 @@ export default function CourseCard({
         setShowUpcomingModal(true);
       }
     } catch (err) {
-      console.error("[CourseCard] Error checking Sanity product ID:", err);
-      // Fallback: if productUuid is set, navigate, otherwise show modal
-      if (productUuid) {
-        router.push(`/courses/${slug}/plans`);
-      } else {
-        setShowUpcomingModal(true);
-      }
+      console.error("[CourseCard] Error checking product:", err);
+      setShowUpcomingModal(true);
     } finally {
       setIsCheckingPlans(false);
     }
@@ -105,16 +104,18 @@ export default function CourseCard({
     }
   }
 
-  // Fallback for outcomes if empty
-  const displayOutcomes = (outcomes && outcomes.length > 0)
-    ? outcomes
-    : (keyConcepts && keyConcepts.length > 0)
-      ? keyConcepts.map(kc => kc.title)
-      : [
-        "Hands-on project experience",
-        "Comprehensive industry-standard curriculum",
-        "Learn from seasoned professionals"
-      ];
+  // Pointers for hover popup: prioritize hoverDetails from Sanity, fallback to outcomes or keyConcepts
+  const popupPointers = (hoverDetails && hoverDetails.length > 0)
+    ? hoverDetails
+    : (outcomes && outcomes.length > 0)
+      ? outcomes
+      : (keyConcepts && keyConcepts.length > 0)
+        ? keyConcepts.map(kc => kc.title)
+        : [
+          "Hands-on project experience",
+          "Comprehensive industry-standard curriculum",
+          "Learn from seasoned professionals"
+        ];
 
   const displayLevel = level || "Beginner";
   const displayHours = hours || 12;
@@ -177,10 +178,13 @@ export default function CourseCard({
           </div>
 
           {/* Price row */}
-          {price != null && (
+          {(starterPrice != null || price != null) && (
             <div className="mt-6 mb-1">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-0.5">
+                Starting from
+              </span>
               <span className="text-2xl font-bold text-slate-900">
-                ₹{price.toFixed(2)}
+                ₹{(starterPrice ?? price)?.toLocaleString("en-IN")}
               </span>
             </div>
           )}
@@ -217,13 +221,13 @@ export default function CourseCard({
             </p>
           )}
 
-          {displayOutcomes && displayOutcomes.length > 0 && (
+          {popupPointers && popupPointers.length > 0 && (
             <ul className="flex flex-col gap-4 mt-2">
-              {displayOutcomes.slice(0, 3).map((outcome, i) => (
+              {popupPointers.slice(0, 4).map((pointer, i) => (
                 <li key={i} className="flex gap-3 items-start">
                   <Check size={20} className="text-slate-600 shrink-0 mt-0.5" />
                   <span className="text-sm text-slate-600 leading-relaxed">
-                    {outcome}
+                    {pointer}
                   </span>
                 </li>
               ))}
@@ -244,7 +248,7 @@ export default function CourseCard({
                 <span>Checking...</span>
               </>
             ) : (
-              <span>View Plans</span>
+              <span>View Plan</span>
             )}
           </button>
         </div>

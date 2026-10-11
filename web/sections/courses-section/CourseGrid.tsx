@@ -13,8 +13,10 @@ interface CourseItem {
   duration?: string;
   tagline?: string;
   hoverDescription?: string;
+  hoverDetails?: string[];
   rating?: number;
   price?: number;
+  starterPrice?: number;
   instructorName?: string;
   slug: string;
   productUuid?: string | null;
@@ -63,6 +65,7 @@ export default function CourseGrid({ courses }: CourseGridProps) {
               hours={course.hours}
               students={course.students}
               price={course.price}
+              starterPrice={course.starterPrice}
               instructorName={course.instructorName}
               level={course.level}
               updatedAt={course._updatedAt}
@@ -70,6 +73,7 @@ export default function CourseGrid({ courses }: CourseGridProps) {
               keyConcepts={course.keyConcepts}
               index={index}
               productUuid={course.productUuid}
+              hoverDetails={course.hoverDetails}
             />
           ))}
         </div>

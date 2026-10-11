@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser({
           id: session.user.id,
           email: session.user.email || "",
-          name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "",
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.user_metadata?.username || session.user.email?.split("@")[0] || "",
         });
         localStorage.setItem("automate-current-user-id", session.user.id);
         window.dispatchEvent(new Event("cart-updated"));
@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser({
           id: session.user.id,
           email: session.user.email || "",
-          name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "",
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.user_metadata?.username || session.user.email?.split("@")[0] || "",
         });
         localStorage.setItem("automate-current-user-id", session.user.id);
         window.dispatchEvent(new Event("cart-updated"));

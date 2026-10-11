@@ -1,9 +1,56 @@
-import {defineConfig} from 'sanity'
+import {defineConfig, DocumentActionComponent} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {codeInput} from '@sanity/code-input'
 import {visionTool} from '@sanity/vision'
+import {useToast} from '@sanity/ui'
 import {schemaTypes} from './schemaTypes'
 import {ProductSelectorInput} from './components/ProductSelectorInput'
+
+function createSyncPlanPublishAction(originalPublishAction: DocumentActionComponent) {
+  return function SyncPlanPublishAction(props: any) {
+    const originalResult = originalPublishAction(props)
+    const toast = useToast()
+
+    return {
+      ...originalResult,
+      onHandle: async () => {
+        if (originalResult?.onHandle) {
+          originalResult.onHandle()
+        }
+        const doc = props.draft || props.published
+        if (doc && typeof doc.price === 'number') {
+          try {
+            const apiBase =
+              (typeof window !== 'undefined' &&
+                (import.meta as any).env?.SANITY_STUDIO_API_URL) ||
+              (typeof window !== 'undefined' &&
+              ['localhost', '127.0.0.1'].includes(window.location.hostname)
+                ? 'http://localhost:3000'
+                : '')
+            const res = await fetch(`${apiBase}/api/bundles/sync-price`, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                badge: doc.badge || doc.title,
+                price: doc.price,
+                bundleUuid: doc.bundleUuid,
+              }),
+            })
+            if (res.ok) {
+              toast.push({
+                status: 'success',
+                title: 'Supabase Price Updated',
+                description: `Sanity price ₹${doc.price} synchronized to phase2.bundles (${doc.badge || doc.title})`,
+              })
+            }
+          } catch (e) {
+            console.error('[SyncPlanPublishAction] Failed to trigger price sync:', e)
+          }
+        }
+      },
+    }
+  }
+}
 
 export default defineConfig({
   name: 'default',
@@ -18,35 +65,38 @@ export default defineConfig({
     types: schemaTypes,
   },
 
+  document: {
+    actions: (prev, context) => {
+      if (context.schemaType === 'plan') {
+        return prev.map((originalAction) =>
+          originalAction.action === 'publish'
+            ? (createSyncPlanPublishAction(originalAction) as any)
+            : originalAction,
+        )
+      }
+      return prev
+    },
+  },
+
   /**
    * form.components.input
    * ─────────────────────
    * Intercept the input rendering for the `productUuid` field on the
    * `courseDetails` document type and replace it with our custom
    * ProductSelectorInput — no schema modification required.
-   *
-   * The resolver receives `props` from Sanity's form layer:
-   *   - props.schemaType.name  → the field's schema type ('string', 'image', …)
-   *   - props.id               → the full field path, e.g. 'productUuid'
-   *   - props.path             → the field path array
-   *
-   * We match on both the document type (via the path) and the field name so
-   * the custom input only activates on exactly this one field.
    */
   form: {
     components: {
       input: (props) => {
-        // props.id is the field name at the current level.
-        // We only want to intercept the 'productUuid' string field.
         if (
           props.id === 'productUuid' &&
           props.schemaType.name === 'string'
         ) {
           return ProductSelectorInput(props as any)
         }
-        // Fall through to default Sanity rendering for all other fields.
         return props.renderDefault(props)
       },
     },
   },
 })
+

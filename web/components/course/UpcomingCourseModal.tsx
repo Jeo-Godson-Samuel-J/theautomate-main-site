@@ -94,24 +94,22 @@ export default function UpcomingCourseModal({
           {/* Heading */}
           <h3
             id="upcoming-modal-title"
-            className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug"
+            className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-snug"
           >
-            {courseTitle ? (
-              <span className="line-clamp-2">{courseTitle}</span>
-            ) : (
-              "Course Coming Soon"
-            )}
+            This is an Upcoming Product
           </h3>
+
+          {/* Course Name */}
+          {courseTitle && (
+            <p className="mt-2 text-base font-semibold text-[#0166A7]">
+              {courseTitle}
+            </p>
+          )}
 
           {/* Primary & Secondary Description */}
           <div className="mt-3 space-y-2 text-slate-600">
-            <p className="text-base font-semibold text-slate-800">
-              This course does not exist yet — it&apos;s an upcoming product.
-            </p>
             <p className="text-sm text-slate-500 leading-relaxed max-w-sm">
-              Our instructors and curriculum team are actively building the modules,
-              hands-on exercises, and project blueprints. Plans and enrollments
-              will be open once it launches!
+              This product has not yet been launched in the learning portal. Curriculum modules and enrollment plans will open once the product is released!
             </p>
           </div>
 
