@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { syncSanityPricesToSupabase } from "@/lib/services/plan.services";
 import { makePhase2Client } from "@/lib/supabase/server";
+import { client } from "@/lib/sanity.client";
 
 export const dynamic = "force-dynamic";
 
@@ -34,26 +35,50 @@ export async function POST(request: Request) {
       // Empty body is acceptable; defaults to full sync
     }
 
-    const { badge, price, bundleUuid } = body;
+    const { badge, bundleUuid } = body;
 
-    // If specific badge and price provided, update that specific bundle
-    if (badge && typeof price === "number") {
-      const supabase = makePhase2Client();
+    // If specific badge provided, fetch authoritative price from Sanity CMS
+    if (badge) {
       const targetBadge = String(badge).trim().toLowerCase();
 
+      // Query Sanity directly to ensure price authenticity
+      const sanityPlan = await client.fetch<any>(
+        `*[_type == "plan" && (lower(badge) == $targetBadge || lower(title) == $targetBadge || _id == $bundleUuid)][0]{
+          _id,
+          badge,
+          title,
+          price,
+          bundleUuid
+        }`,
+        { targetBadge, bundleUuid: bundleUuid || "" },
+        { cache: "no-store" }
+      );
+
+      if (!sanityPlan || typeof sanityPlan.price !== "number") {
+        // Fall back to full Sanity CMS sync
+        const result = await syncSanityPricesToSupabase();
+        return NextResponse.json(
+          { success: true, message: "Full sync completed", synced: result.synced },
+          { status: 200, headers: corsHeaders() }
+        );
+      }
+
+      const supabase = makePhase2Client();
       const { data: dbBundles, error: fetchErr } = await supabase
         .from("bundles")
         .select("id, bundle_name, price");
 
       if (fetchErr || !dbBundles) {
+        console.error("[sync-price] Failed to fetch Supabase bundles:", fetchErr);
         return NextResponse.json(
-          { error: "Failed to fetch Supabase bundles", details: fetchErr?.message },
+          { error: "Failed to fetch Supabase bundles" },
           { status: 500, headers: corsHeaders() }
         );
       }
 
       const matchingBundle = dbBundles.find((b: any) => {
         if (bundleUuid && b.id === bundleUuid) return true;
+        if (sanityPlan.bundleUuid && b.id === sanityPlan.bundleUuid) return true;
         const bName = (b.bundle_name || "").trim().toLowerCase();
         return bName === targetBadge || bName.includes(targetBadge) || targetBadge.includes(bName);
       });
@@ -66,7 +91,7 @@ export async function POST(request: Request) {
       }
 
       const oldPrice = Number(matchingBundle.price);
-      const newPrice = Number(price);
+      const newPrice = Number(sanityPlan.price);
 
       const { error: updateErr } = await supabase
         .from("bundles")
@@ -77,8 +102,9 @@ export async function POST(request: Request) {
         .eq("id", matchingBundle.id);
 
       if (updateErr) {
+        console.error("[sync-price] Failed to update Supabase bundle:", updateErr);
         return NextResponse.json(
-          { error: "Failed to update Supabase bundle", details: updateErr.message },
+          { error: "Failed to update Supabase bundle" },
           { status: 500, headers: corsHeaders() }
         );
       }
@@ -116,7 +142,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("[api/bundles/sync-price] Error:", error);
     return NextResponse.json(
-      { error: "Failed to sync price", details: error?.message },
+      { error: "Failed to sync price" },
       { status: 500, headers: corsHeaders() }
     );
   }

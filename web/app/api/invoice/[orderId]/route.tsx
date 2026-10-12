@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { renderToStream } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/components/pdf/InvoicePDF";
@@ -22,6 +23,16 @@ export async function GET(
 
     if (!orderId) {
       return NextResponse.json({ error: "Order ID is required" }, { status: 400 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const token = searchParams.get("token");
+
+    const secret = process.env.UPGRADE_HANDOFF_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "invoice-fallback-secret";
+    const expectedToken = crypto.createHmac("sha256", secret).update(String(orderId)).digest("hex");
+
+    if (!token || token !== expectedToken) {
+      return NextResponse.json({ error: "Unauthorized access to invoice" }, { status: 403 });
     }
 
     // 1. Fetch Order
@@ -94,7 +105,7 @@ export async function GET(
   } catch (err: any) {
     console.error("[invoice-generation] Error:", err);
     return NextResponse.json(
-      { error: "Failed to generate invoice", details: err?.message || err?.toString() || "Unknown error" },
+      { error: "Failed to generate invoice" },
       { status: 500 }
     );
   }

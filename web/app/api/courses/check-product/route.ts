@@ -100,7 +100,6 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         error: "Failed to check course product",
-        details: error?.message || "Unknown error",
         message: "This is an Upcoming Product",
       },
       { status: 500 }

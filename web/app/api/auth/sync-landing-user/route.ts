@@ -20,6 +20,15 @@ export async function POST(req: Request) {
     const cleanEmail = String(email).trim().toLowerCase();
     const fullName = (name || "").trim() || cleanEmail.split("@")[0];
 
+    // Verify that authUserId exists in Supabase Auth and matches the registered email
+    const { data: authUserData, error: authUserErr } = await supabaseAdmin.auth.admin.getUserById(authUserId);
+    if (authUserErr || !authUserData?.user || authUserData.user.email?.toLowerCase().trim() !== cleanEmail) {
+      return NextResponse.json(
+        { success: false, error: "User verification failed" },
+        { status: 403 }
+      );
+    }
+
     // 1. Sync Phase 2 landing_users
     const { error: landingError } = await supabaseAdmin
       .schema("phase2")

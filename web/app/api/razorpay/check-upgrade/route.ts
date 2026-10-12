@@ -144,17 +144,14 @@ export async function POST(req: NextRequest) {
       if (diffHours <= 120) {
         const { data: orders } = await supabase
           .from("orders")
-          .select("amount, phone_number, created_at")
+          .select("amount, created_at")
           .eq("user_id", phase2User.id)
           .eq("course_id", resolvedCourseId)
           .in("status", ["paid", "captured", "successful", "authorized"]);
 
         let totalPaid = 0;
-        let resolvedPhone = "";
         if (orders && orders.length > 0) {
           totalPaid = orders.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-          const orderWithPhone = orders.find((o) => o.phone_number && o.phone_number.trim() !== "");
-          if (orderWithPhone) resolvedPhone = orderWithPhone.phone_number;
         }
 
         const upgradePrice = Math.max(0, targetBundlePrice - totalPaid);
@@ -164,7 +161,6 @@ export async function POST(req: NextRequest) {
           courseTitle: resolvedCourseTitle,
           upgradePrice,
           enrollmentId: enrollment.id,
-          resolvedPhone,
           resolvedBatchType,
           resolvedCourseId, // Original phase2 DB course ID
         });
@@ -183,11 +179,6 @@ export async function POST(req: NextRequest) {
     // Prefer the one that matches providedProductUuid, else the first one
     const primaryCourse = eligibleCoursesData.find(c => c.courseId === providedProductUuid) || eligibleCoursesData[0];
 
-
-    // Skip legacy verification logic that operated on a single `enrollment`
-    // (We did the same checks in the loop above)
-
-
     return NextResponse.json({
       eligible: true,
       price: primaryCourse.upgradePrice,
@@ -195,13 +186,12 @@ export async function POST(req: NextRequest) {
       resolvedProductUuid: primaryCourse.courseId,
       resolvedCourseTitle: primaryCourse.courseTitle,
       resolvedBatchType: primaryCourse.resolvedBatchType,
-      resolvedPhone: primaryCourse.resolvedPhone || "",
       eligibleCourses: eligibleCoursesData,
     });
   } catch (error: any) {
     console.error("Error in check-upgrade:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to check upgrade eligibility" },
+      { error: "Failed to check upgrade eligibility" },
       { status: 500 },
     );
   }

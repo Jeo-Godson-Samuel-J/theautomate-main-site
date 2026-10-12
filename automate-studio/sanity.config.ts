@@ -21,12 +21,9 @@ function createSyncPlanPublishAction(originalPublishAction: DocumentActionCompon
         if (doc && typeof doc.price === 'number') {
           try {
             const apiBase =
-              (typeof window !== 'undefined' &&
-                (import.meta as any).env?.SANITY_STUDIO_API_URL) ||
-              (typeof window !== 'undefined' &&
-              ['localhost', '127.0.0.1'].includes(window.location.hostname)
-                ? 'http://localhost:3000'
-                : '')
+              (typeof process !== 'undefined' && (process.env as any)?.SANITY_STUDIO_API_URL) ||
+              (typeof window !== 'undefined' && (import.meta as any).env?.SANITY_STUDIO_API_URL) ||
+              ''
             const res = await fetch(`${apiBase}/api/bundles/sync-price`, {
               method: 'POST',
               headers: {'Content-Type': 'application/json'},

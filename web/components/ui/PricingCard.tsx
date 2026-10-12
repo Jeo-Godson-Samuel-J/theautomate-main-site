@@ -356,7 +356,7 @@ export function PricingCard({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+                const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || '';
                 const targetMaincourseId =
                   candidateCourseIds.map((id) => enrolledCourseMap?.[id]).find(Boolean) ||
                   enrolledCourseMap?.[resolvedCourseId] ||

@@ -54,6 +54,7 @@ export default function OrderSummary({
     status: "success" | "error" | "loading";
     message: string;
     orderId?: string;
+    invoiceToken?: string;
     redirectUrl?: string;
     isExistingUser?: boolean;
   }>({
@@ -228,6 +229,7 @@ export default function OrderSummary({
               status: "success",
               message: successMsg,
               orderId: verifyData.orderId,
+              invoiceToken: verifyData.invoiceToken,
               redirectUrl: verifyData.redirectUrl,
               isExistingUser,
             });
@@ -410,6 +412,7 @@ export default function OrderSummary({
         status={modal.status}
         message={modal.message}
         orderId={modal.orderId}
+        invoiceToken={modal.invoiceToken}
         redirectUrl={modal.redirectUrl}
         isExistingUser={modal.isExistingUser}
         onClose={() => setModal((prev) => ({ ...prev, isOpen: false }))}

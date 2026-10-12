@@ -199,7 +199,7 @@ export function ViewPlanOrderSummary({
             className="w-full bg-[#16a34a] hover:bg-[#15803d] h-14 rounded-full text-sm font-bold text-white transition-all duration-300 shadow-xl cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
-              const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+              const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || '';
               const targetMaincourseId =
                 candidateCourseIds.map((id) => enrolledCourseMap?.[id]).find(Boolean) ||
                 enrolledCourseMap?.[resolvedCourseId] ||

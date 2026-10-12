@@ -37,8 +37,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const UPGRADE_SESSION_COOKIE = "upgrade_session";
 
-const PORTAL_URL =
-  process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || "http://localhost:3001";
+const PORTAL_URL = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || "";
 
 export function middleware(req: NextRequest) {
   const { pathname, searchParams } = req.nextUrl;
@@ -65,11 +64,13 @@ export function middleware(req: NextRequest) {
 
   // ── No valid session — redirect to portal login ───────────────────────────
   // Preserve the full intended URL so the portal can eventually redirect back.
-  const intendedUrl = req.nextUrl.toString();
   const redirectParams = new URLSearchParams({
     message: "Your upgrade session has expired or is invalid. Please start the upgrade again from your courses page.",
+    next: req.nextUrl.pathname + req.nextUrl.search,
   });
-  const redirectTarget = `${PORTAL_URL}/login?${redirectParams.toString()}`;
+  const redirectTarget = PORTAL_URL
+    ? `${PORTAL_URL}/login?${redirectParams.toString()}`
+    : new URL(`/login?${redirectParams.toString()}`, req.url);
 
   return NextResponse.redirect(redirectTarget, { status: 302 });
 }

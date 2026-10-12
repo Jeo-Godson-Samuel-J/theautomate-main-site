@@ -9,12 +9,13 @@ interface ModalProps {
     status: 'success' | 'error' | 'loading';
     message: string;
     orderId?: string;
+    invoiceToken?: string;
     redirectUrl?: string;
     isExistingUser?: boolean;
     onClose: () => void;
 }
 
-export default function PaymentStatusModal({ isOpen, status, message, orderId, redirectUrl, isExistingUser, onClose }: ModalProps) {
+export default function PaymentStatusModal({ isOpen, status, message, orderId, invoiceToken, redirectUrl, isExistingUser, onClose }: ModalProps) {
     if (!isOpen) return null;
 
     return (
@@ -72,7 +73,10 @@ export default function PaymentStatusModal({ isOpen, status, message, orderId, r
                                     </Button>
                                     {orderId && (
                                         <Button
-                                            onClick={() => window.open(`/api/invoice/${orderId}`, '_blank')}
+                                            onClick={() => {
+                                                const url = `/api/invoice/${orderId}${invoiceToken ? `?token=${encodeURIComponent(invoiceToken)}` : ''}`;
+                                                window.open(url, '_blank');
+                                            }}
                                             variant="outline"
                                             className="w-full h-14 rounded-2xl font-bold shadow-sm border-2 border-[#1B262C] text-[#1B262C] hover:bg-gray-50"
                                         >

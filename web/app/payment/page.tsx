@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { client } from "@/lib/sanity.client";
 import PaymentPageClient from "@/sections/payment-section/PaymentPageClient";
 import UpgradeCheckoutClient, {
@@ -79,11 +79,17 @@ type ValidateResult =
   | { ok: false; error: string };
 
 async function validateUpgradeHandoff(token: string): Promise<ValidateResult> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    (process.env.NODE_ENV === "development"
-      ? "http://localhost:3000"
-      : "");
+  let baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+  if (!baseUrl) {
+    try {
+      const headerList = await headers();
+      const host = headerList.get("host");
+      const proto = headerList.get("x-forwarded-proto") || "https";
+      if (host) baseUrl = `${proto}://${host}`;
+    } catch {
+      // In case headers() is unavailable
+    }
+  }
 
   const cookieStore = await cookies();
   // Forward any existing upgrade_session cookie so validate-handoff can detect replays

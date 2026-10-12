@@ -13,8 +13,11 @@ const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID!;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET!;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const LEARNING_PORTAL_URL =
-  process.env.LEARNING_PORTAL_URL || "https://your-learning-portal.com";
+const LEARNING_PORTAL_URL = (
+  process.env.LEARNING_PORTAL_URL ||
+  process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL ||
+  ""
+).replace(/\/$/, "");
 
 // ---------------------------------------------------------------------------
 // Supabase client – scoped to the "phase-2" schema for table operations.
@@ -110,14 +113,19 @@ export async function POST(req: Request) {
           ? JSON.parse(existingOrder.additional_comments)
           : null;
         if (meta?.upgrade_type === "portal_pro_upgrade") {
-          const portalUrl = LEARNING_PORTAL_URL.replace(/\/$/, "");
-          redirectUrl = `${portalUrl}/upgrade/success?payment_id=${encodeURIComponent(razorpay_payment_id)}&source=landing`;
+          redirectUrl = LEARNING_PORTAL_URL
+            ? `${LEARNING_PORTAL_URL}/upgrade/success?payment_id=${encodeURIComponent(razorpay_payment_id)}&source=landing`
+            : `/upgrade/success?payment_id=${encodeURIComponent(razorpay_payment_id)}&source=landing`;
         }
       } catch { /* ignore parse errors */ }
 
       return NextResponse.json({
         success: true,
-        redirectUrl: redirectUrl ?? `${LEARNING_PORTAL_URL}/login?message=${encodeURIComponent("Your payment has already been processed.")}`,
+        redirectUrl:
+          redirectUrl ??
+          (LEARNING_PORTAL_URL
+            ? `${LEARNING_PORTAL_URL}/login?message=${encodeURIComponent("Your payment has already been processed.")}`
+            : `/login?message=${encodeURIComponent("Your payment has already been processed.")}`),
         orderId: existingOrder.id,
         message: "Payment already recorded.",
       });
@@ -723,8 +731,9 @@ export async function POST(req: Request) {
       // (The order was already marked as paid during the upsert)
 
       // ── Return portal-specific redirect ─────────────────────────────
-      const portalBase = LEARNING_PORTAL_URL.replace(/\/$/, "");
-      const portalRedirect = `${portalBase}/upgrade/success?payment_id=${encodeURIComponent(razorpay_payment_id)}&source=landing`;
+      const portalRedirect = LEARNING_PORTAL_URL
+        ? `${LEARNING_PORTAL_URL}/upgrade/success?payment_id=${encodeURIComponent(razorpay_payment_id)}&source=landing`
+        : `/upgrade/success?payment_id=${encodeURIComponent(razorpay_payment_id)}&source=landing`;
 
       return NextResponse.json(
         {
@@ -975,7 +984,7 @@ export async function POST(req: Request) {
               Click the button below to access your learning portal.
             </p>
 
-            <a href="${LEARNING_PORTAL_URL}/login" 
+            <a href="${LEARNING_PORTAL_URL ? `${LEARNING_PORTAL_URL}/login` : '/login'}" 
                style="display: inline-block; background-color: #2283FF; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
               Access Learning Portal
             </a>
@@ -1017,7 +1026,12 @@ export async function POST(req: Request) {
         "Your new course has been added. Please log in to access it.",
       );
     }
-    const redirectUrl = `${LEARNING_PORTAL_URL}/login?${loginParams.toString()}`;
+    const redirectUrl = LEARNING_PORTAL_URL
+      ? `${LEARNING_PORTAL_URL}/login?${loginParams.toString()}`
+      : `/login?${loginParams.toString()}`;
+
+    const invoiceSecret = process.env.UPGRADE_HANDOFF_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "invoice-fallback-secret";
+    const invoiceToken = crypto.createHmac("sha256", invoiceSecret).update(String(order.id)).digest("hex");
 
     return NextResponse.json(
       {
@@ -1026,6 +1040,7 @@ export async function POST(req: Request) {
         isNewUser,
         existingUser: !isNewUser,
         orderId: order.id,
+        invoiceToken,
         enrollmentErrors: enrollmentErrors.length > 0 ? enrollmentErrors : undefined,
         message: isNewUser
           ? "Account created successfully. Check your email for login instructions."

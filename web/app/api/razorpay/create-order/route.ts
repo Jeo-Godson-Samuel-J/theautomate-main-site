@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    console.log("Using Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
     const {
       amount: requestedAmount,
       courseKey,

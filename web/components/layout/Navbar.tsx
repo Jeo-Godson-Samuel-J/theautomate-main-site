@@ -168,7 +168,7 @@ export default function Navbar() {
 
     // User is enrolled in at least one course -> redirect to the learning portal
     setIsProfileOpen(false);
-    const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || "";
     const params = new URLSearchParams({ next: "/courses" });
     if (user?.email) params.set("email", user.email);
     window.location.href = `${baseUrl}/login?${params.toString()}`;
@@ -493,7 +493,7 @@ export default function Navbar() {
                                         onClick={async (e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
-                                          const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+                                          const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || '';
                                           const courseId = String(course.id);
 
                                           // Query user_video_progress for the most-recently
@@ -609,7 +609,7 @@ export default function Navbar() {
                   <Button
                     onClick={() => {
                       setIsOpen(false);
-                      const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || 'http://localhost:3001';
+                      const baseUrl = process.env.NEXT_PUBLIC_LEARNING_PORTAL_URL || '';
                       const params = new URLSearchParams({ next: '/courses' });
                       if (user?.email) params.set('email', user.email);
                       window.location.href = `${baseUrl}/login?${params.toString()}`;
